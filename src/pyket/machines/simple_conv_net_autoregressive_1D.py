@@ -25,7 +25,7 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
         x = ToFloat32()(keras_input_layer)
         x = Lambda(lambda y:K.expand_dims(y, axis=-1))(x)
         for i in range(self.depth - 1):
-            conv_layer = Conv1D(filters=self.num_of_channels, kernel_size=self.kernel_size, padding='causal',
+            conv_layer = Conv1D(filters=self.num_of_channels, kernel_size=self.kernel_size, padding='valid',
                         strides=self.strides, activation=self.activation)
             if self.weights_normalization:
                 conv_layer = WeightNormalization(conv_layer)
@@ -34,6 +34,6 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
         conv_layer = Conv1D(filters=4, kernel_size=1, padding='valid', strides=1)
         if self.weights_normalization:
             conv_layer = WeightNormalization(conv_layer)
-        x = conv_layer(x)
+        x = conv_layer(ZeroPadding1D(padding=(self.kernel_size - self.strides, 0))(x))
         x = Reshape((K.int_shape(keras_input_layer)[1], 2, 2))(x)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)
