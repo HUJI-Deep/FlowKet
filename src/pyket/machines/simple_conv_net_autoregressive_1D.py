@@ -29,11 +29,11 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
                         strides=self.strides, activation=self.activation)
             if self.weights_normalization:
                 conv_layer = WeightNormalization(conv_layer)
-            x = conv_layer(x)
+            x = conv_layer(ZeroPadding1D(padding=(self.kernel_size - self.strides, 0))(x))
         x = DownShiftLayer()(x)
         conv_layer = Conv1D(filters=4, kernel_size=1, padding='valid', strides=1)
         if self.weights_normalization:
             conv_layer = WeightNormalization(conv_layer)
-        x = conv_layer(ZeroPadding1D(padding=(self.kernel_size - self.strides, 0))(x))
+        x = conv_layer(x)
         x = Reshape((K.int_shape(keras_input_layer)[1], 2, 2))(x)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)
