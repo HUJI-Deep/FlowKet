@@ -27,10 +27,12 @@ class ExactVariational(object):
         self.probs = np.zeros_like(self.wave_function, dtype=np.float64)
         self.log_probs = np.zeros_like(self.wave_function, dtype=np.float64)
         self.energies = np.zeros_like(self.wave_function, dtype=np.complex128)
-        # self.local_energies_variance = np.zeros_like(self.wave_function, dtype=np.float64)
         self.probs_mult_energy_mean = np.zeros_like(self.wave_function, dtype=np.complex128)
+        self.probs_mult_local_energiey_variance = np.zeros_like(self.wave_function, dtype=np.float64)
         self.energy_grad_coefficients = np.zeros_like(self.wave_function, dtype=np.complex128)
-        self.energies_squared = np.zeros_like(self.wave_function, dtype=np.complex128)
+        self.naive_energies = np.zeros_like(self.wave_function, dtype=np.complex128)
+        self.naive_local_energy_minus_energy = np.zeros_like(self.wave_function, dtype=np.complex128)
+        self.naive_local_energy_minus_energy_squared = np.zeros_like(self.wave_function, dtype=np.float64)
         self.states = decimal_array_to_binary_array(np.arange(self.num_of_states), self.number_of_spins, False).reshape((self.num_of_states, ) + self.input_size)
         self.wave_function_norm_squared = None
 
@@ -42,14 +44,16 @@ class ExactVariational(object):
         self.batch_size = batch_size
         self.num_of_batch_until_full_cycle = self.num_of_states / self.batch_size
         self.batch_complex_local_energies = np.zeros((self.batch_size, ), dtype=np.complex128)
-        self.batch_complex_local_energies_squared = np.zeros((self.batch_size, ), dtype=np.complex128)
-    
+        self.batch_naive_complex_local_energies = np.zeros((self.batch_size, ), dtype=np.complex128)
+
     def _build_batch_local_connections_arrays(self):
         self.log_values = np.zeros((self.states_hamiltonian_values.shape[0], self.batch_size), dtype=np.complex128)
         self.log_val_add = np.zeros_like(self.log_values, dtype=np.complex128)
+        self.log_val_sub = np.zeros_like(self.log_values, dtype=np.complex128)
         self.val_mult = np.zeros_like(self.log_values, dtype=np.complex128)
+        self.val_div = np.zeros_like(self.log_values, dtype=np.complex128)
         self.batch_complex_local_energies_before_sum = np.zeros_like(self.log_values, dtype=np.complex128)
-        self.batch_complex_local_energies_squared_before_sum = np.zeros_like(self.log_values, dtype=np.complex128)
+        self.batch_naive_complex_local_energies_before_sum = np.zeros_like(self.log_values, dtype=np.complex128)
         self.batch_real_energies = np.zeros_like(self.log_values, dtype=np.float64)
     
     def _calculate_max_number_of_local_connections(self):
@@ -89,15 +93,20 @@ class ExactVariational(object):
             for j in range(self.states_local_connections.shape[0]):
                 self.log_values[j, :] = self.wave_function[self.states_idx_local_connections[j, i:i+self.batch_size]]
             np.add(np.conj(self.log_values), self.log_values[0, :], out=self.log_val_add)
+            np.subtract(self.log_values, self.log_values[0, :], out=self.log_val_sub)
             np.exp(self.log_val_add, out=self.val_mult)
+            np.exp(self.log_val_sub, out=self.val_div)
             np.sum(np.multiply(np.conj(self.states_hamiltonian_values[:, i:i+self.batch_size]), 
                 self.val_mult, out=self.batch_complex_local_energies_before_sum), axis=0, out=self.batch_complex_local_energies)
-            np.sum(np.multiply(np.conj(self.states_hamiltonian_values[:, i:i+self.batch_size]) ** 2, 
-                self.val_mult, out=self.batch_complex_local_energies_squared_before_sum), axis=0, out=self.batch_complex_local_energies_squared)
+            np.sum(np.multiply(self.states_hamiltonian_values[:, i:i+self.batch_size], 
+                self.val_div, out=self.batch_naive_complex_local_energies_before_sum), axis=0, out=self.batch_naive_complex_local_energies)
             self.energies[i:i+self.batch_size] = self.batch_complex_local_energies / self.wave_function_norm_squared
-            self.energies_squared[i:i+self.batch_size] = self.batch_complex_local_energies_squared
+            self.naive_energies[i:i+self.batch_size] = self.batch_naive_complex_local_energies
         self.current_energy = fsum(self.energies)
-        self.current_local_energy_variance = fsum(self.energies_squared) / self.wave_function_norm_squared - self.current_energy*self.current_energy
+        np.subtract(self.naive_energies, self.current_energy, out=self.naive_local_energy_minus_energy)
+        np.multiply(np.real(self.naive_local_energy_minus_energy), np.real(self.naive_local_energy_minus_energy), out=self.naive_local_energy_minus_energy_squared)
+        np.multiply(self.naive_local_energy_minus_energy_squared, self.probs, out=self.probs_mult_local_energiey_variance)
+        self.current_local_energy_variance = fsum(self.probs_mult_local_energiey_variance)
         np.multiply(self.probs.astype(np.complex128), self.current_energy, out=self.probs_mult_energy_mean)
         np.subtract(self.energies, self.probs_mult_energy_mean, out=self.energy_grad_coefficients)
 
