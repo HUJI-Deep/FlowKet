@@ -27,16 +27,15 @@ setup(name='pyket',
     zip_safe=False,
 
     install_requires=[
-        # todo support also gpu
-        'tensorflow>=1.10',
+        # todo require  tensorflow>=1.10' or tensorflow-gpu>=1.10'
         'tqdm>=4.31.1'
     ],
 
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     project_urls={
-        # 'Documentation': 'https://Pyket.readthedocs.io/',
-        # 'Changelog': 'https://Pyket.readthedocs.io/en/latest/changelog.html',
+        # 'Documentation': 'https://pyket.readthedocs.io/',
+        # 'Changelog': 'https://pyket.readthedocs.io/en/latest/changelog.html',
         'Issue Tracker': 'https://github.com/noamwies/Pyket/issues',
     },
     )
