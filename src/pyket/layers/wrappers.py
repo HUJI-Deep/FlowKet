@@ -140,7 +140,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             x_init = self.layer(inputs)
             data_norm_axes = list(range(len(x_init.shape) - 1))
             m_init, v_init = tf.nn.moments(x_init, data_norm_axes)
-            scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
+            scale_init = 1. / tf.sqrt(v_init + 1e-10)
 
         # Assign data dependent init values
         self.g = self.g * scale_init
