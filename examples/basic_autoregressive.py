@@ -11,7 +11,7 @@ from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import AutoregressiveSampler
 
 inputs = Input(shape=(16, ), dtype='int8')
-convnet = SimpleConvNetAutoregressive1D(inputs, depth=7, num_of_channels=32, weights_normalization=False)
+convnet = SimpleConvNetAutoregressive1D(inputs, depth=7, num_of_channels=32)
 predictions, conditional_log_probs = convnet.predictions, convnet.conditional_log_probs
 predictions = LogSpaceComplexNumberHistograms(name='psi')(predictions)
 model = Model(inputs=inputs, outputs=predictions)
@@ -32,7 +32,7 @@ generator = VariationalMonteCarlo(model, operator, sampler)
 validation_sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size * 16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_7', generator=generator, update_freq=1, histogram_freq=1, 
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/monte_carlo_batch_%s_run_1' % batch_size, generator=generator, update_freq=1, histogram_freq=1, 
                                                      batch_size=batch_size, write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(generator, 
 	validation_generator=validation_generator, 
