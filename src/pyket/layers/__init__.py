@@ -5,3 +5,5 @@ from .complex.histograms import LogSpaceComplexNumberHistograms
 from .masking import DownShiftLayer, RightShiftLayer
 from .padding import PeriodicPadding
 from .wrappers import WeightNormalization
+from .dihedral_4_invariants import Rot90, FlipLeftRight
+from .transition_invariants import Roll
