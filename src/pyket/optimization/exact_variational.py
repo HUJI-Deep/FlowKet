@@ -42,7 +42,7 @@ class ExactVariational(object):
         if self.num_of_states % batch_size != 0:
             raise Exception('In exact the batch size must divide the total number of states in the system')
         self.batch_size = batch_size
-        self.num_of_batch_until_full_cycle = self.num_of_states / self.batch_size
+        self.num_of_batch_until_full_cycle = self.num_of_states // self.batch_size
         self.batch_complex_local_energies = np.zeros((self.batch_size, ), dtype=np.complex128)
         self.batch_naive_complex_local_energies = np.zeros((self.batch_size, ), dtype=np.complex128)
 
