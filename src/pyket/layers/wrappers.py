@@ -76,7 +76,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             # The kernel's filter or unit dimension is -1
             self.layer_depth = int(self.layer.kernel.shape[-1])
             self.kernel_norm_axes = list(
-                range(self.layer.kernel.shape.rank - 1))
+                range(len(self.layer.kernel.shape) - 1))
 
             self.v = self.layer.kernel
             self.g = self.add_variable(
@@ -138,7 +138,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             existing_activation = self.layer.activation
             self.layer.activation = None
             x_init = self.layer(inputs)
-            data_norm_axes = list(range(x_init.shape.rank - 1))
+            data_norm_axes = list(range(len(x_init.shape) - 1))
             m_init, v_init = tf.nn.moments(x_init, data_norm_axes)
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
 
