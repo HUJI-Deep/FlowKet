@@ -8,7 +8,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
 # from pyket.callbacks.exact import LocalEnergyStats, LocalStats, AbsoluteSigmaZ, OperatorStats, WaveFunctionValuesCache
 from pyket.evaluation import evaluate, exact_evaluate
 from pyket.layers import VectorToComplexNumber, ToFloat32, ToComplex64, PeriodicPadding, ComplexConv1D, ComplexConv2D, LogSpaceComplexNumberHistograms
-from pyket.machines import RBM, DBM, ConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, OBCInvariants, PBCInvariants
+from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, make_obc_invariants, make_pbc_invariants
 from pyket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
 from pyket.optimization import ExactVariational, VariationalMonteCarlo, energy_gradient_loss, energy_plus_sigma_z_square_loss
 from pyket.optimizers import convert_to_accumulate_gradient_optimizer, StochasticReconfiguration
@@ -72,8 +72,7 @@ model.fit_generator(generator(), steps_per_epoch=steps_per_epoch, epochs=80, cal
 model.save_weights('final_ising_fcnn.h5')
 
 evaluation_inputs = Input(shape=(12, 12), dtype='int8')
-predictions = OBCInvariants(evaluation_inputs, model)
-invariant_model = Model(inputs=evaluation_inputs, outputs=predictions)
+invariant_model = make_obc_invariants(evaluation_inputs, model)
 sampler = MetropoliceLocal(invariant_model, batch_size=125, num_of_chains=10, unused_sampels=100)
 generator = VariationalMonteCarlo(invariant_model, operator, sampler)
 evaluate(generator(), steps=800, callbacks=callbacks[:4], keys_to_progress_bar_mapping={'energy/energy' : 'energy', 'energy/relative_error': 'relative_error'})
