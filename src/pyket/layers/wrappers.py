@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import numpy as np
 
 
 class WeightNormalization(tf.keras.layers.Wrapper):
@@ -56,10 +57,12 @@ class WeightNormalization(tf.keras.layers.Wrapper):
       NotImplementedError: If `data_init` is True and running graph execution
     """
 
-    def __init__(self, layer, data_init=True, **kwargs):
+    def __init__(self, layer, data_init=True, normalize_per_output_channel=True, 
+                 exponential_norm=False, **kwargs):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.data_init = data_init
-        self._initialized = False
+        self.normalize_per_output_channel = normalize_per_output_channel
+        self.exponential_norm = exponential_norm
 
     def build(self, input_shape):
         """Build `Layer`"""
@@ -74,28 +77,39 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                                  ' contains a `kernel` for weights')
 
             # The kernel's filter or unit dimension is -1
-            self.layer_depth = int(self.layer.kernel.shape[-1])
-            self.kernel_norm_axes = list(
-                range(len(self.layer.kernel.shape) - 1))
-
+            if self.normalize_per_output_channel:
+                self.layer_depth = int(self.layer.kernel.shape[-1])
+                self.kernel_norm_axes = list(
+                    range(len(self.layer.kernel.shape) - 1))
+            else:
+                self.layer_depth = 1
+                self.kernel_norm_axes = list(
+                    range(len(self.layer.kernel.shape)))
             self.v = self.layer.kernel
+            g_init = 'zeros' if self.exponential_norm else 'ones'
             self.g = self.add_variable(
                 name="g",
                 shape=(self.layer_depth,),
-                initializer=tf.keras.initializers.get('ones'),
+                initializer=tf.keras.initializers.get(g_init),
                 dtype=self.layer.kernel.dtype,
                 trainable=True)
+        self._initialized = self.add_variable(
+                name="initialized",
+                shape=(),
+                initializer=tf.keras.initializers.get('zeros'),
+                dtype=tf.bool,
+                trainable=False)
 
         super(WeightNormalization, self).build()
 
     def call(self, inputs):
         """Call `Layer`"""
-        if not self._initialized:
-            self._initialize_weights(inputs)
-
-        self._compute_weights()  # Recompute weights for each forward pass
-        output = self.layer(inputs)
-        return output
+        # todo more effiect implementation ?
+        init_op = tf.cond(self._initialized, true_fn=lambda :tf.group(*[tf.no_op()]), false_fn=lambda :self._initialize_weights(tf.stop_gradient(inputs)))
+        with tf.control_dependencies([init_op]):
+            self._compute_weights()  # Recompute weights for each forward pass
+            output = self.layer(inputs)
+            return output
 
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(
@@ -108,8 +122,11 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         normalized value, so that the layer is ready for call().
         """
         with tf.name_scope('compute_weights'):
+            g = self.g
+            if self.exponential_norm:
+                g = tf.exp(g)
             self.layer.kernel = tf.nn.l2_normalize(
-                self.v, axis=self.kernel_norm_axes) * self.g
+                self.v, axis=self.kernel_norm_axes) * g
 
     def _initialize_weights(self, inputs):
         """Initialize weight g.
@@ -118,17 +135,21 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         or by the input value if self.data_init is True.
         """
         if self.data_init:
-            self._data_dep_init(inputs)
+            init_ops = self._data_dep_init(inputs)
         else:
-            self._init_norm()
-        self._initialized = True
+            init_ops = self._init_norm()
+        init_ops.append(self._initialized.assign(np.ones(shape=(), dtype=np.bool)))
+        return tf.group(*init_ops)
 
     def _init_norm(self):
         """Set the weight g with the norm of the weight vector."""
         with tf.name_scope('init_norm'):
             flat = tf.reshape(self.v, [-1, self.layer_depth])
-            self.g.assign(
-                tf.reshape(tf.linalg.norm(flat, axis=0), (self.layer_depth,)))
+            norm = tf.linalg.norm(flat, axis=0)
+            if self.exponential_norm:
+                norm = tf.log(norm + 1e-10)
+            return [self.g.assign(
+                tf.reshape(norm, (self.layer_depth,)))]
 
     def _data_dep_init(self, inputs):
         """Data dependent initialization."""
@@ -138,17 +159,28 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             existing_activation = self.layer.activation
             self.layer.activation = None
             x_init = self.layer(inputs)
-            data_norm_axes = list(range(len(x_init.shape) - 1))
+            if self.normalize_per_output_channel:
+                data_norm_axes = list(range(len(x_init.shape) - 1))
+            else:
+                data_norm_axes = list(range(len(x_init.shape)))
             m_init, v_init = tf.nn.moments(x_init, data_norm_axes)
             scale_init = 1. / tf.sqrt(v_init + 1e-10)
 
         # Assign data dependent init values
-        self.g = self.g * scale_init
+        init_ops = []
+
+        if self.exponential_norm:
+            init_ops.append(tf.assign_add(self.g, tf.log(scale_init + 1e-10)))
+        else:
+            init_ops.append(tf.assign(self.g, self.g * scale_init))
         if hasattr(self.layer, 'bias'):
-            self.layer.bias = -m_init * scale_init
+            init_ops.append(tf.assign(self.layer.bias, -m_init * scale_init))
         self.layer.activation = existing_activation
+        return init_ops
 
     def get_config(self):
-        config = {'data_init': self.data_init}
+        config = {'data_init': self.data_init, 
+                  'normalize_per_output_channel': self.normalize_per_output_channel, 
+                  'exponential_norm' : self.exponential_norm}
         base_config = super(WeightNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
