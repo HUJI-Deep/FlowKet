@@ -33,7 +33,7 @@ model.summary()
 # still can use monte carlo generator for estimating histograms
 # tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/exact_run_0', generator=monte_carlo_generator, update_freq=1, histogram_freq=1, 
 #                                                      batch_size=batch_size, write_output=False)
-tensorboard = TensorBoard(log_dir='tensorboard_logs/exact_run_0')
+tensorboard = TensorBoard(log_dir='tensorboard_logs/exact_run_0', update_freq=1)
 
 callbacks = default_wave_function_callbacks_factory(generator, 
 	true_ground_state_energy=-49.257706531889006) + [tensorboard]

@@ -1,7 +1,9 @@
-import tensorflow
-import numpy as np
+import time
 
 from ..exact.utils import binary_array_to_decimal_array, decimal_array_to_binary_array, fsum, complex_norm_log_fsum_exp
+
+import tensorflow
+import numpy as np
 
 
 class ExactVariational(object):
@@ -112,8 +114,11 @@ class ExactVariational(object):
 
     def machine_updated(self):
         with self._graph.as_default():
+            self.machine_updated_start_time = time.time()
             self._update_wave_function_arrays()
+            self.wave_function_update_end_time = time.time()
             self._update_local_energy()
+            self.local_energy_update_end_time = time.time()
 
     def __call__(self):
         while True:

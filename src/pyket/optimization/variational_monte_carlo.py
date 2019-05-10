@@ -1,3 +1,5 @@
+import time
+
 import tensorflow
 import numpy
 
@@ -53,9 +55,12 @@ class VariationalMonteCarlo(object):
 
     def _next_batch(self):
         with self._graph.as_default():
+            self.start_time = time.time()
             self.sampler.next_batch()
             self.current_batch = self.sampler.batch
+            self.sampling_end_time = time.time()
             self._update_batch_local_energy()
+            self.local_energy_end_time = time.time()
             return self.current_batch, numpy.conj(self.current_local_energy - numpy.mean(self.current_local_energy)) / self._batch_size
 
     def __call__(self):
