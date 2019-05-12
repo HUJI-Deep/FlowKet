@@ -12,7 +12,7 @@ from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutor
 from pyket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
 from pyket.optimization import ExactVariational, VariationalMonteCarlo, energy_gradient_loss, energy_plus_sigma_z_square_loss
 from pyket.optimizers import convert_to_accumulate_gradient_optimizer, StochasticReconfiguration
-from pyket.samplers import MetropoliceLocal, MetropoliceHamiltonian, AutoregressiveSampler, FastAutoregressiveSampler, Ensemble 
+from pyket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, FastAutoregressiveSampler, Ensemble
 
 
 inputs = Input(shape=(12, 12), dtype='int8')
@@ -54,7 +54,7 @@ operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 # operator = NetketOperator(netket_operator=netket_operator, hilbert_state_shape=hilbert_state_shape=hilbert_state_shape=hilbert_state_shape, max_num_of_local_connections=200)
 wave_function_cache = WaveFunctionValuesCache(reset_cache_interval=logical_actual_ratio)
 # VariationalMonteCarlo
-sampler = MetropoliceLocal(model, batch_size, num_of_chains=10, unused_sampels=100)
+sampler = MetropolisHastingsLocal(model, batch_size, num_of_chains=10, unused_sampels=100)
 # sampler = FastAutoregressiveSampler(fast_sampling, buffer_size=5000)
 # sampler = FastAutoregressiveSampler(conditional_log_probs)
 generator = VariationalMonteCarlo(model, operator, sampler, cache=wave_function_cache)
@@ -73,6 +73,6 @@ model.save_weights('final_ising_fcnn.h5')
 
 evaluation_inputs = Input(shape=(12, 12), dtype='int8')
 invariant_model = make_obc_invariants(evaluation_inputs, model)
-sampler = MetropoliceLocal(invariant_model, batch_size=125, num_of_chains=10, unused_sampels=100)
+sampler = MetropolisHastingsLocal(invariant_model, batch_size=125, num_of_chains=10, unused_sampels=100)
 generator = VariationalMonteCarlo(invariant_model, operator, sampler)
 evaluate(generator(), steps=800, callbacks=callbacks[:4], keys_to_progress_bar_mapping={'energy/energy' : 'energy', 'energy/relative_error': 'relative_error'})

@@ -17,14 +17,18 @@ class ExactSigmaZ(Callback):
         self._abs_sigma_z_vals = numpy.absolute(self.generator.states.sum(axis=axis_to_sum)) / total_spins_per_sample
         self._sigma_z_vals = self.generator.states.sum(axis=axis_to_sum) / total_spins_per_sample
 
-    def add_sigma_z_logs(self, logs, generator, prefix=""):
+    def add_sigma_z_logs(self, logs):
         logs['observables/abs_sigma_z' ] = fdot(self._abs_sigma_z_vals, self.generator.probs)
         logs['observables/sigma_z'] = fdot(self._sigma_z_vals, self.generator.probs)
         
-    def on_batch_end(self, batch, logs={}):
+    def on_batch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
         if self.log_in_batch_or_epoch and ((batch % self.generator.num_of_batch_until_full_cycle) == 0):
-            self.add_sigma_z_logs(logs, self.generator)
+            self.add_sigma_z_logs(logs)
         
-    def on_epoch_end(self, batch, logs={}):
+    def on_epoch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
         if not self.log_in_batch_or_epoch:
-            self.add_sigma_z_logs(logs, self.generator)
+            self.add_sigma_z_logs(logs)

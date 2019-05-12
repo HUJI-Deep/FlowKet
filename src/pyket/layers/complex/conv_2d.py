@@ -11,8 +11,10 @@ class ComplexConv2D(ComplexLayer):
                  kernel_initializer='complex_independent_filters', bias_initializer='zeros', 
                  activation=None, **kwargs):
         super(ComplexConv2D, self).__init__(**kwargs)
-        if initializer == 'complex_independent_filters':
-            initializer = complex_independent_filters()
+        if kernel_initializer == 'complex_independent_filters':
+            kernel_initializer = complex_independent_filters()
+        if bias_initializer == 'complex_independent_filters':
+            bias_initializer = complex_independent_filters()
         self.kernel_size = kernel_size
         self.filters = filters
         self.kernel_initializer = kernel_initializer

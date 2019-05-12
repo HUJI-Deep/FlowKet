@@ -6,5 +6,5 @@ class GeneratorIterator(Callback):
         super(GeneratorIterator, self).__init__(**kwargs)
         self.generator = generator
         
-    def on_epoch_end(self, batch, logs={}):
+    def on_epoch_end(self, batch, logs=None):
         next(self.generator)

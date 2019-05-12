@@ -1,6 +1,6 @@
 import tensorflow
 import numpy as np
- 
+
 import tensorflow
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.initializers import Initializer
@@ -12,9 +12,10 @@ from tensorflow.keras.initializers import Initializer
 # created from 2 real variables the tf.gradient calculate the gradient conjugate
 # (and we can't simply use tf.conj(tf.gradients)) because we want jacobians vector products ...
 CONJ_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_conj'
-NORMAL_TRAINABLE_VARIABLES =  tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_normal'
-REAL_TRAINABLE_VARIABLES =  tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_real'
-IMAG_TRAINABLE_VARIABLES =  tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_imag'
+NORMAL_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_normal'
+REAL_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_real'
+IMAG_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_imag'
+
 
 class NumpyInitializer(Initializer):
     def __init__(self, np_array):
@@ -26,6 +27,7 @@ class NumpyInitializer(Initializer):
 
 class ComplexLayer(Layer):
     """docstring for ComplexLayer"""
+
     def __init__(self, dtype=np.complex64, **kwargs):
         super(ComplexLayer, self).__init__(dtype=dtype, **kwargs)
 
@@ -40,10 +42,10 @@ class ComplexLayer(Layer):
                 imag_initializer = -1.0 * complex_initializer
         else:
             real_initializer = NumpyInitializer(np.real(init_with))
-            imag_initializer = NumpyInitializer(-1*np.imag(init_with))
-        real = self.add_weight(name='%s_real' % name, 
+            imag_initializer = NumpyInitializer(-1 * np.imag(init_with))
+        real = self.add_weight(name='%s_real' % name,
                                shape=shape, initializer=real_initializer, dtype=dtype, trainable=trainable)
-        imag = self.add_weight(name='%s_imag' % name, 
+        imag = self.add_weight(name='%s_imag' % name,
                                shape=shape, initializer=imag_initializer, dtype=dtype, trainable=trainable)
         minus_imag = tensorflow.multiply(imag, -1., 'conj_imag')
         if trainable and real not in tensorflow.get_collection(REAL_TRAINABLE_VARIABLES):

@@ -11,15 +11,20 @@ from tensorflow.keras.layers import Lambda, Input
 
 def build_ensemble(predictions):
     joint_predictions = Concatenate(axis=-1)(predictions)
+
     def inner(x):
-        new_real = 0.5 * tensorflow.reduce_logsumexp(tensorflow.real(x) * 2.0, axis=-1, keepdims=True) - 0.5 * numpy.log(len(predictions))
-        new_imag = angle(tensorflow.reduce_mean(tensorflow.exp(tensorflow.complex(tensorflow.zeros_like(new_real), tensorflow.imag(x))), axis=-1, keepdims=True))
+        new_real = 0.5 * tensorflow.reduce_logsumexp(tensorflow.real(x) * 2.0, axis=-1,
+                                                     keepdims=True) - 0.5 * numpy.log(len(predictions))
+        new_imag = angle(tensorflow.reduce_mean(
+            tensorflow.exp(tensorflow.complex(tensorflow.zeros_like(new_real), tensorflow.imag(x))), axis=-1,
+            keepdims=True))
         return tensorflow.complex(new_real, new_imag)
+
     return Lambda(inner)(joint_predictions)
 
 
 def make_obc_invariants(keras_input_layer, predictions_model):
-    inputs = [keras_input_layer, 
+    inputs = [keras_input_layer,
               Rot90(k=1)(keras_input_layer),
               Rot90(k=2)(keras_input_layer),
               Rot90(k=3)(keras_input_layer)]

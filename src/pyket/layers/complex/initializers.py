@@ -14,8 +14,6 @@ from tensorflow.keras.utils import (serialize_keras_object,
                                     deserialize_keras_object)
 
 
-
-
 def _compute_fans(shape, data_format='channels_last'):
     """Computes the number of input and output units for a weight shape.
     # Arguments

@@ -15,10 +15,14 @@ class MCMCStats(Callback):
         logs['mcmc/energy_effective_sample_size'] = effective_sample_size
         logs['mcmc/energy_correlations_sum'] = correlations_sum
         
-    def on_batch_end(self, batch, logs={}):
+    def on_batch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
         if self.log_in_batch_or_epoch:
             self.add_mcmc_logs(logs)
         
-    def on_epoch_end(self, batch, logs={}):
+    def on_epoch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
         if not self.log_in_batch_or_epoch:
             self.add_mcmc_logs(logs)

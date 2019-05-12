@@ -12,12 +12,12 @@ def sum_correlations(correlations):
     return correlations.sum()
 
 
-class MetropoliceSampler(Sampler):
+class MetropolisHastingsSampler(Sampler):
     """docstring for MetropoliceSampler"""
 
     def __init__(self, machine, batch_size, num_of_chains=1, unused_sampels=0, discard_ratio=10, **kwargs):
         self.num_of_chains = num_of_chains
-        super(MetropoliceSampler, self).__init__(input_size=machine.input_shape[1:], batch_size=batch_size, **kwargs)
+        super(MetropolisHastingsSampler, self).__init__(input_size=machine.input_shape[1:], batch_size=batch_size, **kwargs)
         self.machine = machine
         print('using %s parallel samplers' % num_of_chains)
         self.unused_sampels = unused_sampels
@@ -38,7 +38,7 @@ class MetropoliceSampler(Sampler):
         self.sample_machine_values = self.machine.predict(self.sample, batch_size=self.mini_batch_size)[:, 0]
 
     def set_batch_size(self, batch_size, **kwargs):
-        super(MetropoliceSampler, self).set_batch_size(batch_size, **kwargs)
+        super(MetropolisHastingsSampler, self).set_batch_size(batch_size, **kwargs)
         if self.batch_size % self.num_of_chains != 0:
             raise Exception('Num of samplers must divide the batch size')
         self._batch = self.batch.view().reshape(
@@ -91,7 +91,7 @@ class MetropoliceSampler(Sampler):
         return r_hat, variance, correlations_sum, effective_sample_size
 
 
-class MetropoliceHastingSymmetricProposal(MetropoliceSampler):
+class MetropolisHastingsHastingSymmetricProposal(MetropolisHastingsSampler):
     """docstring for MetropoliceHastingSymmetricProposal"""
 
     @abc.abstractmethod
@@ -114,10 +114,10 @@ class MetropoliceHastingSymmetricProposal(MetropoliceSampler):
         return self.accepts.sum()
 
     def __init__(self, machine, batch_size, **kwargs):
-        super(MetropoliceHastingSymmetricProposal, self).__init__(machine, batch_size, **kwargs)
+        super(MetropolisHastingsHastingSymmetricProposal, self).__init__(machine, batch_size, **kwargs)
 
 
-class MetropoliceLocal(MetropoliceHastingSymmetricProposal):
+class MetropolisHastingsLocal(MetropolisHastingsHastingSymmetricProposal):
     """docstring for MetropoliceLocal"""
 
     def _next_candidates(self):
@@ -127,20 +127,20 @@ class MetropoliceLocal(MetropoliceHastingSymmetricProposal):
         self.candidates[idx_for_dim] *= -1
 
     def __init__(self, machine, batch_size, **kwargs):
-        super(MetropoliceLocal, self).__init__(machine, batch_size, **kwargs)
+        super(MetropolisHastingsLocal, self).__init__(machine, batch_size, **kwargs)
 
 
-class MetropoliceUniform(MetropoliceHastingSymmetricProposal):
+class MetropolisHastingsUniform(MetropolisHastingsHastingSymmetricProposal):
     """docstring for MetropoliceUniform"""
 
     def _next_candidates(self):
         self.candidates = numpy.random.choice([-1, 1], size=self.sample.shape)
 
     def __init__(self, machine, batch_size, **kwargs):
-        super(MetropoliceUniform, self).__init__(machine, batch_size, **kwargs)
+        super(MetropolisHastingsUniform, self).__init__(machine, batch_size, **kwargs)
 
 
-class MetropoliceHamiltonian(MetropoliceSampler):
+class MetropolisHastingsHamiltonian(MetropolisHastingsSampler):
     """docstring for MetropoliceHamiltonian"""
 
     def _sweep(self):
@@ -163,5 +163,5 @@ class MetropoliceHamiltonian(MetropoliceSampler):
         return self.accepts.sum()
 
     def __init__(self, machine, batch_size, hamiltonian, **kwargs):
-        super(MetropoliceHamiltonian, self).__init__(machine, batch_size, **kwargs)
+        super(MetropolisHastingsHamiltonian, self).__init__(machine, batch_size, **kwargs)
         self.hamiltonian = hamiltonian

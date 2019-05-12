@@ -12,9 +12,9 @@ class PeriodicPadding(Layer):
         self.vertical_padding = vertical_padding
 
     def call(self, x, mask=None):
-        '''
+        """
         Create a periodic padding (wrap) around the image, to emulate periodic boundary conditions
-        '''
+        """
         # copy from https://github.com/tensorflow/tensorflow/issues/956 
         # todo check the channels axis
         upper_pad = x[:,-self.padding_size:,:,:]

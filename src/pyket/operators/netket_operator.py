@@ -1,8 +1,6 @@
-from .operator import Operator
-
-import math
-
 import numpy
+
+from .operator import Operator
 
 
 class NetketOperatorWrapper(Operator):    

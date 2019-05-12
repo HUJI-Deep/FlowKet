@@ -15,11 +15,15 @@ class SigmaZStats(Callback):
         logs['%sobservables/abs_sigma_z'  % prefix] = numpy.absolute(generator.current_batch.sum(axis=axis_to_sum)).mean() / total_spins_per_sample
         logs['%sobservables/sigma_z' % prefix] = generator.current_batch.sum(axis=axis_to_sum).mean() / total_spins_per_sample
         
-    def on_batch_end(self, batch, logs={}):
+    def on_batch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
         if self.log_in_batch_or_epoch:
             self.add_sigma_z_logs(logs, self.generator)
         
-    def on_epoch_end(self, batch, logs={}):
+    def on_epoch_end(self, batch, logs=None):
+        if logs is None:
+            logs = {}
         if not self.log_in_batch_or_epoch:
             self.add_sigma_z_logs(logs, self.generator)
         if self.validation_generator is not None:

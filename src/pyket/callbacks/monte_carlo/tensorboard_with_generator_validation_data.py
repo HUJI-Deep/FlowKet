@@ -11,6 +11,7 @@ class TensorBoardWithGeneratorValidationData(TensorBoard):
 
     def on_epoch_end(self, epoch, logs=None):
         validation_size = self.generator.current_batch.shape[0]
-        self.validation_data = self.generator.current_batch, numpy.zeros((validation_size, 1), dtype=numpy.complex128), numpy.full(validation_size, fill_value=1.0/validation_size)
+        self.validation_data = self.generator.current_batch, \
+                               numpy.zeros((validation_size, 1), dtype=numpy.complex128), \
+                               numpy.full(validation_size, fill_value=1.0/validation_size)
         super().on_epoch_end(epoch, logs)
-        

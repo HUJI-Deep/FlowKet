@@ -37,7 +37,7 @@ def cube_shape(number_of_spins_in_each_dimention=20, cube_dimention=1,
     return [number_of_spins_in_each_dimention, ] * cube_dimention
 
 
-class OperatorOnGrid(Operator):
+class OperatorOnGrid(Operator, abc.ABC):
     """docstring for OperatorOnGrid"""
     def __init__(self, hilbert_state_shape=cube_shape(), pbc=True):
         super(OperatorOnGrid, self).__init__(hilbert_state_shape)

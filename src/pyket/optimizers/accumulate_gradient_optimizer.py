@@ -1,5 +1,3 @@
-import sys
-
 import tensorflow
 from tensorflow.keras import backend as K
 
@@ -24,15 +22,18 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
         if not accumulate_sum_or_mean:
             new_grads = [g / K.cast(update_params_frequency, K.dtype(g)) for g in new_grads]
         self.updated_grads = [K.update_add(p, g) for p, g in zip(self.accumulate_gradient_accumulators, new_grads)]
+
         def update_function():
             with tensorflow.control_dependencies(orig_get_updates(loss, params)):
-                reset_grads = [K.update(p, K.zeros(K.int_shape(p), dtype=K.dtype(p))) for p in self.accumulate_gradient_accumulators]
+                reset_grads = [K.update(p, K.zeros(K.int_shape(p), dtype=K.dtype(p))) for p in
+                               self.accumulate_gradient_accumulators]
             return tensorflow.group(*(reset_grads + [updates_accumulated_iterations]))
+
         def just_store_function():
             return tensorflow.group(*[updates_accumulated_iterations])
-        
+
         update_switch = K.equal((updates_accumulated_iterations) % update_params_frequency, 0)
-        
+
         with tensorflow.control_dependencies(self.updated_grads):
             self.updates = [K.switch(update_switch, update_function, just_store_function)]
             return self.updates

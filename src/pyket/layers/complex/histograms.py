@@ -16,4 +16,3 @@ class LogSpaceComplexNumberHistograms(Layer):
         normalized_phase_hist = tensorflow.summary.histogram("normalized_phase", 
             tensorflow.imag(x) %  (2.0 * math.pi))
         return x
-        

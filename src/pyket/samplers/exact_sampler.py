@@ -1,9 +1,7 @@
-import abc
+import numpy
 
 from .base_sampler import Sampler
 from ..exact.utils import decimal_array_to_binary_array
-
-import numpy
 
 
 class ExactSampler(Sampler):
@@ -13,4 +11,7 @@ class ExactSampler(Sampler):
         self.exact_variational = exact_variational
     
     def next_batch(self):
-        self.batch = decimal_array_to_binary_array(numpy.random.choice(self.exact_variational.num_of_states, size=self.batch_size, p=self.exact_variational.probs), self.exact_variational.number_of_spins).reshape((self.batch_size, )+self.input_size)
+        self.batch = decimal_array_to_binary_array(
+            numpy.random.choice(self.exact_variational.num_of_states,
+                                size=self.batch_size, p=self.exact_variational.probs),
+            self.exact_variational.number_of_spins).reshape((self.batch_size, )+self.input_size)
