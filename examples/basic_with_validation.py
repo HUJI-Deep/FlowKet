@@ -34,7 +34,7 @@ monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 validation_sampler = MetropolisHastingsLocal(model, batch_size * 16, num_of_chains=16, unused_sampels=16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_1', monte_carlo_iterator=monte_carlo_generator,
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_1', generator=monte_carlo_generator,
                                                      update_freq=1, histogram_freq=1, batch_size=batch_size,
                                                      write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,

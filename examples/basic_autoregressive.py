@@ -33,7 +33,7 @@ validation_sampler = AutoregressiveSampler(conditional_log_probs_model, batch_si
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/monte_carlo_batch_%s_run_4' % batch_size,
-                                                     monte_carlo_iterator=monte_carlo_generator, update_freq=1,
+                                                     generator=monte_carlo_generator, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
                                                           validation_generator=validation_generator,

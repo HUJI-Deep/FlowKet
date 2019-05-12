@@ -35,7 +35,7 @@ monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 
 checkpoint = ModelCheckpoint('ising_fcnn.h5', monitor='energy/energy', save_best_only=True, save_weights_only=True)
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_0',
-                                                     monte_carlo_iterator=monte_carlo_generator,
+                                                     generator=monte_carlo_generator,
                                                      update_freq=1, histogram_freq=1,
                                                      batch_size=batch_size, write_output=False)
 early_stopping = EarlyStopping(monitor='energy/relative_error', min_delta=1e-5)
