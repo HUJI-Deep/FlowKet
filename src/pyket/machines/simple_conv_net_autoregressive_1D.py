@@ -44,5 +44,5 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
         x = DownShiftLayer()(x)
         x = causal_conv_1d(x, filters=4, kernel_size=1,
                            weights_normalization=self.weights_normalization)
-        x = Reshape((K.int_shape(keras_input_layer)[1], 2, 2))(x)
+        x = Reshape(K.int_shape(keras_input_layer)[1:] + (2, 2))(x)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)

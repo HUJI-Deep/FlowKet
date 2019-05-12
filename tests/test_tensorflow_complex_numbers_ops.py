@@ -16,7 +16,7 @@ def test_lncosh(value):
     with tf.Session() as sess:
         sess.run([tf.global_variables_initializer()])
         diff_norm = sess.run(diff_norm_t)
-        assert diff_norm < 1e-8
+        assert diff_norm.item() < 1e-8
 
 
 @pytest.mark.parametrize('value', COMPLEX_NUMBERS)
@@ -30,4 +30,4 @@ def test_lncosh_gradient(value):
     with tf.Session() as sess:
         sess.run([tf.global_variables_initializer()])
         diff_norm = sess.run(diff_norm_t)
-        assert diff_norm < 1e-8
+        assert diff_norm.item() < 1e-8

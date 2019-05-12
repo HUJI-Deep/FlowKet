@@ -21,10 +21,10 @@ def get_simple_linear_model(orig_optimizer, update_params_frequency, accumulate_
         return K.mean(y_pred)
 
     def get_w():
-        return model.get_weights()[0][0][0]
+        return model.get_weights()[0][0][0].item()
 
     def get_sgd_iteration():
-        return orig_optimizer.get_weights()[orig_optimizer.weights.index(orig_optimizer.iterations)]
+        return orig_optimizer.get_weights()[orig_optimizer.weights.index(orig_optimizer.iterations)].item()
 
     model.compile(optimizer=orig_optimizer, loss=y_loss)
     return model, get_w, get_sgd_iteration

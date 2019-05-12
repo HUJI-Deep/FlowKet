@@ -1,7 +1,7 @@
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
 from ..layers import ToFloat32, DownShiftLayer, RightShiftLayer, VectorToComplexNumber, WeightNormalization
 
-from tensorflow.keras.layers import Lambda, Conv2D, Reshape, ZeroPadding2D, Activation
+from tensorflow.keras.layers import Activation, Add, Concatenate, Conv2D, Lambda, Reshape, ZeroPadding2D
 from tensorflow.keras import backend as K
 
 
@@ -29,13 +29,12 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
     def _activation(self):
         return Activation(self.activation)
 
-    def _causal_conv_2d(self, vertical_x, horizontal_x, filters=None, use_horizontal_mask=False):
-        if filters is None:
-            filters = self.num_of_channels
+    def _causal_conv_2d(self, vertical_x, horizontal_x, use_horizontal_mask=False):
+        filters = self.num_of_channels
         if self.padding > 0:
-            vertical_x = ZeroPadding2D(padding=((self.padding // 2, self.padding // 2), (self.padding, 0)))(vertical_x)
+            vertical_x = ZeroPadding2D(padding=((self.padding, 0), (self.padding // 2, self.padding // 2)))(vertical_x)
             horizontal_x = ZeroPadding2D(padding=((0, 0), (self.padding, 0)))(horizontal_x)
-        vertical_x = self._conv2d(filters=filters, kernel_size=self.kernel_size )(vertical_x)
+        vertical_x = self._conv2d(filters=filters, kernel_size=self.kernel_size)(vertical_x)
         x = self._conv2d(filters=filters, kernel_size=(1, self.kernel_size))(horizontal_x)
         x = self._activation()(x)
         if use_horizontal_mask:
@@ -44,7 +43,7 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
         y = DownShiftLayer()(self._activation()(vertical_x))
         y = self._conv2d(filters=filters // 2, kernel_size=1)(y)
         x, y = self._activation()(x), self._activation()(y)
-        x = K.Concatenate()([x, y])
+        x = Concatenate()([x, y])
         if self.padding > 0:
             x = ZeroPadding2D(padding=((self.padding, 0), (self.padding, 0)))(x)
         horizontal_x = self._conv2d(filters=filters, kernel_size=self.kernel_size)(x)
@@ -56,7 +55,8 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
             vertical_x, horizontal_x = self._causal_conv_2d(vertical_x, horizontal_x)
             vertical_x, horizontal_x = self._activation()(vertical_x), self._activation()(horizontal_x)
         vertical_x, horizontal_x = self._causal_conv_2d(vertical_x, horizontal_x)
-        vertical_x, horizontal_x = vertical_x_input + vertical_x, horizontal_x_input + horizontal_x
+        vertical_x = Add()([vertical_x_input, vertical_x])
+        horizontal_x = Add()([horizontal_x_input, horizontal_x])
         vertical_x, horizontal_x = self._activation()(vertical_x), self._activation()(horizontal_x)
         return vertical_x, horizontal_x
 
@@ -65,10 +65,12 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
         x = Lambda(lambda y: K.expand_dims(y, axis=-1))(x)
         vertical_x, horizontal_x = x, x
         vertical_x, horizontal_x = self._causal_conv_2d(vertical_x, horizontal_x)
+        vertical_x, horizontal_x = self._activation()(vertical_x), self._activation()(horizontal_x)
         for i in range(self.depth - 2):
             vertical_x, horizontal_x = self._resiual_block(vertical_x, horizontal_x)
-        _, x= self._causal_conv_2d(vertical_x, horizontal_x, filters=4)
-        x = Reshape((K.int_shape(keras_input_layer)[1], 2, 2))(x)
+        _, x = self._causal_conv_2d(vertical_x, horizontal_x, use_horizontal_mask=True)
+        x = Conv2D(filters=4, kernel_size=1, strides=1)(self._activation()(x))
+        x = Reshape(K.int_shape(keras_input_layer)[1:] + (2, 2))(x)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)
 
     @property
