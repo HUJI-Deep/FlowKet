@@ -4,16 +4,20 @@ from keras.models import Model
 from keras.optimizers import SGD, RMSprop, Adam, TFOptimizer
 
 from pyket.callbacks import TensorBoard
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, MCMCStats, LocalEnergyStats, LocalStats, SigmaZStats, OperatorStats, WaveFunctionValuesCache
+from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, MCMCStats, LocalEnergyStats, LocalStats, \
+    SigmaZStats, OperatorStats, WaveFunctionValuesCache
 # from pyket.callbacks.exact import LocalEnergyStats, LocalStats, AbsoluteSigmaZ, OperatorStats, WaveFunctionValuesCache
 from pyket.evaluation import evaluate, exact_evaluate
-from pyket.layers import VectorToComplexNumber, ToFloat32, ToComplex64, PeriodicPadding, ComplexConv1D, ComplexConv2D, LogSpaceComplexNumberHistograms
-from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, make_obc_invariants, make_pbc_invariants
+from pyket.layers import VectorToComplexNumber, ToFloat32, ToComplex64, PeriodicPadding, ComplexConv1D, ComplexConv2D, \
+    LogSpaceComplexNumberHistograms
+from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, \
+    make_obc_invariants, make_pbc_invariants
 from pyket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
-from pyket.optimization import ExactVariational, VariationalMonteCarlo, energy_gradient_loss, energy_plus_sigma_z_square_loss
+from pyket.optimization import ExactVariational, VariationalMonteCarlo, energy_gradient_loss, \
+    energy_plus_sigma_z_square_loss
 from pyket.optimizers import convert_to_accumulate_gradient_optimizer, StochasticReconfiguration
-from pyket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, FastAutoregressiveSampler, Ensemble
-
+from pyket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, \
+    FastAutoregressiveSampler, Ensemble
 
 inputs = Input(shape=(12, 12), dtype='int8')
 
@@ -43,7 +47,8 @@ steps_per_epoch = logical_steps_per_epoch * logical_actual_ratio
 
 # optimizer = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=Taccumulate_sum_or_meanrue)
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
-convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=logical_actual_ratio, accumulate_sum_or_mean=False)
+convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=logical_actual_ratio,
+                                         accumulate_sum_or_mean=False)
 model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=12, cube_dimention=2)
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
@@ -62,17 +67,19 @@ generator = VariationalMonteCarlo(model, operator, sampler, cache=wave_function_
 # generator = ExactVariational(model, operator, batch_size, cache=wave_function_cache)
 checkpoint = ModelCheckpoint('ising_fcnn.h5', monitor='energy', save_best_only=True, save_weights_only=True)
 # tensorboard = TensorBoard(update_freq=1)
-tensorboard = TensorBoardWithGeneratorValidationData(generator=generator, update_freq=1, histogram_freq=1, 
+tensorboard = TensorBoardWithGeneratorValidationData(monte_carlo_iterator=generator, update_freq=1, histogram_freq=1,
                                                      batch_size=batch_size)
 early_stopping = EarlyStopping(monitor='relative_energy_error', min_delta=1e-5)
-callbacks = [LocalEnergyStats(generator, true_ground_state_energy=-457.0416241), 
-            wave_function_cache, LocalStats("Energy Again", sampler=sampler, operator=operator, cache=wave_function_cache), 
-            SigmaZStats(generator=generator), checkpoint, tensorנoard, early_stopping, TerminateOnNaN()]
-model.fit_generator(generator(), steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks, max_queue_size=0)
+callbacks = [LocalEnergyStats(generator, true_ground_state_energy=-457.0416241),
+             wave_function_cache,
+             LocalStats("Energy Again", sampler=sampler, operator=operator, cache=wave_function_cache),
+             SigmaZStats(monte_carlo_generator=generator), checkpoint, tensorנoard, early_stopping, TerminateOnNaN()]
+model.fit_generator(generator, steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks, max_queue_size=0)
 model.save_weights('final_ising_fcnn.h5')
 
 evaluation_inputs = Input(shape=(12, 12), dtype='int8')
 invariant_model = make_obc_invariants(evaluation_inputs, model)
 sampler = MetropolisHastingsLocal(invariant_model, batch_size=125, num_of_chains=10, unused_sampels=100)
 generator = VariationalMonteCarlo(invariant_model, operator, sampler)
-evaluate(generator(), steps=800, callbacks=callbacks[:4], keys_to_progress_bar_mapping={'energy/energy' : 'energy', 'energy/relative_error': 'relative_error'})
+evaluate(generator, steps=800, callbacks=callbacks[:4],
+         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
