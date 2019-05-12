@@ -1,4 +1,3 @@
-from tensorflow.keras.callbacks import TerminateOnNaN, ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.layers import Input, Dense, Flatten, Reshape, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
@@ -30,15 +29,18 @@ model.summary()
 hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=4, cube_dimention=2)
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = MetropolisHastingsLocal(model, batch_size, num_of_chains=16, unused_sampels=16)
-generator = VariationalMonteCarlo(model, operator, sampler)
+monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 
 validation_sampler = MetropolisHastingsLocal(model, batch_size * 16, num_of_chains=16, unused_sampels=16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_1', generator=generator, update_freq=1, histogram_freq=1, 
-                                                     batch_size=batch_size, write_output=False)
-callbacks = default_wave_function_stats_callbacks_factory(generator, 
-	validation_generator=validation_generator, 
-	true_ground_state_energy=-50.18662388277671) + [MCMCStats(generator), tensorboard]
-model.fit_generator(generator(), steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks, max_queue_size=0, workers=0)
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_1', monte_carlo_iterator=monte_carlo_generator,
+                                                     update_freq=1, histogram_freq=1, batch_size=batch_size,
+                                                     write_output=False)
+callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
+                                                          validation_generator=validation_generator,
+                                                          true_ground_state_energy=-50.18662388277671) + \
+            [MCMCStats(monte_carlo_generator), tensorboard]
+model.fit_generator(monte_carlo_generator, steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks,
+                    max_queue_size=0, workers=0)
 model.save_weights('final_ising_fcnn.h5')
