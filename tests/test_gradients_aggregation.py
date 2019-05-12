@@ -11,23 +11,28 @@ import tensorflow as tf
 
 
 def get_simple_linear_model(orig_optimizer, update_params_frequency, accumulate_sum_or_mean):
-    inputs = Input(shape=(1, ), dtype='float32')
+    inputs = Input(shape=(1,), dtype='float32')
     outputs = Dense(1, use_bias=False, kernel_initializer='ones')(inputs)
     model = Model(inputs=inputs, outputs=outputs)
-    convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequency=update_params_frequency, 
-        accumulate_sum_or_mean=accumulate_sum_or_mean)
+    convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequency=update_params_frequency,
+                                             accumulate_sum_or_mean=accumulate_sum_or_mean)
+
     def y_loss(y_true, y_pred):
         return K.mean(y_pred)
+
     def get_w():
         return model.get_weights()[0][0][0]
+
     def get_sgd_iteration():
         return orig_optimizer.get_weights()[orig_optimizer.weights.index(orig_optimizer.iterations)]
+
     model.compile(optimizer=orig_optimizer, loss=y_loss)
     return model, get_w, get_sgd_iteration
 
+
 def test_update_just_when_need():
     model, get_w, get_sgd_iteration = get_simple_linear_model(SGD(lr=1.0), 2, False)
-    w_before_call = get_w() 
+    w_before_call = get_w()
     model.fit(x=np.array([[2.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
     w_after_first_call = get_w()
     global_step_after_first_call = get_sgd_iteration()

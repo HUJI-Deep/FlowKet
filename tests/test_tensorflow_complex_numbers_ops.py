@@ -3,7 +3,8 @@ import tensorflow as tf
 
 from pyket.layers.complex.tensorflow_ops import lncosh, float_norm
 
-COMPLEX_NUMBERS = [2, 3j, 1+7j, 10-3j, -6]
+COMPLEX_NUMBERS = [2, 3j, 1 + 7j, 10 - 3j, -6]
+
 
 @pytest.mark.parametrize('value', COMPLEX_NUMBERS)
 def test_lncosh(value):
