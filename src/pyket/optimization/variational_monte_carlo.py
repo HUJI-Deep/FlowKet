@@ -13,7 +13,7 @@ class VariationalMonteCarlo(object):
         self.sampler = sampler
         self._batch_size = sampler.batch_size
         self._graph = tensorflow.get_default_graph()
-        self.current_local_energy = numpy.zeros((self._batch_size), dtype=numpy.complex128)
+        self.current_local_energy = numpy.zeros((self._batch_size, ), dtype=numpy.complex128)
         self.current_energy = None
         self.current_local_energy_variance = None
         self.current_batch = None
