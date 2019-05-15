@@ -2,13 +2,10 @@ import tensorflow
 
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
-from tensorflow.python.keras.engine.input_layer import InputLayer
 
 
 class ExpandInputDim(Layer):
     def call(self, x, mask=None):
-        x_layer, _, _ = x._keras_history
-        assert isinstance(x_layer, InputLayer)
         return K.expand_dims(x, axis=-1)
 
 
