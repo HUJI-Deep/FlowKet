@@ -57,7 +57,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
       NotImplementedError: If `data_init` is True and running graph execution
     """
 
-    def __init__(self, layer, data_init=True, normalize_per_output_channel=True, 
+    def __init__(self, layer, data_init=True, normalize_per_output_channel=True,
                  exponential_norm=False, **kwargs):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.data_init = data_init
@@ -94,18 +94,19 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                 dtype=self.layer.kernel.dtype,
                 trainable=True)
         self._initialized = self.add_variable(
-                name="initialized",
-                shape=(),
-                initializer=tf.keras.initializers.get('zeros'),
-                dtype=tf.bool,
-                trainable=False)
+            name="initialized",
+            shape=(),
+            initializer=tf.keras.initializers.get('zeros'),
+            dtype=tf.bool,
+            trainable=False)
 
         super(WeightNormalization, self).build()
 
     def call(self, inputs):
         """Call `Layer`"""
         # todo more effiect implementation ?
-        init_op = tf.cond(self._initialized, true_fn=lambda :tf.group(*[tf.no_op()]), false_fn=lambda :self._initialize_weights(tf.stop_gradient(inputs)))
+        init_op = tf.cond(self._initialized, true_fn=lambda: tf.group(*[tf.no_op()]),
+                          false_fn=lambda: self._initialize_weights(tf.stop_gradient(inputs)))
         with tf.control_dependencies([init_op]):
             self._compute_weights()  # Recompute weights for each forward pass
             output = self.layer(inputs)
@@ -179,8 +180,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         return init_ops
 
     def get_config(self):
-        config = {'data_init': self.data_init, 
-                  'normalize_per_output_channel': self.normalize_per_output_channel, 
-                  'exponential_norm' : self.exponential_norm}
+        config = {'data_init': self.data_init,
+                  'normalize_per_output_channel': self.normalize_per_output_channel,
+                  'exponential_norm': self.exponential_norm}
         base_config = super(WeightNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

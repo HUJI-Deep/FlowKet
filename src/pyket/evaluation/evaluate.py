@@ -19,6 +19,7 @@ def evaluate(generator, steps, callbacks, keys_to_progress_bar_mapping=None):
             next(generator)
             logs = {}
             for callback in callbacks:
+                callback.on_batch_end(i, logs)
                 callback.on_epoch_end(i, logs)
             logs_arr.append(logs)
             if keys_to_progress_bar_mapping is not None:
@@ -31,5 +32,6 @@ def exact_evaluate(exact_variational, callbacks):
     exact_variational.machine_updated()
     logs = {}
     for callback in callbacks:
+        callback.on_batch_end(exact_variational.num_of_batch_until_full_cycle, logs)
         callback.on_epoch_end(1, logs)
     return logs

@@ -1,8 +1,7 @@
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
-from ..layers import ToFloat32, DownShiftLayer, VectorToComplexNumber, WeightNormalization
+from ..layers import ToFloat32, DownShiftLayer, ExpandInputDim, VectorToComplexNumber, WeightNormalization
 
-from tensorflow.keras.layers import Activation, Conv1D, Lambda, Layer, Reshape, ZeroPadding1D
-from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Activation, Conv1D, ZeroPadding1D, Activation
 
 
 def causal_conv_1d(x, filters, kernel_size, weights_normalization, activation=None):
@@ -34,8 +33,8 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
         return self._unnormalized_conditional_log_wave_function
 
     def _build_unnormalized_conditional_log_wave_function(self, keras_input_layer):
-        x = ToFloat32()(keras_input_layer)
-        x = Lambda(lambda y: K.expand_dims(y, axis=-1))(x)
+        x = ExpandInputDim()(keras_input_layer)
+        x = ToFloat32()(x)
         for i in range(self.depth - 1):
             x = causal_conv_1d(x, filters=self.num_of_channels,
                                kernel_size=self.kernel_size,
@@ -44,5 +43,4 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
         x = DownShiftLayer()(x)
         x = causal_conv_1d(x, filters=4, kernel_size=1,
                            weights_normalization=self.weights_normalization)
-        x = Reshape(K.int_shape(keras_input_layer)[1:] + (2, 2))(x)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)

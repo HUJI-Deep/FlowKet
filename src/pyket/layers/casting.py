@@ -1,9 +1,8 @@
 import functools
 
 import tensorflow
-
-from tensorflow.keras.layers import Layer
-from tensorflow.keras import backend as K
+from tensorflow.python.keras.layers import Layer
+from tensorflow.python.keras import backend as K
 
 
 class VectorToComplexNumber(Layer):
@@ -12,8 +11,13 @@ class VectorToComplexNumber(Layer):
         self.axis = axis
 
     def call(self, x, mask=None):
-        assert K.int_shape(x)[self.axis] == 2
-        real, imag = tensorflow.unstack(x, axis=self.axis)
+        axis = len(K.int_shape(x)) -1 if self.axis == -1 else self.axis
+        assert K.int_shape(x)[axis] % 2 == 0
+        orig_shape = K.int_shape(x)
+        new_shape = list(orig_shape[:axis] + (2, orig_shape[axis] // 2) + orig_shape[axis + 1:])
+        new_shape[0] = -1
+        x = tensorflow.reshape(x, shape=new_shape)
+        real, imag = tensorflow.unstack(x, axis=axis)
         return tensorflow.complex(real, imag)
 
     def get_config(self):
@@ -28,7 +32,7 @@ class CastingLayer(Layer):
         self.to_type = to_type
 
     def call(self, x, mask=None):
-        return K.cast(x, dtype=self.to_type)        
+        return K.cast(x, dtype=self.to_type)
 
     def get_config(self):
         config = {'to_type': self.to_type}

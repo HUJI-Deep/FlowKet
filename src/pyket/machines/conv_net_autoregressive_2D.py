@@ -1,8 +1,8 @@
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
-from ..layers import ToFloat32, DownShiftLayer, RightShiftLayer, VectorToComplexNumber, WeightNormalization
+from ..layers import ConcatenateChannels, ToFloat32, DownShiftLayer, RightShiftLayer,\
+    VectorToComplexNumber, WeightNormalization, ExpandInputDim
 
-from tensorflow.keras.layers import Activation, Add, Concatenate, Conv2D, Lambda, Reshape, ZeroPadding2D
-from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Activation, Add, Conv2D, ZeroPadding2D
 
 
 class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
@@ -43,7 +43,7 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
         y = DownShiftLayer()(self._activation()(vertical_x))
         y = self._conv2d(filters=filters // 2, kernel_size=1)(y)
         x, y = self._activation()(x), self._activation()(y)
-        x = Concatenate()([x, y])
+        x = ConcatenateChannels()([x, y])
         if self.padding > 0:
             x = ZeroPadding2D(padding=((self.padding, 0), (self.padding, 0)))(x)
         horizontal_x = self._conv2d(filters=filters, kernel_size=self.kernel_size)(x)
@@ -61,8 +61,8 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
         return vertical_x, horizontal_x
 
     def _build_unnormalized_conditional_log_wave_function(self, keras_input_layer):
-        x = ToFloat32()(keras_input_layer)
-        x = Lambda(lambda y: K.expand_dims(y, axis=-1))(x)
+        x = ExpandInputDim()(keras_input_layer)
+        x = ToFloat32()(x)
         vertical_x, horizontal_x = x, x
         vertical_x, horizontal_x = self._causal_conv_2d(vertical_x, horizontal_x)
         vertical_x, horizontal_x = self._activation()(vertical_x), self._activation()(horizontal_x)
@@ -70,7 +70,6 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
             vertical_x, horizontal_x = self._resiual_block(vertical_x, horizontal_x)
         _, x = self._causal_conv_2d(vertical_x, horizontal_x, use_horizontal_mask=True)
         x = Conv2D(filters=4, kernel_size=1, strides=1)(self._activation()(x))
-        x = Reshape(K.int_shape(keras_input_layer)[1:] + (2, 2))(x)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)
 
     @property
