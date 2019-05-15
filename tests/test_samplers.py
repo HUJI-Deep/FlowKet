@@ -52,7 +52,7 @@ def sampler_factory(sampler_class, machine, machine_input, num_of_samples):
     (MetropolisHastingsLocal, TWO_DIM_INPUT, ConvNetAutoregressive2D,
      {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
 ])
-def test_sampler_by_l2(sampler_class, machine_input, machine_class, machine_args):
+def test_sampler_by_l1(sampler_class, machine_input, machine_class, machine_args):
     # this test based on https://arxiv.org/pdf/1308.3946.pdf
     with GRAPH.as_default():
         machine = machine_class(machine_input, **machine_args)
@@ -70,8 +70,5 @@ def test_sampler_by_l2(sampler_class, machine_input, machine_class, machine_args
         exact_sampler_chosen_idx = binary_array_to_decimal_array(exact_sampler.batch.reshape((num_of_samples, -1)))
         x = numpy.bincount(sampler_chosen_idx.astype(numpy.int), minlength=exact_variational.num_of_states)
         y = numpy.bincount(exact_sampler_chosen_idx.astype(numpy.int), minlength=exact_variational.num_of_states)
-        z = (numpy.square(x - y) - x - y).sum()
-        estimated_sampler_diff_l2_norm = numpy.sqrt(numpy.abs(z))
-        estimated_sampler_diff_l2_norm /= num_of_samples
-        test_noise = numpy.sqrt(1.0 / num_of_samples)
-        assert estimated_sampler_diff_l2_norm < test_noise
+        z = ((numpy.square(x - y) - x - y) / (x + y + 1e-20)).sum()
+        assert z <= numpy.sqrt(num_of_samples)
