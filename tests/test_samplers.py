@@ -1,6 +1,7 @@
 from pyket.exact.utils import binary_array_to_decimal_array
 from pyket.machines import SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D
-from pyket.samplers import AutoregressiveSampler, ExactSampler, FastAutoregressiveSampler, MetropolisHastingsLocal
+from pyket.samplers import AutoregressiveSampler, ExactSampler, FastAutoregressiveSampler, \
+    MetropolisHastingsLocal, MetropolisHastingsSampler
 from pyket.operators import Operator
 from pyket.optimization import ExactVariational
 
@@ -29,11 +30,15 @@ class IdentityOperator(Operator):
 
 
 def sampler_factory(sampler_class, machine, machine_input, num_of_samples):
-    if sampler_class == MetropolisHastingsLocal:
+    if issubclass(sampler_class, MetropolisHastingsSampler):
+        input_size = numpy.product(list(K.int_shape(machine_input)[1:]))
         model = Model(inputs=machine_input, outputs=machine.predictions)
+        return sampler_class(model, num_of_samples, mini_batch_size=BATCH_SIZE,
+                             num_of_chains=num_of_samples // (2 ** 7),
+                             unused_sampels=input_size)
     else:
         model = Model(inputs=machine_input, outputs=machine.conditional_log_probs)
-    return sampler_class(model, num_of_samples, mini_batch_size=BATCH_SIZE)
+        return sampler_class(model, num_of_samples, mini_batch_size=BATCH_SIZE)
 
 
 @pytest.mark.parametrize('sampler_class, machine_input, machine_class, machine_args', [
