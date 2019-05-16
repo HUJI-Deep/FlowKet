@@ -10,7 +10,7 @@ from pyket.optimization import energy_gradient_loss
 from pyket.machines import ConvNetAutoregressive2D
 from pyket.samplers import AutoregressiveSampler, FastAutoregressiveSampler
 
-run_index = sys.argv[-1].strip()
+run_index = int(sys.argv[-1].strip())
 
 inputs = Input(shape=(10, 10), dtype='int8')
 convnet = ConvNetAutoregressive2D(inputs, depth=10, num_of_channels=32, weights_normalization=False)
