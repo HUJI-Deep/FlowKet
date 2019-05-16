@@ -1,20 +1,7 @@
-import tensorflow
 import numpy as np
-
 import tensorflow
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.initializers import Initializer
-
-# we manage both conj and normal trainable collection because normal gradient can be calculated using 
-# tf.gradients(loss, tf.get_collection(CONJ_TRAINABLE_VARIABLES)) and the gradient conjugate can be calculated using
-# tf.gradients(loss, tf.get_collection(NORMAL_TRAINABLE_VARIABLES))
-# The reason for this is that by default if the yours variable is complex that 
-# created from 2 real variables the tf.gradient calculate the gradient conjugate
-# (and we can't simply use tf.conj(tf.gradients)) because we want jacobians vector products ...
-CONJ_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_conj'
-NORMAL_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_normal'
-REAL_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_real'
-IMAG_TRAINABLE_VARIABLES = tensorflow.GraphKeys.TRAINABLE_VARIABLES + '_imag'
 
 
 class NumpyInitializer(Initializer):
@@ -30,6 +17,12 @@ class ComplexLayer(Layer):
 
     def __init__(self, dtype=np.complex64, **kwargs):
         super(ComplexLayer, self).__init__(dtype=dtype, **kwargs)
+        # The reason for this is that by default if the yours variable is complex that
+        # created from 2 real variables the tf.gradient calculate the gradient conjugate
+        # (and we can't simply use tf.conj(tf.gradients)) because we want jacobians vector products ...
+        self.weights_for_complex_value_params_gradient = []
+        self.real_weights = []
+        self.imag_weights = []
 
     def add_complex_weight(self, name, shape, complex_initializer, trainable, dtype=tensorflow.float32):
         init_with = complex_initializer(shape)
@@ -48,11 +41,8 @@ class ComplexLayer(Layer):
         imag = self.add_weight(name='%s_imag' % name,
                                shape=shape, initializer=imag_initializer, dtype=dtype, trainable=trainable)
         minus_imag = tensorflow.multiply(imag, -1., 'conj_imag')
-        if trainable and real not in tensorflow.get_collection(REAL_TRAINABLE_VARIABLES):
-            tensorflow.add_to_collection(REAL_TRAINABLE_VARIABLES, real)
-            tensorflow.add_to_collection(CONJ_TRAINABLE_VARIABLES, real)
-            tensorflow.add_to_collection(NORMAL_TRAINABLE_VARIABLES, real)
-            tensorflow.add_to_collection(IMAG_TRAINABLE_VARIABLES, imag)
-            tensorflow.add_to_collection(CONJ_TRAINABLE_VARIABLES, imag)
-            tensorflow.add_to_collection(NORMAL_TRAINABLE_VARIABLES, minus_imag)
+        self.real_weights.append(real)
+        self.imag_weights .append(imag)
+        self.weights_for_complex_value_params_gradient.append(real)
+        self.weights_for_complex_value_params_gradient.append(minus_imag)
         return tensorflow.complex(real, minus_imag)

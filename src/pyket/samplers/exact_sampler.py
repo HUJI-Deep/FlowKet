@@ -11,8 +11,10 @@ class ExactSampler(Sampler):
         super(ExactSampler, self).__init__(exact_variational.input_size, batch_size, **kwargs)
         self.exact_variational = exact_variational
 
-    def next_batch(self):
-        self.batch = decimal_array_to_binary_array(
-            numpy.random.choice(self.exact_variational.num_of_states,
-                                size=self.batch_size, p=self.exact_variational.probs),
-            self.exact_variational.number_of_spins).reshape((self.batch_size,) + self.input_size)
+    def __next__(self):
+        decimal_batch = numpy.random.choice(self.exact_variational.num_of_states,
+                                            size=self.batch_size,
+                                            p=self.exact_variational.probs)
+        binary_batch = decimal_array_to_binary_array(decimal_batch,
+                                                     num_of_bits=self.exact_variational.number_of_spins)
+        return binary_batch.reshape((self.batch_size,) + self.input_size)

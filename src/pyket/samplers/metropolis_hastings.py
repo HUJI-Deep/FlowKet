@@ -17,7 +17,8 @@ class MetropolisHastingsSampler(Sampler):
 
     def __init__(self, machine, batch_size, num_of_chains=1, unused_sampels=0, discard_ratio=10, **kwargs):
         self.num_of_chains = num_of_chains
-        super(MetropolisHastingsSampler, self).__init__(input_size=machine.input_shape[1:], batch_size=batch_size, **kwargs)
+        super(MetropolisHastingsSampler, self).__init__(input_size=machine.input_shape[1:], batch_size=batch_size,
+                                                        **kwargs)
         self.machine = machine
         print('using %s parallel samplers' % num_of_chains)
         self.unused_sampels = unused_sampels
@@ -41,8 +42,6 @@ class MetropolisHastingsSampler(Sampler):
         super(MetropolisHastingsSampler, self).set_batch_size(batch_size, **kwargs)
         if self.batch_size % self.num_of_chains != 0:
             raise Exception('Num of samplers must divide the batch size')
-        self._batch = self.batch.view().reshape(
-            (self.num_of_chains, self.batch_size // self.num_of_chains) + self.input_size)
 
     @abc.abstractmethod
     def _sweep(self):
@@ -53,18 +52,21 @@ class MetropolisHastingsSampler(Sampler):
             for j in range(self.unused_sampels):
                 self._sweep()
 
-    def next_batch(self):
+    def __next__(self):
+        batch = numpy.empty((self.batch_size,) + self.input_size)
+        batch_divided_to_chains = batch.view().reshape(
+            (self.num_of_chains, self.batch_size // self.num_of_chains) + self.input_size)
         self.machine_updated()
         accepts_counter = 0
-        sampels_per_chain = self.batch_size // self.num_of_chains 
+        sampels_per_chain = self.batch_size // self.num_of_chains
         if self.discard_ratio > 0:
             self.warn_up(sampels_per_chain // self.discard_ratio)
         for i in range(sampels_per_chain):
             for j in range(self.unused_sampels + 1):
                 accepts_counter += self._sweep()
-            start_idx = i * self.num_of_chains
-            self._batch[:, i] = self.sample
+            batch_divided_to_chains[:, i, ...] = self.sample
         self.acceptance_ratio = accepts_counter / (self.batch_size * (self.unused_sampels + 1))
+        return batch
 
     def calc_r_hat_value(self, estimated_values):
         # according to page 285 in Bayesian Data Analysis Third Edition
@@ -105,9 +107,9 @@ class MetropolisHastingsHastingSymmetricProposal(MetropolisHastingsSampler):
         if not numpy.all(numpy.isfinite(candidates_machine_values)):
             print(candidates_machine_values)
             raise Exception('candidates_machine_values has not finite element')
-        log_ratio = numpy.multiply(numpy.subtract(numpy.real(candidates_machine_values), 
-                    numpy.real(self.sample_machine_values), 
-                    out=self.first_temp_out_real), 2.0, out=self.second_temp_out_real)
+        log_ratio = numpy.multiply(numpy.subtract(numpy.real(candidates_machine_values),
+                                                  numpy.real(self.sample_machine_values),
+                                                  out=self.first_temp_out_real), 2.0, out=self.second_temp_out_real)
         numpy.greater(numpy.exp(log_ratio), numpy.random.uniform(size=num_of_chains), out=self.accepts)
         self.sample[self.accepts, ...] = self.candidates[self.accepts, ...]
         self.sample_machine_values[self.accepts] = candidates_machine_values[self.accepts]
@@ -122,7 +124,8 @@ class MetropolisHastingsLocal(MetropolisHastingsHastingSymmetricProposal):
 
     def _next_candidates(self):
         i = list(range(self.num_of_chains))
-        idx_for_dim = tuple([i] + [numpy.random.randint(low=dim_size, size=self.num_of_chains).tolist() for dim_size in self.sample.shape[1:]])
+        idx_for_dim = tuple([i] + [numpy.random.randint(low=dim_size, size=self.num_of_chains).tolist() for dim_size in
+                                   self.sample.shape[1:]])
         numpy.copyto(self.candidates, self.sample)
         self.candidates[idx_for_dim] *= -1
 
@@ -153,9 +156,9 @@ class MetropolisHastingsHamiltonian(MetropolisHastingsSampler):
         all_conn, mel, use_conn = self.hamiltonian.find_conn(self.candidates)
         candidates_num_of_conn = numpy.count_nonzero(use_conn, axis=0)
         candidates_machine_values = self.machine.predict(self.candidates, batch_size=self.mini_batch_size)[:, 0]
-        log_ratio = numpy.multiply(numpy.subtract(numpy.real(candidates_machine_values), 
-            numpy.real(self.sample_machine_values), 
-            out=self.first_temp_out_real), 2.0, out=self.second_temp_out_real)
+        log_ratio = numpy.multiply(numpy.subtract(numpy.real(candidates_machine_values),
+                                                  numpy.real(self.sample_machine_values),
+                                                  out=self.first_temp_out_real), 2.0, out=self.second_temp_out_real)
         log_ratio += numpy.log(num_of_conn / candidates_num_of_conn)
         numpy.greater(numpy.exp(log_ratio), numpy.random.uniform(size=self.num_of_chains), out=self.accepts)
         self.sample[self.accepts, ...] = self.candidates[self.accepts, ...]

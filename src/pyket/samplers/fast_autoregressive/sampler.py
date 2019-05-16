@@ -23,9 +23,6 @@ def visit_layer_predecessors(layer, visitor):
 class FastAutoregressiveSampler(Sampler):
     """docstring for FastAutoregressiveSampler"""
 
-    def next_batch(self):
-        self.batch = self.sampling_function(numpy.zeros((self.batch_size, )))[0]
-
     def __init__(self, conditional_log_probs_machine, batch_size, **kwargs):
         super(FastAutoregressiveSampler, self).__init__(input_size=conditional_log_probs_machine.input_shape[1:],
                                                         batch_size=batch_size, **kwargs)
@@ -36,6 +33,9 @@ class FastAutoregressiveSampler(Sampler):
         self._layer_to_input_layers = {}
         self._build_dependency_graph()
         self._build_sampling_function()
+
+    def __next__(self):
+        return self.sampling_function(numpy.zeros((self.batch_size, )))[0]
 
     def _create_layer_activation_array(self, layer):
         output_shape = layer.output_shape

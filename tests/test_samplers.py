@@ -13,6 +13,7 @@ from tensorflow.keras.models import Model
 
 from tensorflow.python.keras import backend as K
 
+
 ONE_DIM_INPUT = Input(shape=(10,), dtype='int8')
 TWO_DIM_INPUT = Input(shape=(4, 3), dtype='int8')
 GRAPH = tensorflow.get_default_graph()
@@ -68,11 +69,11 @@ def test_sampler_by_l1(sampler_class, machine_input, machine_class, machine_args
         exact_sampler = ExactSampler(exact_variational, BATCH_SIZE)
         num_of_samples = max(2 ** 14, 8 * exact_variational.num_of_states)
         exact_sampler.set_batch_size(num_of_samples, mini_batch_size=BATCH_SIZE)
-        exact_sampler.next_batch()
+        batch_from_exact_sampler= next(exact_sampler)
         sampler = sampler_factory(sampler_class, machine, machine_input, num_of_samples)
-        sampler.next_batch()
-        sampler_chosen_idx = binary_array_to_decimal_array(sampler.batch.reshape((num_of_samples, -1)))
-        exact_sampler_chosen_idx = binary_array_to_decimal_array(exact_sampler.batch.reshape((num_of_samples, -1)))
+        batch_from_sampler = next(sampler)
+        sampler_chosen_idx = binary_array_to_decimal_array(batch_from_sampler.reshape((num_of_samples, -1)))
+        exact_sampler_chosen_idx = binary_array_to_decimal_array(batch_from_exact_sampler.reshape((num_of_samples, -1)))
         x = numpy.bincount(sampler_chosen_idx.astype(numpy.int), minlength=exact_variational.num_of_states)
         y = numpy.bincount(exact_sampler_chosen_idx.astype(numpy.int), minlength=exact_variational.num_of_states)
         z = ((numpy.square(x - y) - x - y) / (x + y + 1e-20)).sum()

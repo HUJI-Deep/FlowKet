@@ -4,12 +4,11 @@ import tensorflow
 from tensorflow.keras.layers import Lambda
 from tensorflow.python.ops.parallel_for import gradients
 
-
-from ..layers import CONJ_TRAINABLE_VARIABLES, LambdaWithOneToOneTopology
+from pyket.layers import LambdaWithOneToOneTopology
 
 
 class Machine(abc.ABC):
-    def __init__(self, keras_input_layer, use_pfor=False):
+    def __init__(self, keras_input_layer, use_pfor=False, use_complex_value_params=False):
         super(Machine, self).__init__()
         self.keras_input_layer = keras_input_layer
         self.use_pfor = use_pfor
@@ -19,10 +18,10 @@ class Machine(abc.ABC):
     def predictions(self):
         pass
 
-    def predictions_jacobian(self):
-        gradients.jacobian(tf.real(x), tf.get_collection(CONJ_TRAINABLE_VARIABLES),
-                           use_pfor=self.use_pfor)
-        return Lambda(lambda x: x)(self.predictions)
+    def predictions_jacobian(self, params):
+        def jacobian(x):
+            return gradients.jacobian(tensorflow.real(x), params, use_pfor=self.use_pfor)
+        return Lambda(jacobian)(self.predictions)
 
 
 class AutoregressiveMachine(Machine):

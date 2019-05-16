@@ -15,7 +15,7 @@ from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutor
 from pyket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
 from pyket.optimization import ExactVariational, VariationalMonteCarlo, energy_gradient_loss, \
     energy_plus_sigma_z_square_loss
-from pyket.optimizers import convert_to_accumulate_gradient_optimizer, StochasticReconfiguration
+from pyket.optimizers import convert_to_accumulate_gradient_optimizer, ComplexValueParametersStochasticReconfiguration
 from pyket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, \
     FastAutoregressiveSampler, Ensemble
 

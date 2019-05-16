@@ -23,18 +23,19 @@ class AutoregressiveSampler(Sampler):
             autoregressive_ordering = raster_autoregressive_order
         self.autoregressive_ordering = autoregressive_ordering
 
-    def next_batch(self, random_batch=None):
-        if random_batch is None:
-            random_batch = numpy.random.rand(*((self.batch_size,) + self.input_size))
+    def __next__(self):
+        batch = numpy.empty((self.batch_size,) + self.input_size)
+        random_batch = numpy.random.rand(*((self.batch_size,) + self.input_size))
         progress = tqdm if self.use_progress_bar else lambda x: x
         for i in progress(list(self.autoregressive_ordering(self.input_size))):
-            log_probs = self.conditional_log_probs_machine.predict(self.batch, batch_size=self.mini_batch_size)
+            log_probs = self.conditional_log_probs_machine.predict(batch, batch_size=self.mini_batch_size)
             if len(i) == 1:
                 h = i[0]
-                self.batch[:, h] = 2 * (numpy.exp(log_probs[:, h, 0]) > random_batch[:, h]) - 1
+                batch[:, h] = 2 * (numpy.exp(log_probs[:, h, 0]) > random_batch[:, h]) - 1
             elif len(i) == 2:
                 h, w = i
-                self.batch[:, h, w] = 2 * (numpy.exp(log_probs[:, h, w, 0]) > random_batch[:, h, w]) - 1
+                batch[:, h, w] = 2 * (numpy.exp(log_probs[:, h, w, 0]) > random_batch[:, h, w]) - 1
             else:
                 # todo support generalautoregressive models with more than 2 dims
                 raise Exception('AutoregressiveSampler support dims <= 2 ')
+        return batch

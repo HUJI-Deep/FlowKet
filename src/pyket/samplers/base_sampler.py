@@ -18,8 +18,10 @@ class Sampler(abc.ABC):
             mini_batch_size = batch_size
         self.batch_size = batch_size
         self.mini_batch_size = mini_batch_size
-        self.batch = numpy.zeros((self.batch_size,) + self.input_size)
+
+    def __iter__(self):
+        return self
 
     @abc.abstractmethod
-    def next_batch(self):
+    def __next__(self):
         pass
