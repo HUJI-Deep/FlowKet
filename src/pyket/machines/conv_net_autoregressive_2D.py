@@ -1,8 +1,8 @@
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
-from ..layers import ConcatenateChannels, ToFloat32, DownShiftLayer, RightShiftLayer,\
+from ..layers import ToFloat32, DownShiftLayer, RightShiftLayer,\
     VectorToComplexNumber, WeightNormalization, ExpandInputDim
 
-from tensorflow.keras.layers import Activation, Add, Conv2D, ZeroPadding2D
+from tensorflow.keras.layers import Activation, Add, Concatenate, Conv2D, ZeroPadding2D
 
 
 class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
@@ -43,7 +43,7 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
         y = DownShiftLayer()(self._activation()(vertical_x))
         y = self._conv2d(filters=filters // 2, kernel_size=1)(y)
         x, y = self._activation()(x), self._activation()(y)
-        x = ConcatenateChannels()([x, y])
+        x = Concatenate(axis=-1)([x, y])
         if self.padding > 0:
             x = ZeroPadding2D(padding=((self.padding, 0), (self.padding, 0)))(x)
         horizontal_x = self._conv2d(filters=filters, kernel_size=self.kernel_size)(x)

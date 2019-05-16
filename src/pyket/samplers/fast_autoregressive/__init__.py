@@ -1,3 +1,4 @@
+from .concatenate_topology import ConcatenateTopology
 from .convolutional_topology import ConvolutionalTopology
 from .masking_topology import DownShiftTopology, RightShiftTopology
 from .one_to_one_topology import OneToOneTopology, OneToOneTopologyWithIdentity

@@ -1,11 +1,11 @@
+from tensorflow.keras.layers import Activation, Add, Average, Subtract, Multiply, Maximum, Minimum, \
+    LeakyReLU, PReLU, ELU, ThresholdedReLU, Softmax
+
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from ...layers import VectorToComplexNumber, CastingLayer, ConcatenateChannels, ExpandInputDim, \
+from ...layers import VectorToComplexNumber, CastingLayer, ExpandInputDim, \
     LambdaWithOneToOneTopology
-
-from tensorflow.keras.layers import Activation, Add, Average, Subtract, Multiply, Maximum, Minimum, \
-    LeakyReLU, PReLU, ELU, ThresholdedReLU, Softmax
 
 
 class OneToOneTopology(LayerTopology):
@@ -33,10 +33,10 @@ class OneToOneTopologyWithIdentity(OneToOneTopology):
             values = values[0]
         return values
 
+
 TopologyManager().register_layer_topology(OneToOneTopology, Activation)
 TopologyManager().register_layer_topology(OneToOneTopology, Add)
 TopologyManager().register_layer_topology(OneToOneTopology, CastingLayer)
-TopologyManager().register_layer_topology(OneToOneTopology, ConcatenateChannels)
 TopologyManager().register_layer_topology(OneToOneTopology, VectorToComplexNumber)
 TopologyManager().register_layer_topology(OneToOneTopology, LambdaWithOneToOneTopology)
 TopologyManager().register_layer_topology(OneToOneTopology, Subtract)
@@ -50,4 +50,3 @@ TopologyManager().register_layer_topology(OneToOneTopology, ELU)
 TopologyManager().register_layer_topology(OneToOneTopology, ThresholdedReLU)
 TopologyManager().register_layer_topology(OneToOneTopology, Softmax)
 TopologyManager().register_layer_topology(OneToOneTopologyWithIdentity, ExpandInputDim)
-
