@@ -16,14 +16,16 @@ class MetropolisHastingsSampler(Sampler):
     """docstring for MetropoliceSampler"""
 
     def __init__(self, machine, batch_size, num_of_chains=1, unused_sampels=0, discard_ratio=10, **kwargs):
-        self.num_of_chains = num_of_chains
         super(MetropolisHastingsSampler, self).__init__(input_size=machine.input_shape[1:], batch_size=batch_size,
                                                         **kwargs)
         self.machine = machine
         print('using %s parallel samplers' % num_of_chains)
         self.unused_sampels = unused_sampels
         print('unused sampels in each sweep : %s' % unused_sampels)
-        self.sample = numpy.random.choice([-1, 1], size=(num_of_chains,) + self.input_size)
+        self.num_of_chains = num_of_chains
+        if self.batch_size % self.num_of_chains != 0:
+            raise Exception('Num of samplers must divide the batch size')
+        self.sample = numpy.random.choice([-1, 1], size=(self.num_of_chains,) + self.input_size)
         self.candidates = numpy.copy(self.sample)
         self.sample_machine_values = self.machine(self.sample)[0]
         self.first_temp_out = numpy.zeros((num_of_chains,), dtype=numpy.complex128)
@@ -37,11 +39,6 @@ class MetropolisHastingsSampler(Sampler):
 
     def machine_updated(self):
         self.sample_machine_values = self.machine.predict(self.sample, batch_size=self.mini_batch_size)[:, 0]
-
-    def set_batch_size(self, batch_size, **kwargs):
-        super(MetropolisHastingsSampler, self).set_batch_size(batch_size, **kwargs)
-        if self.batch_size % self.num_of_chains != 0:
-            raise Exception('Num of samplers must divide the batch size')
 
     @abc.abstractmethod
     def _sweep(self):
