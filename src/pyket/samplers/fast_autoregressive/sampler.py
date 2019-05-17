@@ -33,9 +33,10 @@ class FastAutoregressiveSampler(Sampler):
         self._layer_to_input_layers = {}
         self._build_dependency_graph()
         self._build_sampling_function()
+        self._fake_input = numpy.zeros((self.batch_size, )).tolist()
 
     def __next__(self):
-        return self.sampling_function(numpy.zeros((self.batch_size, )))[0]
+        return self.sampling_function(self._fake_input)[0]
 
     def _create_layer_activation_array(self, layer):
         output_shape = layer.output_shape
