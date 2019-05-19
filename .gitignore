@@ -105,3 +105,4 @@ venv.bak/
 
 examples/tensorboard_logs
 .idea
+*.out
