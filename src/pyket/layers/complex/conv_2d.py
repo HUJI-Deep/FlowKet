@@ -1,27 +1,20 @@
 import tensorflow
 
 from .base_layer import ComplexLayer
-from .initializers import complex_independent_filters
 from .tensorflow_ops import conv2d_complex
 
 
 class ComplexConv2D(ComplexLayer):
 
     def __init__(self, filters, kernel_size, strides=(1, 1), padding='valid', dilation_rate=(1, 1),
-                 kernel_initializer='complex_independent_filters', bias_initializer='zeros',
+                 kernel_initializer='complex_glorot', bias_initializer='zeros',
                  activation=None, use_bias=True, **kwargs):
         super(ComplexConv2D, self).__init__(**kwargs)
-        if kernel_initializer == 'complex_independent_filters':
-            kernel_initializer = complex_independent_filters()
-        if bias_initializer == 'complex_independent_filters':
-            bias_initializer = complex_independent_filters()
         self.kernel_size = kernel_size
         self.dilation_rate = dilation_rate
         self.filters = filters
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
-        self.params_dtype = tensorflow.float64 if hasattr(self, 'dtype') and self.dtype == tensorflow.complex128 \
-            else tensorflow.float32
         self.use_bias = use_bias
         self.strides = strides
         self.padding = padding

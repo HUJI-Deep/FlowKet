@@ -8,7 +8,7 @@ from pyket.layers import LambdaWithOneToOneTopology
 
 
 class Machine(abc.ABC):
-    def __init__(self, keras_input_layer, use_pfor=False, use_complex_value_params=False):
+    def __init__(self, keras_input_layer, use_pfor=False):
         super(Machine, self).__init__()
         self.keras_input_layer = keras_input_layer
         self.use_pfor = use_pfor

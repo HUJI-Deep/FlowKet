@@ -1,15 +1,9 @@
 import numpy as np
 import tensorflow
 from tensorflow.keras.layers import Layer
-from tensorflow.keras.initializers import Initializer
 
-
-class NumpyInitializer(Initializer):
-    def __init__(self, np_array):
-        self.np_array = np_array
-
-    def __call__(self, shape, dtype=None, partition_info=None):
-        return self.np_array
+from .initializers import get as get_initializer
+from .initializers import ConjugateDecorator
 
 
 class ComplexLayer(Layer):
@@ -17,32 +11,30 @@ class ComplexLayer(Layer):
 
     def __init__(self, dtype=np.complex64, **kwargs):
         super(ComplexLayer, self).__init__(dtype=dtype, **kwargs)
-        # The reason for this is that by default if the yours variable is complex that
-        # created from 2 real variables the tf.gradient calculate the gradient conjugate
+        # The reason for this is that by default if the variable is complex that
+        # created from 2 real variables than tf.gradient calculate the gradient conjugate
         # (and we can't simply use tf.conj(tf.gradients)) because we want jacobians vector products ...
         self.weights_for_complex_value_params_gradient = []
         self.real_weights = []
         self.imag_weights = []
+        self.params_dtype = tensorflow.float64 if hasattr(self, 'dtype') and self.dtype == tensorflow.complex128 \
+            else tensorflow.float32
 
-    def add_complex_weight(self, name, shape, complex_initializer, trainable, dtype=tensorflow.float32):
-        init_with = complex_initializer(shape)
-        if isinstance(init_with, tensorflow.Tensor):
-            if init_with.dtype.is_complex:
-                real_initializer = tensorflow.real(complex_initializer)
-                imag_initializer = -1.0 * tensorflow.imag(complex_initializer)
-            else:
-                real_initializer = complex_initializer
-                imag_initializer = -1.0 * complex_initializer
-        else:
-            real_initializer = NumpyInitializer(np.real(init_with))
-            imag_initializer = NumpyInitializer(-1 * np.imag(init_with))
+    def add_complex_weight(self, name, shape, complex_initializer, trainable=True, dtype=tensorflow.float32):
+        complex_initializer = ConjugateDecorator(get_initializer(complex_initializer))
         real = self.add_weight(name='%s_real' % name,
-                               shape=shape, initializer=real_initializer, dtype=dtype, trainable=trainable)
+                               shape=shape,
+                               initializer=complex_initializer.get_real_part_initializer(),
+                               dtype=dtype,
+                               trainable=trainable)
         imag = self.add_weight(name='%s_imag' % name,
-                               shape=shape, initializer=imag_initializer, dtype=dtype, trainable=trainable)
+                               shape=shape,
+                               initializer=complex_initializer.get_imag_part_initializer(),
+                               dtype=dtype,
+                               trainable=trainable)
         minus_imag = tensorflow.multiply(imag, -1., 'conj_imag')
         self.real_weights.append(real)
-        self.imag_weights .append(imag)
+        self.imag_weights.append(imag)
         self.weights_for_complex_value_params_gradient.append(real)
         self.weights_for_complex_value_params_gradient.append(minus_imag)
         return tensorflow.complex(real, minus_imag)
