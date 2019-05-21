@@ -1,10 +1,10 @@
 from .abstract_machine import Machine
 
 import tensorflow
-from tensorflow.keras.layers import Flatten, Add, Lambda
+from tensorflow.keras.layers import Add, Flatten, Lambda
 
-from pyket.layers import TranslationInvariantComplexDense, ComplexDense, ToComplex64
-from pyket.layers.complex.tensorflow_ops import lncosh
+from ..layers import TranslationInvariantComplexDense, ComplexDense, ToComplex64
+from ..layers.complex.tensorflow_ops import lncosh
 
 
 class RBM(Machine):
