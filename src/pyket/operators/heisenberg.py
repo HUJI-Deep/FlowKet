@@ -57,21 +57,23 @@ class HeisenbergFindConn(object):
         self.all_use_conn = numpy.zeros((num_of_conn, batch_size))
         # todo support general hilbert_state_shape dimention
         dim = len(ham.hilbert_state_shape)
-        assert(dim == 2) 
-        shape = self.ham.hilbert_state_shape[0], self.ham.hilbert_state_shape[1], dim, batch_size, self.ham.hilbert_state_shape[0], \
+        assert (dim == 2)
+        shape = self.ham.hilbert_state_shape[0], self.ham.hilbert_state_shape[1], dim, batch_size, \
+                self.ham.hilbert_state_shape[0], \
                 self.ham.hilbert_state_shape[1]
         self.sample_conn = self.all_conn[1:, ...].view().reshape(shape)
         shape = self.ham.hilbert_state_shape[0], self.ham.hilbert_state_shape[1], dim, batch_size
         self.use_conn = self.all_use_conn[1:, ...].view().reshape(shape)
         self.all_use_conn[0, :] = True
         self.mel = self.all_mel[1:, ...].view().reshape(shape)
+        self.self_mel = numpy.zeros((batch_size,) + self.ham.hilbert_state_shape)
+        self.tmp_arr = numpy.zeros((batch_size,))
 
     def find_conn(self, sample):
         assert sample.shape[0] == self.batch_size
-        self.all_conn[:] = sample[numpy.newaxis, :, :, :]
-        self_mel = numpy.zeros((sample.shape[0], self.ham.hilbert_state_shape[0], self.ham.hilbert_state_shape[1]))
-        self.calc_conn_and_mel(sample, self_mel)
-        self.all_mel[0, :] = self_mel.sum(axis=(1, 2))
+        self.all_conn[:] = sample[numpy.newaxis, ...]
+        self.calc_conn_and_mel(sample, self.self_mel)
+        numpy.sum(self.self_mel, axis=(1, 2), out= self.all_mel[0, :])
         return self.all_conn.view(), self.all_mel.view(), self.all_use_conn.view()
 
     def calc_conn_and_mel(self, sample, self_mel):
@@ -80,12 +82,14 @@ class HeisenbergFindConn(object):
                 dim_idx = 0
                 if self.ham.hilbert_state_shape[0] > 1:
                     if i + 1 < self.ham.hilbert_state_shape[0]:
-                        self_mel[:, i, j] += sample[:, i, j] * sample[:, i + 1, j]
+                        numpy.multiply(sample[:, i, j], sample[:, i + 1, j], out=self.tmp_arr)
+                        self_mel[:, i, j] += self.tmp_arr
                         self.use_conn[i, j, dim_idx, :] = (sample[:, i, j] != sample[:, i + 1, j])
                         self.sample_conn[i, j, dim_idx, :, i, j] = sample[:, i + 1, j]
                         self.sample_conn[i, j, dim_idx, :, i + 1, j] = sample[:, i, j]
                     elif self.pbc:
-                        self_mel[:, i, j] += sample[:, i, j] * sample[:, 0, j]
+                        numpy.multiply(sample[:, i, j], sample[:, 0, j], out=self.tmp_arr)
+                        self_mel[:, i, j] += self.tmp_arr
                         self.use_conn[i, j, dim_idx, :] = (sample[:, i, j] != sample[:, 0, j])
                         self.sample_conn[i, j, dim_idx, :, i, j] = sample[:, 0, j]
                         self.sample_conn[i, j, dim_idx, :, 0, j] = sample[:, i, j]
@@ -95,12 +99,14 @@ class HeisenbergFindConn(object):
                     dim_idx += 1
                 if self.ham.hilbert_state_shape[1] > 1:
                     if j + 1 < self.ham.hilbert_state_shape[1]:
-                        self_mel[:, i, j] += sample[:, i, j] * sample[:, i, j + 1]
+                        numpy.multiply(sample[:, i, j], sample[:, i, j + 1], out=self.tmp_arr)
+                        self_mel[:, i, j] += self.tmp_arr
                         self.use_conn[i, j, dim_idx, :] = (sample[:, i, j] != sample[:, i, j + 1])
                         self.sample_conn[i, j, dim_idx, :, i, j] = sample[:, i, j + 1]
                         self.sample_conn[i, j, dim_idx, :, i, j + 1] = sample[:, i, j]
                     elif self.pbc:
-                        self_mel[:, i, j] += sample[:, i, j] * sample[:, i, 0]
+                        numpy.multiply(sample[:, i, j], sample[:, i, 0], out=self.tmp_arr)
+                        self_mel[:, i, j] += self.tmp_arr
                         self.use_conn[i, j, dim_idx, :] = (sample[:, i, j] != sample[:, i, 0])
                         self.sample_conn[i, j, dim_idx, :, i, j] = sample[:, i, 0]
                         self.sample_conn[i, j, dim_idx, :, i, 0] = sample[:, i, j]

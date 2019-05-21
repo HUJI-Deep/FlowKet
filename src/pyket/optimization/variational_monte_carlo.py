@@ -1,6 +1,7 @@
 import time
 
 import tensorflow
+from tensorflow.python.keras import backend as K
 import numpy
 
 
@@ -14,6 +15,7 @@ class VariationalMonteCarlo(object):
         self.sampler = sampler
         self._batch_size = sampler.batch_size
         self._graph = tensorflow.get_default_graph()
+        self._session = K.get_session()
         self.current_local_energy = numpy.zeros((self._batch_size,), dtype=numpy.complex128)
         self.current_energy = None
         self.current_local_energy_variance = None
@@ -61,6 +63,7 @@ class VariationalMonteCarlo(object):
             self._update_batch_local_energy_for_balanced_local_connections(local_connections, hamiltonian_values)
 
     def _next_batch(self):
+        K.set_session(self._session)
         with self._graph.as_default():
             self.start_time = time.time()
             self.current_batch = next(self.sampler)

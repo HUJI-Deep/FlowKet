@@ -1,6 +1,3 @@
-from collections import OrderedDict
-import itertools
-import functools
 import sys
 
 import tensorflow as tf
@@ -14,9 +11,8 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
 from pyket.layers import LogSpaceComplexNumberHistograms
 from pyket.machines import ConvNetAutoregressive2D
 from pyket.operators import Heisenberg
-from pyket.optimization import VariationalMonteCarlo, UnbiasedVariationalMonteCarlo, energy_gradient_loss
-from pyket.samplers import FastAutoregressiveSampler, AutoregressiveSampler
-
+from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.samplers import FastAutoregressiveSampler
 
 run_index = int(sys.argv[-1].strip())
 num_gpus = [1,2,4][run_index % 3]
