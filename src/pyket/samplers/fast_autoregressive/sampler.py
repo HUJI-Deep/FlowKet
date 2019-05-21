@@ -14,7 +14,7 @@ from ..base_sampler import Sampler
 def visit_layer_predecessors(layer, visitor):
     layer_nodes = layer.inbound_nodes
     assert len(layer_nodes) == 1
-    inbound_layers = layer_nodes[0].inbound_layers
+    inbound_layers = layer_nodes[-1].inbound_layers
     visitor(layer, inbound_layers)
     for inbound_layer in inbound_layers:
         visit_layer_predecessors(inbound_layer, visitor)
