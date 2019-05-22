@@ -54,7 +54,7 @@ class HeisenbergFindConn(object):
         num_of_conn = self.ham.max_number_of_local_connections
         self.all_conn = numpy.zeros((num_of_conn, batch_size) + self.ham.hilbert_state_shape)
         self.all_mel = numpy.zeros((num_of_conn, batch_size))
-        self.all_use_conn = numpy.zeros((num_of_conn, batch_size))
+        self.all_use_conn = numpy.zeros((num_of_conn, batch_size), dtype=numpy.bool)
         # todo support general hilbert_state_shape dimention
         dim = len(ham.hilbert_state_shape)
         assert (dim == 2)
@@ -77,6 +77,7 @@ class HeisenbergFindConn(object):
         return self.all_conn.view(), self.all_mel.view(), self.all_use_conn.view()
 
     def calc_conn_and_mel(self, sample, self_mel):
+        self_mel[:] = 0
         for i in range(self.ham.hilbert_state_shape[0]):
             for j in range(self.ham.hilbert_state_shape[1]):
                 dim_idx = 0

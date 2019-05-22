@@ -3,7 +3,8 @@ from tensorflow.keras.callbacks import Callback
 
 
 class LocalEnergyStats(Callback):
-    def __init__(self, generator, validation_generator=None, true_ground_state_energy=None, log_in_batch_or_epoch=True, **kwargs):
+    def __init__(self, generator, validation_generator=None, true_ground_state_energy=None,
+                 log_in_batch_or_epoch=True, **kwargs):
         super(LocalEnergyStats, self).__init__(**kwargs)
         self.generator = generator
         self.validation_generator = validation_generator

@@ -17,17 +17,18 @@ def to_complex_tensors(tensors):
 
 
 def get_model_weights_for_complex_value_params_gradient(keras_model):
-    model_weights = [layer.weights_for_complex_value_params_gradient for layer in keras_model.layers]
+    model_weights = [layer.weights_for_complex_value_params_gradient for layer in keras_model.layers
+                     if layer.count_params() > 0]
     return [item for sublist in model_weights for item in sublist]
 
 
 def get_model_real_weights(keras_model):
-    model_weights = [layer.real_weights for layer in keras_model.layers]
+    model_weights = [layer.real_weights for layer in keras_model.layers if layer.count_params() > 0]
     return [item for sublist in model_weights for item in sublist]
 
 
 def get_model_imag_weights(keras_model):
-    model_weights = [layer.imag_weights for layer in keras_model.layers]
+    model_weights = [layer.imag_weights for layer in keras_model.layers if layer.count_params() > 0]
     return [item for sublist in model_weights for item in sublist]
 
 
@@ -52,7 +53,7 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
             self.lr = K.variable(lr, name='lr')
-            self.diag_shift = K.variable(diag_shift, name='diag_shift')
+            self.diag_shift = K.variable(diag_shift, name='diag_shift', dtype=self.predictions_keras_model.output.dtype)
 
     def get_updates(self, loss, params):
         assert params == self.predictions_keras_model.weights
@@ -97,7 +98,7 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
                                                                                                complex_vector,
                                                                                                wave_function_jacobian_minus_mean=None):
         num_of_complex_params_t = tf.shape(complex_vector)[0]
-        if wave_function_jacobian_minus_mean is not None:
+        if wave_function_jacobian_minus_mean is None:
             def wave_function_gradient_covariance_vector_product(complex_vector):
                 return self.get_stochastic_reconfiguration_matrix_vector_product_via_jvp(complex_vector)
         else:
@@ -105,7 +106,7 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
                 return tf.matmul(wave_function_jacobian_minus_mean,
                                  tf.matmul(wave_function_jacobian_minus_mean, v),
                                  adjoint_a=True) / self.batch_size + self.diag_shift * v
-        operator = Operator(shape=tf.stack([num_of_complex_params_t] * 2, axis=0), dtype=self.predictions.dtype,
+        operator = Operator(shape=tf.stack([num_of_complex_params_t] * 2, axis=0), dtype=self.predictions_keras_model.output.dtype,
                             apply=wave_function_gradient_covariance_vector_product)
         conjugate_gradient_res = conjugate_gradient(operator, complex_vector, tol=self.conjugate_gradient_tol,
                                                     max_iter=self.max_iter)
@@ -116,14 +117,14 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
         return flat_gradient
 
     def _get_energy_grad(self, loss):
-        energy_grads = self.get_gradients(loss, self.model_weights_for_complex_gradient)
+        energy_grads = self.get_gradients(loss, self.model_weights_for_complex_value_params_gradient)
         energy_grad = tf.squeeze(tensors_to_column(to_complex_tensors(energy_grads))) / 2
         return energy_grad
 
     def _get_wave_function_jacobian_minus_mean(self):
         jacobian_real = self.predictions_jacobian(self.predictions_keras_model.weights)
         jacobian_complex = tensors_to_matrix(to_complex_tensors(jacobian_real),
-                                             tf.shape(jacobian_real)[0])
+                                             tf.shape(jacobian_real[0])[0])
         mean_grad = tf.reduce_mean(jacobian_complex, axis=0, keepdims=True)
         return jacobian_complex - mean_grad
 

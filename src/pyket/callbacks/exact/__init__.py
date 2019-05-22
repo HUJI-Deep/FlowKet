@@ -1,4 +1,5 @@
 from .local_energy import ExactLocalEnergy
+from .machine_updated import MachineUpdated
 from .runtime_stats import RuntimeStats
 from .sigma_z import ExactSigmaZ
 
