@@ -74,6 +74,7 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
 
     def _apply_complex_gradient(self, flat_gradient):
         conj_flat_gradient = tf.conj(flat_gradient)
+        # conj_flat_gradient = flat_gradient
         real_gradients = column_to_tensors(self.model_real_weights, tf.real(conj_flat_gradient))
         imag_gradients = column_to_tensors(self.model_imag_weights, tf.imag(conj_flat_gradient))
         self.updates = [K.update_add(self.iterations, 1)]
@@ -90,13 +91,14 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
         num_of_complex_params_t = tf.shape(energy_grad)[0]
         s = tf.matmul(wave_function_jacobian_minus_mean, wave_function_jacobian_minus_mean,
                       adjoint_a=True) / self.batch_size \
-            + tf.eye(num_of_complex_params_t, dtype=self.predictions.dtype) * self.diag_shift
+            + tf.eye(num_of_complex_params_t, dtype=self.predictions_keras_model.output.dtype) * self.diag_shift
         flat_gradient = tf.linalg.solve(s, energy_grad)
         return flat_gradient
 
     def compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver(self,
                                                                                                complex_vector,
                                                                                                wave_function_jacobian_minus_mean=None):
+        complex_vector = tf.squeeze(complex_vector)
         num_of_complex_params_t = tf.shape(complex_vector)[0]
         if wave_function_jacobian_minus_mean is None:
             def wave_function_gradient_covariance_vector_product(complex_vector):
@@ -106,7 +108,8 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
                 return tf.matmul(wave_function_jacobian_minus_mean,
                                  tf.matmul(wave_function_jacobian_minus_mean, v),
                                  adjoint_a=True) / self.batch_size + self.diag_shift * v
-        operator = Operator(shape=tf.stack([num_of_complex_params_t] * 2, axis=0), dtype=self.predictions_keras_model.output.dtype,
+        operator = Operator(shape=tf.stack([num_of_complex_params_t] * 2, axis=0),
+                            dtype=self.predictions_keras_model.output.dtype,
                             apply=wave_function_gradient_covariance_vector_product)
         conjugate_gradient_res = conjugate_gradient(operator, complex_vector, tol=self.conjugate_gradient_tol,
                                                     max_iter=self.max_iter)
@@ -118,7 +121,8 @@ class ComplexValueParametersStochasticReconfiguration(Optimizer):
 
     def _get_energy_grad(self, loss):
         energy_grads = self.get_gradients(loss, self.model_weights_for_complex_value_params_gradient)
-        energy_grad = tf.squeeze(tensors_to_column(to_complex_tensors(energy_grads))) / 2
+        # energy_grad = tf.squeeze(tensors_to_column(to_complex_tensors(energy_grads))) / 2
+        energy_grad = tensors_to_column(to_complex_tensors(energy_grads)) / 2
         return energy_grad
 
     def _get_wave_function_jacobian_minus_mean(self):
