@@ -19,7 +19,7 @@ class ComplexValueParametersSimpleConvNetAutoregressive1D(AutoNormalizedAutoregr
     """docstring for ConvNetAutoregressive1D"""
 
     def __init__(self, keras_input_layer, depth, num_of_channels, kernel_size=3,
-                 use_dilation=True, max_dilation_rate=None, activation=crelu, **kwargs):
+                 use_dilation=True, max_dilation_rate=None, activation=lncosh, **kwargs):
         self.depth = depth
         self.num_of_channels = num_of_channels
         self.kernel_size = kernel_size
