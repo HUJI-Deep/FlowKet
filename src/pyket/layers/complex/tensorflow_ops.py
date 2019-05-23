@@ -4,6 +4,15 @@ import numpy
 import tensorflow
 
 
+def keras_conv_to_complex_conv(x, kernel, keras_conv, name=None):
+    with tensorflow.name_scope(name, "ComplexConv", [x]) as name:
+        ac = keras_conv(tensorflow.real(x), tensorflow.real(kernel))
+        bd = keras_conv(tensorflow.imag(x), tensorflow.imag(kernel))
+        ad = keras_conv(tensorflow.real(x), tensorflow.imag(kernel))
+        bc = keras_conv(tensorflow.imag(x), tensorflow.real(kernel))
+        return tensorflow.complex(ac - bd, ad + bc)
+
+
 def conv2d_complex(data, filters, strides, padding, use_cudnn_on_gpu=True, data_format='NHWC', dilations=[1, 1, 1, 1],
                    name=None):
     with tensorflow.name_scope(name, "ComplexConv2D", [data]) as name:

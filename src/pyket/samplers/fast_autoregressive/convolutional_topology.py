@@ -3,7 +3,7 @@ import itertools
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from ...layers import ComplexConv2D
+from ...layers import ComplexConv1D, ComplexConv2D, ComplexConv3D
 
 import numpy
 import tensorflow
@@ -37,4 +37,6 @@ class ConvolutionalTopology(LayerTopology):
 TopologyManager().register_layer_topology(ConvolutionalTopology, Conv1D)
 TopologyManager().register_layer_topology(ConvolutionalTopology, Conv2D)
 TopologyManager().register_layer_topology(ConvolutionalTopology, Conv3D)
+TopologyManager().register_layer_topology(ConvolutionalTopology, ComplexConv1D)
 TopologyManager().register_layer_topology(ConvolutionalTopology, ComplexConv2D)
+TopologyManager().register_layer_topology(ConvolutionalTopology, ComplexConv3D)

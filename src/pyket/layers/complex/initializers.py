@@ -7,11 +7,11 @@ from tensorflow.keras.initializers import get as get_real_number_initializer
 from tensorflow.python.ops.init_ops import _compute_fans
 
 
-class ComplexNumberInitializer(abc.ABC):
+class ComplexValueInitializer(abc.ABC):
     """docstring for ComplexNumberInitializer"""
 
     def __init__(self):
-        super(ComplexNumberInitializer, self).__init__()
+        super(ComplexValueInitializer, self).__init__()
 
     @abc.abstractmethod
     def get_real_part_initializer(self):
@@ -33,7 +33,7 @@ class NegateDecorator(Initializer):
         return -1 * self.initializer.__call__(shape, dtype, partition_info)
 
 
-class ConjugateDecorator(ComplexNumberInitializer):
+class ConjugateDecorator(ComplexValueInitializer):
     """docstring for ConjugateDecorator"""
 
     def __init__(self, complex_initializer):
@@ -47,7 +47,7 @@ class ConjugateDecorator(ComplexNumberInitializer):
         return NegateDecorator(self.complex_initializer.get_imag_part_initializer())
 
 
-class FromRealValueInitializers(ComplexNumberInitializer):
+class FromRealValueInitializers(ComplexValueInitializer):
     """docstring for FromRealValueInitializers"""
 
     def get_real_part_initializer(self):
@@ -82,6 +82,7 @@ class _ImagPartInitializer(Initializer):
         self.whole_initializer = whole_initializer
 
     def __call__(self, shape, dtype=None, partition_info=None):
+        self.whole_initializer.next_complex_nummber(shape, dtype=dtype)
         return tensorflow.sin(self.whole_initializer.phase) * self.whole_initializer.modulus
 
 
@@ -96,7 +97,7 @@ def to_int_shape(shape):
     return tuple([int(s) for s in shape])
 
 
-class StandartComplexNumberInitializer(ComplexNumberInitializer):
+class StandartComplexValueInitializer(ComplexValueInitializer):
     """docstring for StandartComplexNumberInitializer"""
 
     def get_real_part_initializer(self):
@@ -105,7 +106,7 @@ class StandartComplexNumberInitializer(ComplexNumberInitializer):
     def get_imag_part_initializer(self):
         return self.imag_part_initializer
 
-    def next_complex_nummber(self, shape, dtype=None):
+    def _random_modulus_and_phase(self, shape):
         shape = to_int_shape(shape)
         fan_in, fan_out = _compute_fans(shape)
         if self.criterion == 'glorot':
@@ -117,19 +118,28 @@ class StandartComplexNumberInitializer(ComplexNumberInitializer):
         self.modulus = random_rayleigh(shape, scale=scale)
         self.phase = tensorflow.random.uniform(shape, minval=-math.pi, maxval=math.pi)
 
+    def next_complex_nummber(self, shape, dtype=None):
+        self._counter += 1
+        if self._counter == 2:
+            return
+        if self._counter > 2:
+            raise Exception('You should create unique instance of this initializer for each complex value parameter')
+        self._random_modulus_and_phase(shape)
+
     def __init__(self, criterion='glorot'):
-        super(StandartComplexNumberInitializer, self).__init__()
+        super(StandartComplexValueInitializer, self).__init__()
         self.criterion = criterion
+        self._counter = 0
         self.real_part_initializer = _RealPartInitializer(self)
         self.imag_part_initializer = _ImagPartInitializer(self)
 
 
 def get(identifier):
-    if isinstance(identifier, ComplexNumberInitializer):
+    if isinstance(identifier, ComplexValueInitializer):
         return identifier
     elif isinstance(identifier, tuple) and len(identifier) == 2:
         return FromRealValueInitializers(identifier[0], identifier[1])
     elif identifier in ['complex_glorot', 'complex_he']:
-        return StandartComplexNumberInitializer(identifier[8:])
+        return StandartComplexValueInitializer(identifier[8:])
     else:
         return FromRealValueInitializers(identifier, identifier)
