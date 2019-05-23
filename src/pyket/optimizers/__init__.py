@@ -1,3 +1,3 @@
 from .accumulate_gradient_optimizer import convert_to_accumulate_gradient_optimizer
-from .stochastic_reconfiguration.complex_value_parameters_optimizer import \
-    ComplexValueParametersStochasticReconfiguration
+from .stochastic_reconfiguration.complex_values_optimizer import \
+    ComplexValuesStochasticReconfiguration
