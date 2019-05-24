@@ -11,10 +11,7 @@ class ComplexLayer(Layer):
 
     def __init__(self, dtype=np.complex64, **kwargs):
         super(ComplexLayer, self).__init__(dtype=dtype, **kwargs)
-        # The reason for this is that by default if the variable is complex that
-        # created from 2 real variables than tf.gradient calculate the gradient conjugate
-        # (and we can't simply use tf.conj(tf.gradients)) because we want jacobians vector products ...
-        self.weights_for_complex_value_params_gradient = []
+        self.weights_for_complex_value_params_conj_gradient = []  # For tf.conj(jacobians) vector products ...
         self.real_weights = []
         self.imag_weights = []
         self.params_dtype = tensorflow.float64 if hasattr(self, 'dtype') and self.dtype == tensorflow.complex128 \
@@ -35,6 +32,6 @@ class ComplexLayer(Layer):
         minus_imag = tensorflow.multiply(imag, -1., 'conj_imag')
         self.real_weights.append(real)
         self.imag_weights.append(imag)
-        self.weights_for_complex_value_params_gradient.append(real)
-        self.weights_for_complex_value_params_gradient.append(minus_imag)
+        self.weights_for_complex_value_params_conj_gradient.append(real)
+        self.weights_for_complex_value_params_conj_gradient.append(minus_imag)
         return tensorflow.complex(real, minus_imag)

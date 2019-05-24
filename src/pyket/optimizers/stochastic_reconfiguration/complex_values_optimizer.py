@@ -17,12 +17,9 @@ def to_complex_tensors(tensors):
 
 
 def get_model_weights_for_complex_value_params_gradient(keras_model):
-    # model_weights = [layer.weights_for_complex_value_params_gradient for layer in keras_model.layers
-    #                  if layer.count_params() > 0]
-    return keras_model.weights
-    # model_weights = [layer.weights_for_complex_value_params_gradient for layer in keras_model.layers
-    #                  if layer.count_params() > 0]
-    # return [item for sublist in model_weights for item in sublist]
+    model_weights = [layer.weights_for_complex_value_params_conj_gradient for layer in keras_model.layers
+                     if layer.count_params() > 0]
+    return [item for sublist in model_weights for item in sublist]
 
 
 def get_model_real_weights(keras_model):
@@ -47,7 +44,7 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
         self.compute_jvp_instead_of_full_jacobian = compute_jvp_instead_of_full_jacobian
         self.conjugate_gradient_tol = conjugate_gradient_tol
         self.max_iter = max_iter
-        self.model_weights_for_complex_value_params_gradient = get_model_weights_for_complex_value_params_gradient(
+        self.model_weights_for_complex_value_params_conj_gradient = get_model_weights_for_complex_value_params_gradient(
             self.predictions_keras_model)
         self.model_real_weights = get_model_real_weights(self.predictions_keras_model)
         self.model_imag_weights = get_model_imag_weights(self.predictions_keras_model)
@@ -127,7 +124,7 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
         return tensors_to_column(energy_grads) / 2
 
     def get_complex_value_gradients(self, loss):
-        return to_complex_tensors(self.get_gradients(loss, self.model_weights_for_complex_value_params_gradient))
+        return to_complex_tensors(self.get_gradients(loss, self.predictions_keras_model.weights))
 
     def get_wave_function_jacobian_minus_mean(self):
         jacobian_complex = self.get_wave_function_jacobian()
@@ -149,12 +146,12 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
         output_tensor = self.predictions_keras_model.output
         mean_grads = tf.gradients(tf.reduce_mean(tf.real(output_tensor)), self.predictions_keras_model.weights)
         mean_grad = tensors_to_column(to_complex_tensors(mean_grads))
-        jvp = forward_mode_gradients([output_tensor], self.model_weights_for_complex_value_params_gradient,
-                                     column_to_tensors(self.model_weights_for_complex_value_params_gradient, vector))[0]
+        jvp = forward_mode_gradients([output_tensor], self.model_weights_for_complex_value_params_conj_gradient,
+                                     column_to_tensors(self.model_weights_for_complex_value_params_conj_gradient, vector))[0]
         ok_remainder = tf.squeeze(tf.matmul(tensors_to_column(
             complex_vector), mean_grad, transpose_a=True))
         ok_v = jvp - ok_remainder
-        vjp = tf.gradients(output_tensor, self.model_weights_for_complex_value_params_gradient, grad_ys=ok_v,
+        vjp = tf.gradients(output_tensor, self.model_weights_for_complex_value_params_conj_gradient, grad_ys=ok_v,
                            colocate_gradients_with_ops=True)
         # ok_t_remainder is zeros !!!
         return tensors_to_column(to_complex_tensors(vjp)) / self.batch_size + complex_vector * self.diag_shift
