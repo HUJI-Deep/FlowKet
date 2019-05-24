@@ -8,7 +8,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
     default_wave_function_stats_callbacks_factory, MCMCStats
 from pyket.machines import RBMSym
 from pyket.operators import Heisenberg
-from pyket.optimizers import ComplexValueParametersStochasticReconfiguration
+from pyket.optimizers import ComplexValuesStochasticReconfiguration
 from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import MetropolisHastingsHamiltonian, MetropolisHastingsLocal
 
@@ -22,8 +22,8 @@ batch_size = 1000
 steps_per_epoch = 300
 
 # optimizer = SGD(lr=0.05)
-optimizer = ComplexValueParametersStochasticReconfiguration(model, rbm.predictions_jacobian, lr=0.05, diag_shift=0.1,
-                                                            iterative_solver=False)
+optimizer = ComplexValuesStochasticReconfiguration(model, rbm.predictions_jacobian, lr=0.05, diag_shift=0.1,
+                                                   iterative_solver=False)
 model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 model.summary()
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=True)

@@ -17,9 +17,6 @@ TWO_DIM_INPUT = Input(shape=(4, 4), dtype='int8')
 graph = tensorflow.get_default_graph()
 
 
-# apply_complex_gradient
-
-
 class Linear(Machine):
     """docstring for Linear"""
 
@@ -144,7 +141,8 @@ def test_compute_wave_function_gradient_covariance_inverse_multiplication_direct
         jacobian_minus_mean = machine.manual_jacobian - tensorflow.reduce_mean(machine.manual_jacobian, axis=0,
                                                                                keepdims=True)
         manual_s = tensorflow.eye(model.count_params() // 2, dtype=tensorflow.complex64) * diag_shift
-        manual_s += tensorflow.matmul(jacobian_minus_mean, jacobian_minus_mean, adjoint_a=True) / tensorflow.cast(batch_size, tensorflow.complex64)
+        manual_s += tensorflow.matmul(jacobian_minus_mean, jacobian_minus_mean, adjoint_a=True) / tensorflow.cast(
+            batch_size, tensorflow.complex64)
         manual_res_t = pinv(manual_s, complex_vector_t)
         res_t = optimizer.compute_wave_function_gradient_covariance_inverse_multiplication_directly(
             complex_vector_t, jacobian_minus_mean)
@@ -157,4 +155,32 @@ def test_compute_wave_function_gradient_covariance_inverse_multiplication_direct
         manual_res = manual_res_function([sample, complex_vector])[0]
         diff_norm = numpy.linalg.norm(res - manual_res)
         res_norm = numpy.linalg.norm(manual_res)
+        assert (diff_norm / res_norm) < 1e-5
+
+
+@pytest.mark.parametrize('input_layer, batch_size', [
+    (SCALAR_INPUT, 1),
+    (ONE_DIM_INPUT, 128),
+    (TWO_DIM_INPUT, 128),
+])
+def test_apply_complex_gradient(input_layer, batch_size):
+    with graph.as_default():
+        machine = Linear(input_layer)
+        model = Model(inputs=[input_layer], outputs=machine.predictions)
+        optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, lr=1.0)
+        complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
+        predictions_function = K.function(inputs=[input_layer], outputs=[machine.predictions])
+        sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
+        predictions_before = predictions_function(sample)[0]
+        updates = optimizer.apply_complex_gradient(complex_vector_t)
+        apply_gradients_function = K.function(inputs=[input_layer, complex_vector_t],
+                                              outputs=[machine.predictions], updates=[updates])
+        real_vector = numpy.random.normal(size=(model.count_params() // 2, 1, 2))
+        complex_vector = real_vector[..., 0] + 1j * real_vector[..., 1]
+        apply_gradients_function([sample, complex_vector])
+        predictions_after = predictions_function(sample)[0]
+        diff = predictions_after - predictions_before
+        manual_diff = sample.reshape((batch_size, -1)) @ complex_vector
+        diff_norm = numpy.linalg.norm(diff - manual_diff)
+        res_norm = numpy.linalg.norm(manual_diff)
         assert (diff_norm / res_norm) < 1e-5
