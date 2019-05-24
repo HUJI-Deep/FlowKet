@@ -18,7 +18,7 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
                  compute_jvp_instead_of_full_jacobian=False, conjugate_gradient_tol=1e-3,
                  iterative_solver_max_iterations=200, use_energy_loss=False, **kwargs):
         super(ComplexValuesStochasticReconfiguration, self).__init__(predictions_keras_model,
-                                                                     predictions_jacobian, **kwargs)
+                                                                     predictions_jacobian, lr=lr, **kwargs)
         self.iterative_solver = iterative_solver
         self.compute_jvp_instead_of_full_jacobian = compute_jvp_instead_of_full_jacobian
         self.conjugate_gradient_tol = conjugate_gradient_tol

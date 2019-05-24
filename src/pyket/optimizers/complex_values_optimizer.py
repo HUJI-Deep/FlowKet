@@ -28,7 +28,7 @@ def get_model_imag_weights(keras_model):
 class ComplexValuesOptimizer(Optimizer):
     """docstring for StochasticReconfiguration"""
 
-    def __init__(self, predictions_keras_model, predictions_jacobian=None, **kwargs):
+    def __init__(self, predictions_keras_model, predictions_jacobian=None, lr=0.01, **kwargs):
         super(ComplexValuesOptimizer, self).__init__(**kwargs)
         self.predictions_keras_model = predictions_keras_model
         self.predictions_jacobian = predictions_jacobian
@@ -36,6 +36,8 @@ class ComplexValuesOptimizer(Optimizer):
             self.predictions_keras_model)
         self.model_real_weights = get_model_real_weights(self.predictions_keras_model)
         self.model_imag_weights = get_model_imag_weights(self.predictions_keras_model)
+        with K.name_scope(self.__class__.__name__):
+            self.lr = K.variable(lr, name='lr')
 
     def apply_complex_gradient(self, flat_gradient):
         conj_flat_gradient = tf.conj(flat_gradient)
