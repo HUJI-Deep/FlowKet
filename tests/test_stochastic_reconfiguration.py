@@ -71,7 +71,7 @@ def test_get_wave_function_jacobian(input_layer, machine_class, batch_size):
         machine = machine_class(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
         optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian)
-        jacobian_function = K.function(inputs=[input_layer], outputs=[optimizer.get_wave_function_jacobian()])
+        jacobian_function = K.function(inputs=[input_layer], outputs=[optimizer.get_predictions_jacobian()])
         manual_jacobian_function = K.function(inputs=[input_layer], outputs=[machine.manual_jacobian])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
         jacobian = jacobian_function([sample])[0]
@@ -97,7 +97,7 @@ def test_get_complex_value_gradients(input_layer, batch_size):
                                          machine.dense_layer.kernel.shape)) \
             ([machine.predictions, machine.manual_jacobian])
         manual_gradients_function = K.function(inputs=[input_layer], outputs=[manual_gradients_layer])
-        complex_value_gradients_layer = Lambda(lambda x: optimizer.get_complex_value_gradients(tensorflow.real(x)))(
+        complex_value_gradients_layer = Lambda(lambda x: optimizer.get_model_parameters_complex_value_gradients(tensorflow.real(x)))(
             loss)
         # complex_value_gradients_layer = optimizer.get_complex_value_gradients(tensorflow.real(loss))
         complex_value_gradients_function = K.function(inputs=[input_layer],
@@ -123,16 +123,20 @@ def pinv(A, b, reltol=1e-6):
                                                                            transpose_a=True)))
 
 
-@pytest.mark.parametrize('input_layer, batch_size, diag_shift', [
-    (SCALAR_INPUT, 1, 0.01),
-    (ONE_DIM_INPUT, 128, 0.01),
-    (TWO_DIM_INPUT, 128, 0.01),
+@pytest.mark.parametrize('input_layer, batch_size, diag_shift, iterative', [
+    (SCALAR_INPUT, 1, 0.01, False),
+    (ONE_DIM_INPUT, 128, 0.01, False),
+    (TWO_DIM_INPUT, 128, 0.01, False),
+    (ONE_DIM_INPUT, 128, 0.01, True),
+    (TWO_DIM_INPUT, 128, 0.01, True),
 ])
-def test_compute_wave_function_gradient_covariance_inverse_multiplication_directly(input_layer, batch_size, diag_shift):
+def test_compute_wave_function_gradient_covariance_inverse_multiplication(input_layer, batch_size, diag_shift,
+                                                                                   iterative):
     with graph.as_default():
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift)
+        optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
+                                                           conjugate_gradient_tol=1e-6, iterative_solver_max_iterations=None)
         complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
         jacobian_minus_mean = machine.manual_jacobian - tensorflow.reduce_mean(machine.manual_jacobian, axis=0,
                                                                                keepdims=True)
@@ -140,8 +144,40 @@ def test_compute_wave_function_gradient_covariance_inverse_multiplication_direct
         manual_s += tensorflow.matmul(jacobian_minus_mean, jacobian_minus_mean, adjoint_a=True) / tensorflow.cast(
             batch_size, tensorflow.complex64)
         manual_res_t = pinv(manual_s, complex_vector_t)
-        res_t = optimizer.compute_wave_function_gradient_covariance_inverse_multiplication_directly(
-            complex_vector_t, jacobian_minus_mean)
+        multiplication_function = optimizer.compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver \
+            if iterative else optimizer.compute_wave_function_gradient_covariance_inverse_multiplication_directly
+        res_t = multiplication_function(complex_vector_t, jacobian_minus_mean)
+        res_function = K.function(inputs=[input_layer, complex_vector_t], outputs=[res_t])
+        manual_res_function = K.function(inputs=[input_layer, complex_vector_t], outputs=[manual_res_t])
+        sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
+        real_vector = numpy.random.normal(size=(model.count_params() // 2, 1, 2))
+        complex_vector = real_vector[..., 0] + 1j * real_vector[..., 1]
+        res = res_function([sample, complex_vector])[0]
+        manual_res = manual_res_function([sample, complex_vector])[0]
+        diff_norm = numpy.linalg.norm(res - manual_res)
+        res_norm = numpy.linalg.norm(manual_res)
+        assert (diff_norm / res_norm) < 1e-5
+
+
+@pytest.mark.parametrize('input_layer, batch_size, diag_shift', [
+    (SCALAR_INPUT, 1, 0.01),
+    (ONE_DIM_INPUT, 128, 0.01),
+    (TWO_DIM_INPUT, 128, 0.01),
+])
+def test_stochastic_reconfiguration_matrix_vector_product_via_jvp(input_layer, batch_size, diag_shift):
+    with graph.as_default():
+        machine = Linear(input_layer)
+        model = Model(inputs=[input_layer], outputs=machine.predictions)
+        optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
+                                                           conjugate_gradient_tol=1e-6, iterative_solver_max_iterations=None)
+        complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
+        jacobian_minus_mean = machine.manual_jacobian - tensorflow.reduce_mean(machine.manual_jacobian, axis=0,
+                                                                               keepdims=True)
+        manual_s = tensorflow.eye(model.count_params() // 2, dtype=tensorflow.complex64) * diag_shift
+        manual_s += tensorflow.matmul(jacobian_minus_mean, jacobian_minus_mean, adjoint_a=True) / tensorflow.cast(
+            batch_size, tensorflow.complex64)
+        manual_res_t = tensorflow.matmul(manual_s, complex_vector_t)
+        res_t = optimizer.get_stochastic_reconfiguration_matrix_vector_product_via_jvp(complex_vector_t)
         res_function = K.function(inputs=[input_layer, complex_vector_t], outputs=[res_t])
         manual_res_function = K.function(inputs=[input_layer, complex_vector_t], outputs=[manual_res_t])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
