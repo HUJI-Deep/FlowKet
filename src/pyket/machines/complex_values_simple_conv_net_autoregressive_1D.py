@@ -15,7 +15,7 @@ def causal_conv_1d(x, filters, kernel_size, dilation_rate=1, activation=None):
     return x
 
 
-class ComplexValueParametersSimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
+class ComplexValuesSimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
     """docstring for ConvNetAutoregressive1D"""
 
     def __init__(self, keras_input_layer, depth, num_of_channels, kernel_size=3,
@@ -27,7 +27,7 @@ class ComplexValueParametersSimpleConvNetAutoregressive1D(AutoNormalizedAutoregr
         self.max_dilation_rate = max_dilation_rate
         self.activation = activation
         self._build_unnormalized_conditional_log_wave_function(keras_input_layer)
-        super(ComplexValueParametersSimpleConvNetAutoregressive1D, self).__init__(keras_input_layer, **kwargs)
+        super(ComplexValuesSimpleConvNetAutoregressive1D, self).__init__(keras_input_layer, **kwargs)
 
     @property
     def unnormalized_conditional_log_wave_function(self):
