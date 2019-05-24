@@ -92,9 +92,9 @@ def conjugate_gradient(operator,
 
     def cg_step(i, state):  # pylint: disable=missing-docstring
         z = operator.apply(state.p)
-        z = tensorflow.reshape(z, state.p.shape)
+        z = tensorflow.reshape(z, [-1, 1])
         alpha = state.gamma / util.dot(state.p, z)
-        x = state.x + alpha * state.p
+        x = tensorflow.reshape(state.x + alpha * state.p, [-1, 1])
         r = state.r - alpha * z
         if preconditioner is None:
             gamma = util.dot(r, r)
