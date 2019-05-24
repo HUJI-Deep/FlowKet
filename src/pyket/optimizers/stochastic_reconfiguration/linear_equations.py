@@ -31,7 +31,6 @@ from tensorflow.python.ops import linalg_ops
 from tensorflow.python.ops import math_ops
 
 
-
 def conjugate_gradient(operator,
                        rhs,
                        preconditioner=None,
@@ -39,7 +38,7 @@ def conjugate_gradient(operator,
                        tol=1e-4,
                        max_iter=20,
                        name="conjugate_gradient"):
-  r"""Conjugate gradient solver.
+    r"""Conjugate gradient solver.
 
   Solves a linear system of equations `A*x = rhs` for selfadjoint, positive
   definite matrix `A` and right-hand side vector `rhs`, using an iterative,
@@ -82,54 +81,55 @@ def conjugate_gradient(operator,
       - gamma: \\(r \dot M \dot r\\), equivalent to  \\(||r||_2^2\\) when
         `preconditioner=None`.
   """
-  # ephemeral class holding CG state.
-  cg_state = collections.namedtuple("CGState", ["i", "x", "r", "p", "gamma"])
+    # ephemeral class holding CG state.
+    cg_state = collections.namedtuple("CGState", ["i", "x", "r", "p", "gamma"])
 
-  def stopping_criterion(i, state):
-    return math_ops.logical_and(i < max_iter, float_norm(state.r) > tol)
+    def stopping_criterion(i, state):
+        return math_ops.logical_and(i < max_iter, float_norm(state.r) > tol)
 
-  def float_norm(v):
-    return math_ops.cast(linalg_ops.norm(v), tensorflow.float32)
+    def float_norm(v):
+        return math_ops.cast(linalg_ops.norm(v), tensorflow.float32)
 
-  def cg_step(i, state):  # pylint: disable=missing-docstring
-    z = operator.apply(state.p)
-    alpha = state.gamma / util.dot(state.p, z)
-    x = state.x + alpha * state.p
-    r = state.r - alpha * z
-    if preconditioner is None:
-      gamma = util.dot(r, r)
-      beta = gamma / state.gamma
-      p = r + beta * state.p
-    else:
-      q = preconditioner.apply(r)
-      gamma = util.dot(r, q)
-      beta = gamma / state.gamma
-      p = q + beta * state.p
-    return i + 1, cg_state(i + 1, x, r, p, gamma)
+    def cg_step(i, state):  # pylint: disable=missing-docstring
+        z = operator.apply(state.p)
+        z = tensorflow.reshape(z, state.p.shape)
+        alpha = state.gamma / util.dot(state.p, z)
+        x = state.x + alpha * state.p
+        r = state.r - alpha * z
+        if preconditioner is None:
+            gamma = util.dot(r, r)
+            beta = gamma / state.gamma
+            p = r + beta * state.p
+        else:
+            q = preconditioner.apply(r)
+            gamma = util.dot(r, q)
+            beta = gamma / state.gamma
+            p = q + beta * state.p
+        return i + 1, cg_state(i + 1, x, r, p, gamma)
 
-  with ops.name_scope(name):
-    n = operator.shape[1:]
-    rhs = array_ops.expand_dims(rhs, -1)
-    if x is None:
-      x = array_ops.expand_dims(
-          array_ops.zeros(n, dtype=rhs.dtype.base_dtype), -1)
-      r0 = rhs
-    else:
-      x = array_ops.expand_dims(x, -1)
-      r0 = rhs - operator.apply(x)
-    if preconditioner is None:
-      p0 = r0
-    else:
-      p0 = preconditioner.apply(r0)
-    gamma0 = util.dot(r0, p0)
-    tol *= float_norm(r0)
-    i = constant_op.constant(0, dtype=dtypes.int32)
-    state = cg_state(i=i, x=x, r=r0, p=p0, gamma=gamma0)
-    _, state = control_flow_ops.while_loop(stopping_criterion, cg_step,
-                                           [i, state])
-    return cg_state(
-        state.i,
-        x=array_ops.squeeze(state.x),
-        r=array_ops.squeeze(state.r),
-        p=array_ops.squeeze(state.p),
-        gamma=state.gamma)
+    with ops.name_scope(name):
+        n = operator.shape[1:]
+        rhs = array_ops.expand_dims(rhs, -1)
+        if x is None:
+            x = array_ops.expand_dims(
+                array_ops.zeros(n, dtype=rhs.dtype.base_dtype), -1)
+            r0 = rhs
+        else:
+            x = array_ops.expand_dims(x, -1)
+            r0 = rhs - operator.apply(x)
+        if preconditioner is None:
+            p0 = r0
+        else:
+            p0 = preconditioner.apply(r0)
+        gamma0 = util.dot(r0, p0)
+        tol *= float_norm(r0)
+        i = constant_op.constant(0, dtype=dtypes.int32)
+        state = cg_state(i=i, x=x, r=r0, p=p0, gamma=gamma0)
+        _, state = control_flow_ops.while_loop(stopping_criterion, cg_step,
+                                               [i, state])
+        return cg_state(
+            state.i,
+            x=array_ops.squeeze(state.x),
+            r=array_ops.squeeze(state.r),
+            p=array_ops.squeeze(state.p),
+            gamma=state.gamma)
