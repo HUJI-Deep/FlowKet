@@ -77,8 +77,8 @@ def test_get_wave_function_jacobian(input_layer, machine_class, batch_size):
         jacobian_function = K.function(inputs=[input_layer], outputs=[optimizer.get_wave_function_jacobian()])
         manual_jacobian_function = K.function(inputs=[input_layer], outputs=[machine.manual_jacobian])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
-        jacobian = jacobian_function(sample)[0]
-        manual_jacobian = manual_jacobian_function(sample)[0]
+        jacobian = jacobian_function([sample])[0]
+        manual_jacobian = manual_jacobian_function([sample])[0]
         diff_norm = numpy.linalg.norm(jacobian - manual_jacobian, 'fro')
         jacobian_norm = numpy.linalg.norm(manual_jacobian, 'fro')
         assert (diff_norm / jacobian_norm) < 1e-5
@@ -106,12 +106,8 @@ def test_get_complex_value_gradients(input_layer, batch_size):
         complex_value_gradients_function = K.function(inputs=[input_layer],
                                                       outputs=[complex_value_gradients_layer])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
-        complex_value_gradients = complex_value_gradients_function(sample)[0]
-        manual_gradients = manual_gradients_function(sample)[0]
-        print('*' * 50)
-        print(complex_value_gradients)
-        print('*' * 50)
-        print(manual_gradients)
+        complex_value_gradients = complex_value_gradients_function([sample])[0]
+        manual_gradients = manual_gradients_function([sample])[0]
         diff_norm = numpy.linalg.norm(complex_value_gradients - manual_gradients)
         gradients_norm = numpy.linalg.norm(manual_gradients)
         assert (diff_norm / gradients_norm) < 1e-5
