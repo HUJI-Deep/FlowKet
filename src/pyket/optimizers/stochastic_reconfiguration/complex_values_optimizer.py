@@ -65,7 +65,7 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
         else:
             wave_function_jacobian_minus_mean = self.get_wave_function_jacobian_minus_mean()
         if self.plain_local_energy_loss:
-            energy_grad = tf.matmul(wave_function_jacobian_minus_mean, tf.expand_dims(loss, axis=-1), adjoint_a=True)
+            energy_grad = tf.matmul(wave_function_jacobian_minus_mean, tf.conj(tf.reshape(self.predictions_keras_model.targets[0], (-1, 1))), adjoint_a=True)
         else:
             energy_grad = self.get_energy_grad(loss)
         if self.iterative_solver:
@@ -75,7 +75,7 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
             flat_gradient = self.compute_wave_function_gradient_covariance_inverse_multiplication_directly(
                 energy_grad, wave_function_jacobian_minus_mean)
 
-        return self.apply_complex_gradient(flat_gradient)
+        return self.apply_complex_gradient(flat_gradient * (-1.0 + 0j))
 
     def apply_complex_gradient(self, flat_gradient):
         conj_flat_gradient = tf.conj(flat_gradient)
