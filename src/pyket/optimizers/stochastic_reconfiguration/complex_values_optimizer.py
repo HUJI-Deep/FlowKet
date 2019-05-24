@@ -36,13 +36,16 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
     """docstring for StochasticReconfiguration"""
 
     def __init__(self, predictions_keras_model, predictions_jacobian, lr=0.01, diag_shift=0.05, iterative_solver=True,
-                 compute_jvp_instead_of_full_jacobian=False, conjugate_gradient_tol=1e-3, max_iter=200, **kwargs):
+                 compute_jvp_instead_of_full_jacobian=False, conjugate_gradient_tol=1e-3, max_iter=200, plain_local_energy_loss=False, **kwargs):
         super(ComplexValuesStochasticReconfiguration, self).__init__(**kwargs)
         self.predictions_keras_model = predictions_keras_model
         self.predictions_jacobian = predictions_jacobian
         self.iterative_solver = iterative_solver
         self.compute_jvp_instead_of_full_jacobian = compute_jvp_instead_of_full_jacobian
         self.conjugate_gradient_tol = conjugate_gradient_tol
+        if plain_local_energy_loss:
+            assert not (self.iterative_solver and compute_jvp_instead_of_full_jacobian)
+        self.plain_local_energy_loss = plain_local_energy_loss
         self.max_iter = max_iter
         self.model_weights_for_complex_value_params_conj_gradient = get_model_weights_for_complex_value_params_gradient(
             self.predictions_keras_model)
@@ -57,12 +60,14 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
 
     def get_updates(self, loss, params):
         assert params == self.predictions_keras_model.weights
-        energy_grad = self.get_energy_grad(loss)
         if self.iterative_solver and self.compute_jvp_instead_of_full_jacobian:
             wave_function_jacobian_minus_mean = None
         else:
             wave_function_jacobian_minus_mean = self.get_wave_function_jacobian_minus_mean()
-
+        if self.plain_local_energy_loss:
+            energy_grad = tf.matmul(wave_function_jacobian_minus_mean, tf.expand_dims(loss, axis=-1), adjoint_a=True)
+        else:
+            energy_grad = self.get_energy_grad(loss)
         if self.iterative_solver:
             flat_gradient = self.compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver(
                 energy_grad, wave_function_jacobian_minus_mean)
