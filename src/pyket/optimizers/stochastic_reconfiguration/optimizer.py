@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.python.keras import backend as K
 
 from .linear_equations import conjugate_gradient
-from ..complex_values_optimizer import ComplexValuesOptimizer, to_complex_tensors
+from ..complex_values_optimizer import ComplexValuesOptimizer
 from ..utils import tensors_to_column
 from ...layers.complex.tensorflow_ops import float_norm
 
@@ -24,8 +24,6 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         self.conjugate_gradient_tol = conjugate_gradient_tol
         self.use_energy_loss = use_energy_loss
         self.iterative_solver_max_iterations = iterative_solver_max_iterations
-        if use_energy_loss:
-            assert not (self.iterative_solver and compute_jvp_instead_of_full_jacobian)
         self._compute_batch_size()
         self._init_optimizer_parameters(diag_shift, lr)
 
@@ -52,7 +50,8 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         self.updates += self.apply_complex_gradient(flat_gradient * (-1.0 + 0j))
         return self.updates
 
-    def compute_wave_function_gradient_covariance_inverse_multiplication(self, complex_vector, wave_function_jacobian_minus_mean):
+    def compute_wave_function_gradient_covariance_inverse_multiplication(self, complex_vector,
+                                                                         wave_function_jacobian_minus_mean):
         if self.iterative_solver:
             res = self.compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver(
                 complex_vector, wave_function_jacobian_minus_mean)
@@ -95,14 +94,19 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
 
     def get_energy_grad(self, loss, wave_function_jacobian_minus_mean=None):
         if self.use_energy_loss:
+            # todo fix this branch!
             energy_grads = self.get_model_parameters_complex_value_gradients(loss)
             # we take conjugate because our loss actually calculate the conj gradient and usually it's ok because just
             # take the real part ...
             energy_grad = tf.conj(tensors_to_column(energy_grads)) / 2
         else:
-            energy_grad = tf.matmul(wave_function_jacobian_minus_mean,
-                                    tf.conj(tf.reshape(self.predictions_keras_model.targets[0],
-                                                       (-1, 1))), adjoint_a=True)
+            complex_vector = tf.conj(tf.reshape(self.predictions_keras_model.targets[0],
+                                                (-1, 1)))
+            if wave_function_jacobian_minus_mean is None:
+                energy_grad = self.get_predictions_jacobian_vector_product(complex_vector,
+                                                                           conjugate_jacobian=True)
+            else:
+                energy_grad = tf.matmul(wave_function_jacobian_minus_mean, complex_vector, adjoint_a=True)
         return energy_grad
 
     def get_wave_function_jacobian_minus_mean(self):

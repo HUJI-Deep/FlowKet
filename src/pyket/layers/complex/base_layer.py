@@ -1,15 +1,14 @@
-import numpy as np
 import tensorflow
 from tensorflow.keras.layers import Layer
 
-from .initializers import get as get_initializer
 from .initializers import ConjugateDecorator
+from .initializers import get as get_initializer
 
 
 class ComplexLayer(Layer):
     """docstring for ComplexLayer"""
 
-    def __init__(self, dtype=np.complex64, **kwargs):
+    def __init__(self, dtype=tensorflow.complex64, **kwargs):
         super(ComplexLayer, self).__init__(dtype=dtype, **kwargs)
         self.weights_for_complex_value_params_gradient_conjugate = []
         self.real_weights = []
