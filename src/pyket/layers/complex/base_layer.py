@@ -13,8 +13,7 @@ class ComplexLayer(Layer):
         self.weights_for_complex_value_params_gradient_conjugate = []
         self.real_weights = []
         self.imag_weights = []
-        self.params_dtype = tensorflow.float64 if hasattr(self, 'dtype') and self.dtype == tensorflow.complex128 \
-            else tensorflow.float32
+        self.params_dtype = tensorflow.float64 if dtype == tensorflow.complex128 else tensorflow.float32
 
     def add_complex_weight(self, name, shape, complex_initializer, trainable=True, dtype=tensorflow.float32):
         complex_initializer = ConjugateDecorator(get_initializer(complex_initializer))
