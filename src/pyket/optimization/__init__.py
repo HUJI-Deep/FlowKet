@@ -1,3 +1,3 @@
-from .loss import energy_gradient_loss
+from .loss import energy_gradient_loss, monte_carlo_generator_return_local_energy_minus_mean_loss
 from .variational_monte_carlo import VariationalMonteCarlo
 from .exact_variational import ExactVariational
