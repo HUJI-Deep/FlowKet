@@ -119,9 +119,9 @@ class ComplexValuesStochasticReconfiguration(Optimizer):
 
     def get_energy_grad(self, loss):
         energy_grads = self.get_complex_value_gradients(loss)
-        # because we our loss actually calculate the conj gradient and usually it ok because just take the real part ...
-        energy_grads = tf.conj(energy_grads)
-        return tensors_to_column(energy_grads) / 2
+        # we take conjugate because our loss actually calculate the conj gradient and usually it's ok because just
+        # take the real part ...
+        return tf.conj(tensors_to_column(energy_grads)) / 2
 
     def get_complex_value_gradients(self, loss):
         return to_complex_tensors(self.get_gradients(loss, self.predictions_keras_model.weights))
