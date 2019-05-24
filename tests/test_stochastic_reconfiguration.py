@@ -97,9 +97,9 @@ def test_get_complex_value_gradients(input_layer, batch_size):
                                          machine.dense_layer.kernel.shape)) \
             ([machine.predictions, machine.manual_jacobian])
         manual_gradients_function = K.function(inputs=[input_layer], outputs=[manual_gradients_layer])
-        # complex_value_gradients_layer = Lambda(lambda x: optimizer.get_complex_value_gradients(tensorflow.real(x)))(
-        #     loss)
-        complex_value_gradients_layer = optimizer.get_complex_value_gradients(tensorflow.real(loss))
+        complex_value_gradients_layer = Lambda(lambda x: optimizer.get_complex_value_gradients(tensorflow.real(x)))(
+            loss)
+        # complex_value_gradients_layer = optimizer.get_complex_value_gradients(tensorflow.real(loss))
         complex_value_gradients_function = K.function(inputs=[input_layer],
                                                       outputs=[complex_value_gradients_layer])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
@@ -167,14 +167,14 @@ def test_apply_complex_gradient(input_layer, batch_size):
         complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
         predictions_function = K.function(inputs=[input_layer], outputs=[machine.predictions])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
-        predictions_before = predictions_function(sample)[0]
+        predictions_before = predictions_function([sample])[0]
         updates = optimizer.apply_complex_gradient(complex_vector_t)
         apply_gradients_function = K.function(inputs=[input_layer, complex_vector_t],
                                               outputs=[machine.predictions], updates=[updates])
         real_vector = numpy.random.normal(size=(model.count_params() // 2, 1, 2))
         complex_vector = real_vector[..., 0] + 1j * real_vector[..., 1]
         apply_gradients_function([sample, complex_vector])
-        predictions_after = predictions_function(sample)[0]
+        predictions_after = predictions_function([sample])[0]
         diff = predictions_after - predictions_before
         manual_diff = sample.reshape((batch_size, -1)) @ complex_vector
         diff_norm = numpy.linalg.norm(diff - manual_diff)

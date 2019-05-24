@@ -88,8 +88,8 @@ class _ImagPartInitializer(Initializer):
 
 def random_rayleigh(shape, scale):
     scale_squared = scale * scale
-    x = tensorflow.random.normal(shape, stddev=scale_squared)
-    y = tensorflow.random.normal(shape, stddev=scale_squared)
+    x = tensorflow.random_normal(shape, stddev=scale_squared)
+    y = tensorflow.random_normal(shape, stddev=scale_squared)
     return tensorflow.sqrt(x * x + y * y)
 
 
@@ -116,7 +116,7 @@ class StandartComplexValueInitializer(ComplexValueInitializer):
         else:
             raise ValueError('Invalid criterion: ' + self.criterion)
         self.modulus = random_rayleigh(shape, scale=scale)
-        self.phase = tensorflow.random.uniform(shape, minval=-math.pi, maxval=math.pi)
+        self.phase = tensorflow.random_uniform(shape, minval=-math.pi, maxval=math.pi)
 
     def next_complex_nummber(self, shape, dtype=None):
         self._counter += 1
