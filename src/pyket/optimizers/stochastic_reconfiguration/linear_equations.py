@@ -85,6 +85,8 @@ def conjugate_gradient(operator,
     cg_state = collections.namedtuple("CGState", ["i", "x", "r", "p", "gamma"])
 
     def stopping_criterion(i, state):
+        if max_iter is None:
+            return float_norm(state.r) > tol
         return math_ops.logical_and(i < max_iter, float_norm(state.r) > tol)
 
     def float_norm(v):
