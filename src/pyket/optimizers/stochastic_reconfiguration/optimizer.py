@@ -98,11 +98,7 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         num_of_complex_params_t = tf.shape(complex_vector)[0]
         s = tf.matmul(wave_function_jacobian_minus_mean, wave_function_jacobian_minus_mean,
                       adjoint_a=True) / self.batch_size
-        abs_eigvals = tf.abs(tf.linalg.eigvalsh(s))
-        tol = K.epsilon() * tf.cast(num_of_complex_params_t, abs_eigvals.dtype) * tf.reduce_max(tf.abs(s)) # see https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.matrix_rank.html
-        filterd_eigvals = tf.boolean_mask(abs_eigvals, abs_eigvals > tol)
-        updated_s_matrix_rank = K.update(self.s_matrix_rank, tf.count_nonzero(filterd_eigvals))
-        updated_s_matrix_min_eigval = K.update(self.s_matrix_min_eigval, tf.reduce_min(filterd_eigvals))
+        updated_s_matrix_min_eigval, updated_s_matrix_rank = self._update_s_matrix_stats(num_of_complex_params_t, s)
         s += tf.eye(num_of_complex_params_t, dtype=self.predictions_keras_model.output.dtype) * self.diag_shift
         with tf.control_dependencies([updated_s_matrix_min_eigval, updated_s_matrix_rank]):
             if self.use_cholesky:
@@ -110,6 +106,15 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
             else:
                 res = tf.linalg.solve(s, complex_vector)
             return tf.stop_gradient(res)
+
+    def _update_s_matrix_stats(self, num_of_complex_params_t, s):
+        abs_eigvals = tf.abs(tf.linalg.eigvalsh(s))
+        tol = K.epsilon() * tf.cast(num_of_complex_params_t, abs_eigvals.dtype) * tf.reduce_max(
+            tf.abs(s))  # see https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.matrix_rank.html
+        filtered_eigvals = tf.boolean_mask(abs_eigvals, abs_eigvals > tol)
+        updated_s_matrix_rank = K.update(self.s_matrix_rank, tf.count_nonzero(filtered_eigvals))
+        updated_s_matrix_min_eigval = K.update(self.s_matrix_min_eigval, tf.reduce_min(filtered_eigvals))
+        return updated_s_matrix_min_eigval, updated_s_matrix_rank
 
     def compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver(self,
                                                                                                complex_vector,
