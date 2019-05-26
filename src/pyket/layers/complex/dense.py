@@ -28,11 +28,15 @@ class ComplexDense(ComplexLayer):
             units *= input_dim
         self.kernel = self.add_complex_weight(name='kernel',
                                               shape=(input_dim, units),
-                                              complex_initializer=self.kernel_initializer)
+                                              complex_initializer=self.kernel_initializer,
+                                              trainable=True,
+                                              dtype=self.params_dtype)
         if self.use_bias:
             self.bias = self.add_complex_weight(name='bias',
                                                 shape=(units,),
-                                                complex_initializer=self.bias_initializer)
+                                                complex_initializer=self.bias_initializer,
+                                                trainable=True,
+                                                dtype=self.params_dtype)
         else:
             self.bias = None
         self.built = True
@@ -56,8 +60,10 @@ class TranslationInvariantComplexDense(ComplexDense):
         input_dims = tuple([int(s) for s in input_shape[1:]])
         self.number_of_visible = numpy.prod(input_dims)
         self.bare_kernel = self.add_complex_weight(name='kernel',
-                                                   shape=input_dims + (self.units, ),
-                                                   complex_initializer=self.kernel_initializer)
+                                                   shape=input_dims + (self.units,),
+                                                   complex_initializer=self.kernel_initializer,
+                                                   trainable=True,
+                                                   dtype=self.params_dtype)
 
         all_axes = tuple(list(range(len(input_dims))))
         kernel_translations = [tensorflow.roll(self.bare_kernel, i, all_axes) for i in
@@ -67,7 +73,9 @@ class TranslationInvariantComplexDense(ComplexDense):
         if self.use_bias:
             self.bare_bias = self.add_complex_weight(name='bias',
                                                      shape=(self.units,),
-                                                     complex_initializer=self.bias_initializer)
+                                                     complex_initializer=self.bias_initializer,
+                                                     trainable=True,
+                                                     dtype=self.params_dtype)
             self.bias = tensorflow.reshape(tensorflow.stack([self.bare_bias] * self.number_of_visible, axis=-1), (-1,))
         else:
             self.bias = None
