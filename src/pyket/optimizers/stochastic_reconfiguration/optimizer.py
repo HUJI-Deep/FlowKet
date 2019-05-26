@@ -15,8 +15,8 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
     """docstring for StochasticReconfiguration"""
 
     def __init__(self, predictions_keras_model, predictions_jacobian, lr=0.01, diag_shift=0.05, iterative_solver=True,
-                 compute_jvp_instead_of_full_jacobian=False, conjugate_gradient_tol=1e-3,
-                 iterative_solver_max_iterations=200, use_energy_loss=False, use_cholesky=True, **kwargs):
+                 compute_jvp_instead_of_full_jacobian=False, use_energy_loss=False, conjugate_gradient_tol=1e-3,
+                 iterative_solver_max_iterations=200, use_cholesky=True, **kwargs):
         super(ComplexValuesStochasticReconfiguration, self).__init__(predictions_keras_model,
                                                                      predictions_jacobian, lr=lr, **kwargs)
         self.iterative_solver = iterative_solver
@@ -25,29 +25,35 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         self.use_energy_loss = use_energy_loss
         self.use_cholesky = use_cholesky
         self.iterative_solver_max_iterations = iterative_solver_max_iterations
-        self.s_matrix = None
-        self.conjugate_gradient_iterations = None
-        self.conjugate_gradient_residual_norm = None
         self._compute_batch_size()
         self._init_optimizer_parameters(diag_shift, lr)
 
     @property
     def metrics(self):
         def conjugate_gradient_residual_norm(y_true, y_pred):
-            return conjugate_gradient_residual_norm
+            return self.conjugate_gradient_residual_norm
 
         def conjugate_gradient_iterations(y_true, y_pred):
             return self.conjugate_gradient_iterations
 
         def s_matrix_min_eigval(y_true, y_pred):
-            return tf.reduce_min(tf.linalg.eigvalsh(self.s_matrix))
+            return self.s_matrix_min_eigval
+        
+        def s_matrix_rank(y_true, y_pred):
+            return self.s_matrix_rank
+        
+        conjugate_gradient_residual_norm.__name__ = 'stochastic_reconfiguration/%s' %  conjugate_gradient_residual_norm.__name__
+        conjugate_gradient_iterations.__name__ = 'stochastic_reconfiguration/%s' %  conjugate_gradient_iterations.__name__
+        s_matrix_min_eigval.__name__ = 'stochastic_reconfiguration/%s' %  s_matrix_min_eigval.__name__
+        s_matrix_rank.__name__ = 'stochastic_reconfiguration/%s' %  s_matrix_rank.__name__
 
-        res = {}
-        if self.s_matrix is not None:
-            res['StochasticReconfiguration/s_matrix_min_eigval'] = s_matrix_min_eigval
+        res = []
         if self.iterative_solver:
-            res['StochasticReconfiguration/conjugate_gradient_iterations'] = conjugate_gradient_iterations
-            res['StochasticReconfiguration/conjugate_gradient_residual_norm'] = conjugate_gradient_residual_norm
+            res.append(conjugate_gradient_iterations)
+            res.append(conjugate_gradient_residual_norm)
+        else:
+            res.append(s_matrix_rank)
+            res.append(s_matrix_min_eigval)
         return res
 
     def _compute_batch_size(self):
@@ -59,6 +65,10 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
             self.lr = K.variable(lr, name='lr')
             self.diag_shift = K.variable(diag_shift, name='diag_shift', dtype=self.predictions_keras_model.output.dtype)
+            self.s_matrix_min_eigval = K.variable(0.0, name='s_matrix_min_eigval', dtype=self.predictions_keras_model.output.dtype.real_dtype)
+            self.conjugate_gradient_iterations = K.variable(0, name='conjugate_gradient_iterations', dtype='int32')
+            self.conjugate_gradient_residual_norm = K.variable(0.0, name='conjugate_gradient_residual_norm', dtype='float64')
+            self.s_matrix_rank = K.variable(0, dtype='int64', name='s_matrix_rank')
         self.weights = [self.iterations, self.diag_shift]
 
     def get_updates(self, loss, params):
@@ -88,13 +98,18 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         num_of_complex_params_t = tf.shape(complex_vector)[0]
         s = tf.matmul(wave_function_jacobian_minus_mean, wave_function_jacobian_minus_mean,
                       adjoint_a=True) / self.batch_size
+        abs_eigvals = tf.abs(tf.linalg.eigvalsh(s))
+        tol = K.epsilon() * tf.cast(num_of_complex_params_t, abs_eigvals.dtype) * tf.reduce_max(tf.abs(s)) # see https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.matrix_rank.html
+        filterd_eigvals = tf.boolean_mask(abs_eigvals, abs_eigvals > tol)
+        updated_s_matrix_rank = K.update(self.s_matrix_rank, tf.count_nonzero(filterd_eigvals))
+        updated_s_matrix_min_eigval = K.update(self.s_matrix_min_eigval, tf.reduce_min(filterd_eigvals))
         s += tf.eye(num_of_complex_params_t, dtype=self.predictions_keras_model.output.dtype) * self.diag_shift
-        self.s_matrix = s
-        if self.use_cholesky:
-            res = tf.linalg.cholesky_solve(tf.linalg.cholesky(s), complex_vector)
-        else:
-            res = tf.linalg.solve(s, complex_vector)
-        return tf.stop_gradient(res)
+        with tf.control_dependencies([updated_s_matrix_min_eigval, updated_s_matrix_rank]):
+            if self.use_cholesky:
+                res = tf.linalg.cholesky_solve(tf.linalg.cholesky(s), complex_vector)
+            else:
+                res = tf.linalg.solve(s, complex_vector)
+            return tf.stop_gradient(res)
 
     def compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver(self,
                                                                                                complex_vector,
@@ -114,9 +129,10 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
                             apply=wave_function_gradient_covariance_vector_product)
         conjugate_gradient_res = conjugate_gradient(operator, complex_vector, tol=self.conjugate_gradient_tol,
                                                     max_iter=self.iterative_solver_max_iterations)
-        flat_gradient = tf.stop_gradient(tf.reshape(conjugate_gradient_res.x, (-1, 1)))
-        self.conjugate_gradient_iterations = conjugate_gradient_res.i
-        self.conjugate_gradient_residual_norm = float_norm(conjugate_gradient_res.r)
+        updated_conjugate_gradient_iterations = K.update(self.conjugate_gradient_iterations, conjugate_gradient_res.i)
+        updated_conjugate_gradient_residual_norm = K.update(self.conjugate_gradient_residual_norm, float_norm(conjugate_gradient_res.r))
+        with tf.control_dependencies([updated_conjugate_gradient_iterations, updated_conjugate_gradient_residual_norm]):
+            flat_gradient = tf.stop_gradient(tf.reshape(conjugate_gradient_res.x, (-1, 1)))
         return flat_gradient
 
     def get_energy_grad(self, loss, wave_function_jacobian_minus_mean=None):
