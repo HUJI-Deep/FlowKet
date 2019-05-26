@@ -10,7 +10,7 @@ import tensorflow.keras.backend as K
 
 
 class RBMBase(Machine, abc.ABC):
-    def __init__(self, keras_input_layer, alpha=1.0, stddev=1.0, use_float64_ops=False, **kwargs):
+    def __init__(self, keras_input_layer, alpha=1, stddev=1.0, use_float64_ops=False, **kwargs):
         super(RBMBase, self).__init__(keras_input_layer, **kwargs)
         self.use_float64_ops = use_float64_ops
         self.layers_dtype = tensorflow.complex128 if self.use_float64_ops else tensorflow.complex64
@@ -35,7 +35,7 @@ class RBMBase(Machine, abc.ABC):
 class RBM(RBMBase):
     def build_predictions(self, x):
         x = Flatten()(x)
-        self._lnthetas = ComplexDense(units=alpha, activation=lncosh,
+        self._lnthetas = ComplexDense(units=self.alpha, activation=lncosh,
                                       multiply_units_by_input_dim=True,
                                       dtype=self.layers_dtype,
                                       kernel_initializer=self.initializer,
@@ -50,7 +50,7 @@ class RBM(RBMBase):
 
 class RBMSym(RBMBase):
     def build_predictions(self, x):
-        self._lnthetas = TranslationInvariantComplexDense(units=alpha,
+        self._lnthetas = TranslationInvariantComplexDense(units=self.alpha,
                                                           activation=lncosh,
                                                           dtype=self.layers_dtype,
                                                           kernel_initializer=self.initializer,
