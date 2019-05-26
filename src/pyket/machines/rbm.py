@@ -17,13 +17,14 @@ class RBM(Machine):
         else:
             x = ToComplex64()(self.keras_input_layer)
         x = Flatten()(x)
+        initializer = tensorflow.random_normal_initializer(stddev=stddev, dtype=self.layers_dtype.real_dtype)
         self._lnthetas = ComplexDense(units=alpha, activation=lncosh,
                                       multiply_units_by_input_dim=True,
                                       dtype=self.layers_dtype,
-                                      kernel_initializer=tensorflow.random_normal_initializer(stddev=stddev),
-                                      bias_initializer=tensorflow.random_normal_initializer(stddev=stddev))(x)
+                                      kernel_initializer=initializer,
+                                      bias_initializer=initializer)(x)
         x = ComplexDense(units=1, use_bias=False, dtype=self.layers_dtype,
-                         kernel_initializer=tensorflow.random_normal_initializer(stddev=stddev))(x)
+                         kernel_initializer=initializer)(x)
         y = Lambda(lambda t: tensorflow.reduce_sum(t, axis=-1, keepdims=True))(self._lnthetas)
         self._predictions = Add()([x, y])
 
@@ -41,14 +42,13 @@ class RBMSym(Machine):
             x = ToComplex128()(self.keras_input_layer)
         else:
             x = ToComplex64()(self.keras_input_layer)
+        initializer = tensorflow.random_normal_initializer(stddev=stddev, dtype=self.layers_dtype.real_dtype)
         self._lnthetas = TranslationInvariantComplexDense(units=alpha, activation=lncosh, dtype=self.layers_dtype,
-                                                          kernel_initializer=tensorflow.random_normal_initializer(
-                                                              stddev=stddev),
-                                                          bias_initializer=tensorflow.random_normal_initializer(
-                                                              stddev=stddev))(x)
+                                                          kernel_initializer=initializer ,
+                                                          bias_initializer=initializer)(x)
         x = Flatten()(x)
         x = Lambda(lambda t: tensorflow.reduce_sum(t, axis=-1, keepdims=True))(x)
-        x = ComplexDense(units=1, use_bias=False, dtype=self.layers_dtype)(x)
+        x = ComplexDense(units=1, use_bias=False, dtype=self.layers_dtype, kernel_initializer=initializer)(x)
         y = Lambda(lambda t: tensorflow.reduce_sum(t, axis=-1, keepdims=True))(self._lnthetas)
         self._predictions = Add()([x, y])
 
