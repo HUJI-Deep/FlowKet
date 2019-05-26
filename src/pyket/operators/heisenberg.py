@@ -26,7 +26,7 @@ class Heisenberg(OperatorOnGrid):
                     [numpy.ones((size + int(self.total_sz),)), numpy.full((size - int(self.total_sz),), -1)], axis=0)
                 numpy.random.shuffle(states[i, ...])
             states = states.reshape((num_of_states,) + self.hilbert_state_shape)
-            assert numpy.all(states.sum(axis=tuple(range(1, len(sample.shape)))) == self.total_sz)
+            assert numpy.all(states.sum(axis=tuple(range(1, len(states.shape)))) == self.total_sz)
             return states
         return super(Heisenberg, self).random_states(num_of_states)
 

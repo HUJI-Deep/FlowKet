@@ -2,6 +2,7 @@ from .abstract_machine import Machine
 
 import tensorflow
 from tensorflow.keras.layers import Add, Flatten, Lambda
+import tensorflow.keras.backend as K
 
 from ..layers import TranslationInvariantComplexDense, ComplexDense, ToComplex64, ToComplex128
 from ..layers.complex.tensorflow_ops import lncosh
@@ -13,6 +14,7 @@ class RBM(Machine):
         self.use_float64_ops = use_float64_ops
         self.layers_dtype = tensorflow.complex128 if self.use_float64_ops else tensorflow.complex64
         if self.use_float64_ops:
+            K.set_floatx('float64')
             x = ToComplex128()(self.keras_input_layer)
         else:
             x = ToComplex64()(self.keras_input_layer)
@@ -39,6 +41,7 @@ class RBMSym(Machine):
         self.use_float64_ops = use_float64_ops
         self.layers_dtype = tensorflow.complex128 if self.use_float64_ops else tensorflow.complex64
         if self.use_float64_ops:
+            K.set_floatx('float64')
             x = ToComplex128()(self.keras_input_layer)
         else:
             x = ToComplex64()(self.keras_input_layer)

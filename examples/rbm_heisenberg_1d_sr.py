@@ -14,7 +14,7 @@ from pyket.samplers import MetropolisHastingsHamiltonian, MetropolisHastingsLoca
 
 hilbert_state_shape = (20, 1)
 inputs = Input(shape=hilbert_state_shape, dtype='int8')
-rbm = RBMSym(inputs, stddev=0.01)
+rbm = RBMSym(inputs, stddev=0.01, use_float64_ops=True)
 predictions = rbm.predictions
 model = Model(inputs=inputs, outputs=predictions)
 
@@ -24,14 +24,13 @@ steps_per_epoch = 300
 # optimizer = SGD(lr=0.05)
 optimizer = ComplexValuesStochasticReconfiguration(model, rbm.predictions_jacobian, lr=0.05, diag_shift=0.1,
                                                    iterative_solver=False)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=energy_gradient_loss, metrics=optimizer.metrics)
 model.summary()
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=True)
-# sampler = MetropolisHastingsHamiltonian(model, batch_size, operator, num_of_chains=20, unused_sampels=numpy.prod(hilbert_state_shape))
-sampler = MetropolisHastingsLocal(model, batch_size, num_of_chains=10, unused_sampels=numpy.prod(   hilbert_state_shape))
+sampler = MetropolisHastingsHamiltonian(model, batch_size, operator, num_of_chains=20, unused_sampels=numpy.prod(hilbert_state_shape))
 monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/rbm_with_sr_run_3',
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/rbm_with_sr_run_4',
                                                      generator=monte_carlo_generator, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,

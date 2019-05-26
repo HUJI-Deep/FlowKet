@@ -15,7 +15,7 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
     """docstring for StochasticReconfiguration"""
 
     def __init__(self, predictions_keras_model, predictions_jacobian, lr=0.01, diag_shift=0.05, iterative_solver=True,
-                 compute_jvp_instead_of_full_jacobian=False, use_energy_loss=False, conjugate_gradient_tol=1e-3,
+                 compute_jvp_instead_of_full_jacobian=False, use_energy_loss=False, add_s_matrix_stats=False, conjugate_gradient_tol=1e-3,
                  iterative_solver_max_iterations=200, use_cholesky=True, **kwargs):
         super(ComplexValuesStochasticReconfiguration, self).__init__(predictions_keras_model,
                                                                      predictions_jacobian, lr=lr, **kwargs)
@@ -25,6 +25,7 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         self.use_energy_loss = use_energy_loss
         self.use_cholesky = use_cholesky
         self.iterative_solver_max_iterations = iterative_solver_max_iterations
+        self.add_s_matrix_stats = add_s_matrix_stats
         self._compute_batch_size()
         self._init_optimizer_parameters(diag_shift, lr)
 
@@ -108,6 +109,8 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
             return tf.stop_gradient(res)
 
     def _update_s_matrix_stats(self, num_of_complex_params_t, s):
+        if not self.add_s_matrix_stats:
+            return tf.no_op(), tf.no_op()
         abs_eigvals = tf.abs(tf.linalg.eigvalsh(s))
         tol = K.epsilon() * tf.cast(num_of_complex_params_t, abs_eigvals.dtype) * tf.reduce_max(
             tf.abs(s))  # see https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.matrix_rank.html

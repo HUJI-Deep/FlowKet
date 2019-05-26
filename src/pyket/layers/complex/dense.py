@@ -22,7 +22,7 @@ class ComplexDense(ComplexLayer):
 
     def build(self, input_shape):
         assert len(input_shape) == 2
-        input_dim = input_shape[-1]
+        input_dim = int(input_shape[-1])
         units = self.units
         if self.multiply_units_by_input_dim:
             units *= input_dim

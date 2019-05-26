@@ -165,3 +165,5 @@ class MetropolisHastingsHamiltonian(MetropolisHastingsSampler):
     def __init__(self, machine, batch_size, hamiltonian, **kwargs):
         super(MetropolisHastingsHamiltonian, self).__init__(machine, batch_size, **kwargs)
         self.hamiltonian = hamiltonian
+        self.sample = self.hamiltonian.random_states(self.num_of_chains)
+        self.machine_updated()
