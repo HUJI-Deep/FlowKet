@@ -1,5 +1,6 @@
 import tensorflow
 from tensorflow.keras.layers import Activation, ZeroPadding1D
+import tensorflow.keras.backend as K
 
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
 from ..layers import ToComplex64, ToComplex128, DownShiftLayer, ExpandInputDim, ComplexConv1D
@@ -10,7 +11,7 @@ def causal_conv_1d(x, filters, kernel_size, dilation_rate=1, activation=None, dt
     padding = kernel_size + (kernel_size - 1) * (dilation_rate - 1) - 1
     if padding > 0:
         x = ZeroPadding1D(padding=(padding, 0))(x)
-    x = ComplexConv1D(filters=filters, kernel_size=kernel_size, strides=1, dilation_rate=dilation_rate)(x)
+    x = ComplexConv1D(filters=filters, kernel_size=kernel_size, strides=1, dilation_rate=dilation_rate, dtype=dtype)(x)
     if activation is not None:
         x = Activation(activation)(x)
     return x
@@ -28,6 +29,8 @@ class ComplexValuesSimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMac
         self.max_dilation_rate = max_dilation_rate
         self.activation = activation
         self.use_float64_ops = use_float64_ops
+        if use_float64_ops:
+            K.set_floatx('float64')
         self.layers_dtype = tensorflow.complex128 if self.use_float64_ops else tensorflow.complex64
         self._build_unnormalized_conditional_log_wave_function(keras_input_layer)
         super(ComplexValuesSimpleConvNetAutoregressive1D, self).__init__(keras_input_layer, **kwargs)
