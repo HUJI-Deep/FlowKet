@@ -16,13 +16,14 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
 
     def __init__(self, predictions_keras_model, predictions_jacobian, lr=0.01, diag_shift=0.05, iterative_solver=True,
                  compute_jvp_instead_of_full_jacobian=False, conjugate_gradient_tol=1e-3,
-                 iterative_solver_max_iterations=200, use_energy_loss=False, **kwargs):
+                 iterative_solver_max_iterations=200, use_energy_loss=False, use_cholesky=True, **kwargs):
         super(ComplexValuesStochasticReconfiguration, self).__init__(predictions_keras_model,
                                                                      predictions_jacobian, lr=lr, **kwargs)
         self.iterative_solver = iterative_solver
         self.compute_jvp_instead_of_full_jacobian = compute_jvp_instead_of_full_jacobian
         self.conjugate_gradient_tol = conjugate_gradient_tol
         self.use_energy_loss = use_energy_loss
+        self.use_cholesky = use_cholesky
         self.iterative_solver_max_iterations = iterative_solver_max_iterations
         self._compute_batch_size()
         self._init_optimizer_parameters(diag_shift, lr)
@@ -66,7 +67,11 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         s = tf.matmul(wave_function_jacobian_minus_mean, wave_function_jacobian_minus_mean,
                       adjoint_a=True) / self.batch_size
         s += tf.eye(num_of_complex_params_t, dtype=self.predictions_keras_model.output.dtype) * self.diag_shift
-        return tf.stop_gradient(tf.linalg.solve(s, complex_vector))
+        if self.use_cholesky:
+            res = tf.linalg.cholesky_solve(tf.linalg.cholesky(s), complex_vector)
+        else:
+            res = tf.linalg.solve(s, complex_vector)
+        return tf.stop_gradient(res)
 
     def compute_wave_function_gradient_covariance_inverse_multiplication_with_iterative_solver(self,
                                                                                                complex_vector,
