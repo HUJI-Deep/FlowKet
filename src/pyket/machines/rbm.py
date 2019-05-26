@@ -5,8 +5,8 @@ from ..layers import TranslationInvariantComplexDense, ComplexDense, ToComplex64
 from ..layers.complex.tensorflow_ops import lncosh
 
 import tensorflow
-from tensorflow.keras.layers import Add, Flatten, Lambda
 import tensorflow.keras.backend as K
+from tensorflow.keras.layers import Add, Flatten, Lambda
 
 
 class RBMBase(Machine, abc.ABC):
