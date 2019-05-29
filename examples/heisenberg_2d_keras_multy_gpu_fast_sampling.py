@@ -15,12 +15,11 @@ from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import FastAutoregressiveSampler
 
 run_index = int(sys.argv[-1].strip())
-num_gpus = [1,2,4][run_index % 3]
+num_gpus = [1, 2, 4][run_index % 3]
 device = tf.device("/gpu:0") if num_gpus == 1 else tf.device("/cpu:0")
 
 batch_size = 1024
 steps_per_epoch = 50
-
 
 with device:
     inputs = Input(shape=(10, 10), dtype='int8')

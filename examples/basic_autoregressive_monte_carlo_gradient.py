@@ -10,7 +10,9 @@ from pyket.operators import Ising
 from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import AutoregressiveSampler
 
-inputs = Input(shape=(16,), dtype='int8')
+
+hilbert_state_shape = [16, ]
+inputs = Input(shape=hilbert_state_shape , dtype='int8')
 convnet = SimpleConvNetAutoregressive1D(inputs, depth=7, num_of_channels=32)
 predictions, conditional_log_probs = convnet.predictions, convnet.conditional_log_probs
 predictions = LogSpaceComplexNumberHistograms(name='psi')(predictions)
@@ -24,7 +26,6 @@ optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
 model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 model.summary()
 conditional_log_probs_model.summary()
-hilbert_state_shape = [16, ]
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size)
 monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)

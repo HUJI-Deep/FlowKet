@@ -14,8 +14,8 @@ from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import FastAutoregressiveSampler
 
 params_grid_config = {
-    'width': [8, 16],
-    'depth': [5],
+    'width': [16, 32],
+    'depth': [5, 8],
     'lr': [1e-3, 1e-2, 5e-3],
     'complex_ops': [True, False]
 }
@@ -33,7 +33,7 @@ if params['complex_ops']:
                                                          num_of_channels=params['width'], max_dilation_rate=4)
 else:
     convnet = SimpleConvNetAutoregressive1D(inputs, depth=params['depth'], num_of_channels=params['width'] * 2,
-                                            max_dilation_rate=4)
+                                            max_dilation_rate=4, weights_normalization=False)
 predictions, conditional_log_probs = convnet.predictions, convnet.conditional_log_probs
 model = Model(inputs=inputs, outputs=predictions)
 conditional_log_probs_model = Model(inputs=inputs, outputs=conditional_log_probs)

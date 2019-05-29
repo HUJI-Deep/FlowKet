@@ -11,7 +11,8 @@ from pyket.operators import Ising, cube_shape
 from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import MetropolisHastingsLocal
 
-inputs = Input(shape=(4, 4), dtype='int8')
+hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=4, cube_dimention=2)
+inputs = Input(shape=hilbert_state_shape, dtype='int8')
 x = ToFloat32()(inputs)
 x = Dense(32, activation='relu')(x)
 x = Dense(32, activation='relu')(x)
@@ -27,7 +28,6 @@ steps_per_epoch = 500
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
 model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 model.summary()
-hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=4, cube_dimention=2)
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = MetropolisHastingsLocal(model, batch_size, num_of_chains=16, unused_sampels=16)
 monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)

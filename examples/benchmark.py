@@ -2,7 +2,6 @@ import argparse
 import time
 import numpy
 import netket as nk
-import functools
 
 from pyket.utils.jacobian import predictions_jacobian as get_predictions_jacobian
 from pyket.layers import ToComplex64, ComplexConv1D, PeriodicPadding

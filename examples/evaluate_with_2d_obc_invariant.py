@@ -4,8 +4,10 @@ from tensorflow.keras.optimizers import Adam
 
 from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
     default_wave_function_stats_callbacks_factory
+from pyket.evaluation import evaluate
 from pyket.layers import LogSpaceComplexNumberHistograms
 from pyket.machines import ConvNetAutoregressive2D
+from pyket.machines.ensemble import make_obc_invariants
 from pyket.operators import Ising
 from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import AutoregressiveSampler
@@ -37,6 +39,18 @@ tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/2
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
                                                           validation_generator=validation_generator,
                                                           true_ground_state_energy=-50.18662388277671) + [tensorboard]
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks,
+model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=20, callbacks=callbacks,
                     max_queue_size=0, workers=0)
 model.save_weights('final_2d_ising_fcnn.h5')
+
+print('evaluate normal model')
+evaluate(monte_carlo_generator, steps=800, callbacks=callbacks[:4],
+         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
+
+print('evaluate invariant model')
+evaluation_inputs = Input(shape=hilbert_state_shape, dtype='int8')
+invariant_model = make_obc_invariants(evaluation_inputs, model)
+generator = VariationalMonteCarlo(invariant_model, operator, sampler)
+evaluate(generator, steps=800, callbacks=callbacks[:4],
+         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
+
