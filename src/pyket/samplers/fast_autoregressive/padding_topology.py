@@ -34,7 +34,11 @@ class PeriodicPaddingTopology(LayerTopology):
 
     def __init__(self, layer):
         super(PeriodicPaddingTopology, self).__init__(layer)
-        self.padding = self.layer.padding
+        self.padding = []
+        for dim_padding in self.layer.padding:
+            if isinstance(dim_padding, tuple):
+                dim_padding = dim_padding[0]
+            self.padding.append(dim_padding)
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
         return dependencies_values[0]

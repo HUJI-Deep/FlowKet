@@ -21,8 +21,17 @@ class PeriodicPadding(Layer):
         for dim, dim_padding in enumerate(self.padding):
             if dim_padding == 0:
                 continue
+            if isinstance(dim_padding, tuple):
+                before, after = dim_padding
+            else:
+                before, after = dim_padding, dim_padding
             x_unstacked = tensorflow.unstack(x, axis=dim + 1)
-            padded_list = x_unstacked[:-dim_padding] + x_unstacked + x_unstacked[:dim_padding]
+            padded_list = []
+            if before > 0:
+                padded_list += x_unstacked[:-before]
+            padded_list += x_unstacked
+            if after > 0:
+                padded_list += x_unstacked[:after]
             x = tensorflow.stack(padded_list, axis=dim + 1)
         return x
 
