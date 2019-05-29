@@ -21,7 +21,7 @@ class Rot90(Layer):
 
 class FlipLeftRight(Layer):
     def __init__(self, **kwargs):
-        super(Rot90, self).__init__(**kwargs)
+        super(FlipLeftRight, self).__init__(**kwargs)
         
     def call(self, x, mask=None):
         assert len(K.int_shape(x)) == 3

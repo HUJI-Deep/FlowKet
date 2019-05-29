@@ -1,4 +1,4 @@
-from .simple_machines import Linear, LinearDepthTwo
+from .simple_models import Linear, LinearDepthTwo
 
 import numpy
 import pytest

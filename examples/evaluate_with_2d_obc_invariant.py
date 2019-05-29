@@ -7,7 +7,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
 from pyket.evaluation import evaluate
 from pyket.layers import LogSpaceComplexNumberHistograms
 from pyket.machines import ConvNetAutoregressive2D
-from pyket.machines.ensemble import make_obc_invariants
+from pyket.machines.ensemble import make_2d_obc_invariants
 from pyket.operators import Ising
 from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
 from pyket.samplers import AutoregressiveSampler
@@ -49,7 +49,7 @@ evaluate(monte_carlo_generator(), steps=200, callbacks=callbacks[:4],
 
 print('evaluate invariant model')
 evaluation_inputs = Input(shape=hilbert_state_shape, dtype='int8')
-invariant_model = make_obc_invariants(evaluation_inputs, model)
+invariant_model = make_2d_obc_invariants(evaluation_inputs, model)
 generator = VariationalMonteCarlo(invariant_model, operator, sampler)
 evaluate(generator(), steps=200, callbacks=callbacks[:4],
          keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})

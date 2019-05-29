@@ -1,7 +1,5 @@
 import abc
 
-import numpy
-
 
 class Sampler(abc.ABC):
     """docstring for Sampler"""
