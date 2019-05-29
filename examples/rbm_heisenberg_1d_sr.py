@@ -1,6 +1,5 @@
 from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import SGD,  Adam
 
 import numpy
 
@@ -10,7 +9,7 @@ from pyket.machines import RBMSym
 from pyket.operators import Heisenberg
 from pyket.optimizers import ComplexValuesStochasticReconfiguration
 from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
-from pyket.samplers import MetropolisHastingsHamiltonian, MetropolisHastingsLocal
+from pyket.samplers import MetropolisHastingsHamiltonian
 
 hilbert_state_shape = (20, 1)
 inputs = Input(shape=hilbert_state_shape, dtype='int8')

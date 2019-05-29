@@ -47,7 +47,7 @@ monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-run_name = 'heisenberg_2d_%s_gpus_run_%s' % (num_gpus, run_index)
+run_name = 'heisenberg_2d_%s_keras_gpus_run_%s' % (num_gpus, run_index)
 
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/%s' % run_name,
                                                      generator=monte_carlo_generator, update_freq=1,

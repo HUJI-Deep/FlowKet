@@ -19,7 +19,7 @@ num_of_gpu = 4
 model = multi_gpu_model(orig_model, gpus=num_of_gpu)
 model = orig_model
 batch_size = 2 ** 12
-steps_per_epoch = 500 * (2 ** 16) / batch_size
+steps_per_epoch = int(500 * (2 ** 16) // batch_size)
 
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 exact_generator = ExactVariational(model, operator, batch_size)
@@ -36,6 +36,6 @@ tensorboard = TensorBoard(log_dir='tensorboard_logs/exact_run_multy_gpu_with_ker
 
 callbacks = default_wave_function_callbacks_factory(exact_generator,
                                                     true_ground_state_energy=-49.257706531889006) + [tensorboard]
-model.fit_generator(exact_generator, steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks, max_queue_size=0,
+model.fit_generator(exact_generator(), steps_per_epoch=steps_per_epoch, epochs=20, callbacks=callbacks, max_queue_size=0,
                     workers=0)
 orig_model.save_weights('exact_multy.h5')

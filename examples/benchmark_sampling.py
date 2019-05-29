@@ -21,7 +21,6 @@ optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
 model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 sampler_cls = AutoregressiveSampler if run_index % 2 == 0 else FastAutoregressiveSampler
 sampler = sampler_cls(conditional_log_probs_model, batch_size=2 ** 10)
-next(sampler)
 
 
 def sample(steps):

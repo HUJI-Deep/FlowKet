@@ -13,7 +13,7 @@ from pyket.samplers import AutoregressiveSampler
 
 hilbert_state_shape = [16, ]
 inputs = Input(shape=hilbert_state_shape , dtype='int8')
-convnet = SimpleConvNetAutoregressive1D(inputs, depth=7, num_of_channels=32)
+convnet = SimpleConvNetAutoregressive1D(inputs, depth=7, num_of_channels=32, weights_normalization=False)
 predictions, conditional_log_probs = convnet.predictions, convnet.conditional_log_probs
 predictions = LogSpaceComplexNumberHistograms(name='psi')(predictions)
 model = Model(inputs=inputs, outputs=predictions)
@@ -33,7 +33,7 @@ monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 validation_sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size * 16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/monte_carlo_batch_%s_run_4' % batch_size,
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/monte_carlo_batch_%s_run_0' % batch_size,
                                                      generator=monte_carlo_generator, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,

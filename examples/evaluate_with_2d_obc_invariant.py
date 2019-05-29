@@ -33,24 +33,24 @@ monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 validation_sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size * 16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/2d_monte_carlo_batch_%s_run_1' % batch_size,
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/invariant_example_2d_monte_carlo_batch_%s_run_2' % batch_size,
                                                      generator=monte_carlo_generator, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
                                                           validation_generator=validation_generator,
                                                           true_ground_state_energy=-50.18662388277671) + [tensorboard]
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=20, callbacks=callbacks,
+model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=2, callbacks=callbacks,
                     max_queue_size=0, workers=0)
 model.save_weights('final_2d_ising_fcnn.h5')
 
 print('evaluate normal model')
-evaluate(monte_carlo_generator, steps=800, callbacks=callbacks[:4],
+evaluate(monte_carlo_generator(), steps=200, callbacks=callbacks[:4],
          keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
 
 print('evaluate invariant model')
 evaluation_inputs = Input(shape=hilbert_state_shape, dtype='int8')
 invariant_model = make_obc_invariants(evaluation_inputs, model)
 generator = VariationalMonteCarlo(invariant_model, operator, sampler)
-evaluate(generator, steps=800, callbacks=callbacks[:4],
+evaluate(generator(), steps=200, callbacks=callbacks[:4],
          keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
 
