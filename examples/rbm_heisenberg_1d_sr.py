@@ -29,7 +29,7 @@ operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=True)
 sampler = MetropolisHastingsHamiltonian(model, batch_size, operator, num_of_chains=20, unused_sampels=numpy.prod(hilbert_state_shape))
 monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/rbm_with_sr_run_5',
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/rbm_with_sr_run_6',
                                                      generator=monte_carlo_generator, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,

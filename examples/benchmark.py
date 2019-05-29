@@ -107,4 +107,4 @@ if __name__ == '__main__':
     else:
         raise Exception('unknown framework')
     print('finished')
-    print('%siterations take %s seconds' % (args.num_of_iterations, time_in_seconds))
+    print('%s iterations take %s seconds' % (args.num_of_iterations, time_in_seconds))
