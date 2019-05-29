@@ -36,6 +36,6 @@ tensorboard = TensorBoard(log_dir='tensorboard_logs/exact_run_multy_gpu_with_ker
 
 callbacks = default_wave_function_callbacks_factory(exact_generator,
                                                     true_ground_state_energy=-49.257706531889006, log_in_batch_or_epoch=False) + [tensorboard]
-model.fit_generator(exact_generator(), steps_per_epoch=steps_per_epoch, epochs=20, callbacks=callbacks, max_queue_size=0,
+model.fit_generator(exact_generator(), steps_per_epoch=steps_per_epoch, epochs=2, callbacks=callbacks, max_queue_size=0,
                     workers=0)
 orig_model.save_weights('exact_multy.h5')

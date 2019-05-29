@@ -43,6 +43,6 @@ callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
                                                           true_ground_state_energy=-50.18662388277671) + [
                 MCMCStats(monte_carlo_generator), checkpoint, tensorboard, early_stopping, TerminateOnNaN()]
 
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks,
+model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=4, callbacks=callbacks,
                     max_queue_size=0, workers=0)
 model.save_weights('final_ising_fcnn.h5')

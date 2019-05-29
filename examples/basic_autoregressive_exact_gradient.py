@@ -36,6 +36,6 @@ tensorboard = TensorBoard(log_dir='tensorboard_logs/exact_run_single_gpu', updat
 
 callbacks = default_wave_function_callbacks_factory(exact_generator,
                                                     true_ground_state_energy=-49.257706531889006) + [tensorboard]
-model.fit_generator(exact_generator(), steps_per_epoch=steps_per_epoch, epochs=20, callbacks=callbacks, max_queue_size=0,
+model.fit_generator(exact_generator(), steps_per_epoch=steps_per_epoch, epochs=2, callbacks=callbacks, max_queue_size=0,
                     workers=0)
 model.save_weights('final_1d_ising_fcnn.h5')
