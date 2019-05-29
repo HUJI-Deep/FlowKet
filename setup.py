@@ -23,7 +23,6 @@ setup(name='pyket',
       zip_safe=False,
 
       install_requires=[
-          # todo require  tensorflow>=1.10' or tensorflow-gpu>=1.10'
           'tqdm>=4.31.1', 'numpy>=1.16', 'networkx>=2.3'
       ],
       setup_requires=['pytest-runner'],

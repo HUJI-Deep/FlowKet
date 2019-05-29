@@ -66,7 +66,7 @@ class TranslationInvariantComplexDense(ComplexDense):
                                                    dtype=self.params_dtype)
 
         all_axes = tuple(list(range(len(input_dims))))
-        kernel_translations = [tensorflow.roll(self.bare_kernel, i, all_axes) for i in
+        kernel_translations = [tensorflow.manip.roll(self.bare_kernel, i, all_axes) for i in
                                itertools.product(*[range(dim_size) for dim_size in input_dims])]
         self.kernel = tensorflow.reshape(tensorflow.stack(kernel_translations, axis=-1), (self.number_of_visible, -1))
 

@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Activation, Conv1D, ZeroPadding1D, Activatio
 
 
 def causal_conv_1d(x, filters, kernel_size, weights_normalization, dilation_rate=1, activation=None):
-    padding = kernel_size - 1
+    padding = kernel_size + (kernel_size - 1) * (dilation_rate - 1) - 1
     if padding > 0:
         x = ZeroPadding1D(padding=(padding, 0))(x)
     conv_layer = Conv1D(filters=filters, kernel_size=kernel_size, strides=1, dilation_rate=dilation_rate)

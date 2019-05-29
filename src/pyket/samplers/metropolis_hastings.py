@@ -27,7 +27,6 @@ class MetropolisHastingsSampler(Sampler):
             raise Exception('Num of samplers must divide the batch size')
         self.sample = numpy.random.choice([-1, 1], size=(self.num_of_chains,) + self.input_size)
         self.candidates = numpy.copy(self.sample)
-        self.sample_machine_values = self.machine(self.sample)[0]
         self.first_temp_out = numpy.zeros((num_of_chains,), dtype=numpy.complex128)
         self.second_temp_out = numpy.zeros((num_of_chains,), dtype=numpy.complex128)
         self.first_temp_out_real, self.second_temp_out_real = numpy.zeros_like(self.first_temp_out), numpy.zeros_like(
@@ -166,4 +165,3 @@ class MetropolisHastingsHamiltonian(MetropolisHastingsSampler):
         super(MetropolisHastingsHamiltonian, self).__init__(machine, batch_size, **kwargs)
         self.hamiltonian = hamiltonian
         self.sample = self.hamiltonian.random_states(self.num_of_chains)
-        self.machine_updated()
