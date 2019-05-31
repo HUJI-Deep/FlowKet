@@ -15,6 +15,7 @@ class Heisenberg(OperatorOnGrid):
         self.total_sz = total_sz
         self.total_size = numpy.prod(self.hilbert_state_shape)
         self.find_conn_calculators = {}
+        self.dim = len(self.hilbert_state_shape)
         self.max_number_of_local_connections = self.total_size * len(self.hilbert_state_shape) + 1
 
     def random_states(self, num_of_states):
@@ -53,16 +54,15 @@ class HeisenbergFindConn(object):
         self.batch_size = batch_size
         num_of_conn = self.ham.max_number_of_local_connections
         # todo support general hilbert_state_shape dimention
-        self.dim = len(ham.hilbert_state_shape)
-        assert (self.dim <= 2)
+        assert (self.ham.dim <= 2)
         if len(self.ham.hilbert_state_shape) == 1:
-            self.ham.hilbert_state_shape = self.ham.hilbert_state_shape + (1, )
+            self.ham.hilbert_state_shape = tuple(self.ham.hilbert_state_shape) + (1, )
         self.all_conn = numpy.zeros((num_of_conn, batch_size) + self.ham.hilbert_state_shape)
         self.all_mel = numpy.zeros((num_of_conn, batch_size))
         self.all_use_conn = numpy.zeros((num_of_conn, batch_size), dtype=numpy.bool)
-        shape = self.ham.hilbert_state_shape + (self.dim, batch_size) + self.ham.hilbert_state_shape
+        shape = self.ham.hilbert_state_shape + (self.ham.dim, batch_size) + self.ham.hilbert_state_shape
         self.sample_conn = self.all_conn[1:, ...].view().reshape(shape)
-        shape = self.ham.hilbert_state_shape + (self.dim, batch_size)
+        shape = self.ham.hilbert_state_shape + (self.ham.dim, batch_size)
         self.use_conn = self.all_use_conn[1:, ...].view().reshape(shape)
         self.all_use_conn[0, :] = True
         self.mel = self.all_mel[1:, ...].view().reshape(shape)
@@ -71,13 +71,13 @@ class HeisenbergFindConn(object):
 
     def find_conn(self, sample):
         assert sample.shape[0] == self.batch_size
-        if self.dim == 1:
+        if self.ham.dim == 1:
             sample = numpy.expand_dims(sample, axis=-1)
         self.all_conn[:] = sample[numpy.newaxis, ...]
         self.calc_conn_and_mel(sample, self.self_mel)
         numpy.sum(self.self_mel, axis=tuple(list(range(1, 1 + len(self.ham.hilbert_state_shape)))),
                   out=self.all_mel[0, :])
-        if self.dim == 1:
+        if self.ham.dim == 1:
             return self.all_conn.view().reshape(self.all_conn.shape[:-1]), self.all_mel.view(), self.all_use_conn.view()
         return self.all_conn.view(), self.all_mel.view(), self.all_use_conn.view()
 

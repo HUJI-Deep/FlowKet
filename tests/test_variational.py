@@ -25,10 +25,10 @@ def test_exact_and_monte_carlo_agree(model_builder, operator, batch_size):
         exact_variational = ExactVariational(model, operator, batch_size)
         sampler = ExactSampler(exact_variational, batch_size)
         variational_monte_carlo = VariationalMonteCarlo(model,operator, sampler)
-        monte_carlo_energy = evaluate(variational_monte_carlo, 100
-                                      [LocalEnergyStats(variational_monte_carlo)])['energy/energy']
         exact_energy = exact_evaluate(exact_variational,
                                       [ExactLocalEnergy(exact_variational)])['energy/energy']
+        monte_carlo_energy = evaluate(variational_monte_carlo, 100,
+                                      [LocalEnergyStats(variational_monte_carlo)])['energy/energy']
         assert monte_carlo_energy == pytest.approx(exact_energy)
 
 

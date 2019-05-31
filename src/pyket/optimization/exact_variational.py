@@ -108,7 +108,7 @@ class ExactVariational(object):
         np.subtract(self.naive_energies, self.current_energy, out=self.naive_local_energy_minus_energy)
         np.multiply(np.real(self.naive_local_energy_minus_energy), np.real(self.naive_local_energy_minus_energy), out=self.naive_local_energy_minus_energy_squared)
         np.multiply(self.naive_local_energy_minus_energy_squared, self.probs, out=self.probs_mult_local_energiey_variance)
-        self.current_local_energy_variance = fsum(self.probs_mult_local_energiey_variance)
+        self.current_local_energy_variance = fsum(self.probs_mult_local_energiey_variance).item()
         np.multiply(self.probs.astype(np.complex128), self.current_energy, out=self.probs_mult_energy_mean)
         np.subtract(self.energies, self.probs_mult_energy_mean, out=self.energy_grad_coefficients)
 
