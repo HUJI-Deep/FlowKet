@@ -118,7 +118,8 @@ def real_values_1d_model():
     x = Activation('relu')(x)
     x = second_conv_layer(ZeroPadding1D(1)(x))
     x = Activation('relu')(x)
-    x = Conv1D(20, kernel_size=1)(x)
+    x = Conv1D(20
+               , kernel_size=1)(x)
     x = Flatten()(x)
     first_dense_layer = Dense(7)
     second_dense_layer = Dense(1)
