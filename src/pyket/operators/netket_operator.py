@@ -7,7 +7,7 @@ class NetketOperatorWrapper(Operator):
     def __init__(self, netket_operator, hilbert_state_shape, 
                  max_number_of_local_connections=None, should_calc_unused=None):
         assert numpy.prod(hilbert_state_shape) == netket_operator.hilbert.size
-        super(NetketHamiltonianWrapper, self).__init__(hilbert_state_shape)
+        super(NetketOperatorWrapper, self).__init__(hilbert_state_shape)
         self.netket_operator = netket_operator
         self.should_calc_unused = should_calc_unused
         self.max_number_of_local_connections = max_number_of_local_connections
@@ -36,7 +36,7 @@ class NetketOperatorWrapper(Operator):
                 print('wrong max_number_of_local_connections fixing and continue recursively')
                 self.estimated_number_of_local_connections = len(sample_mel)
                 return self.find_conn(sample)
-            sample_mel = sample_mel + [0.0] * (self.self.estimated_number_of_local_connections - len(sample_mel))
+            sample_mel = sample_mel + [0.0] * (self.estimated_number_of_local_connections - len(sample_mel))
             batch_mel[:, i] = numpy.array(sample_mel)
             self_conn_idx = -1
             for j, (to_change_idx, to_change_vals) in enumerate(zip(to_change_idx_list, to_change_vals_list)):
