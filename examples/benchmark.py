@@ -39,7 +39,9 @@ def run_pyket(args):
         predictions_jacobian = lambda x: gradients.jacobian(tf.real(model.output), x, use_pfor=not args.no_pfor)
     if args.use_stochastic_reconfiguration:
         optimizer = ComplexValuesStochasticReconfiguration(model, predictions_jacobian,
-                                                           lr=args.learning_rate, diag_shift=10.0, iterative_solver=args.use_iterative, use_cholesky=args.use_cholesky)
+                                                           lr=args.learning_rate, diag_shift=10.0, 
+                                                           iterative_solver=args.use_iterative, use_cholesky=args.use_cholesky, 
+                                                           iterative_solver_max_iterations=None)
         model.compile(optimizer=optimizer, loss=energy_gradient_loss, metrics=optimizer.metrics)
     else:
         optimizer = SGD(lr=args.learning_rate)
