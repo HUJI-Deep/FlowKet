@@ -105,7 +105,7 @@ def complex_values_1d_model():
         x = ComplexConv1D(4, 4, use_bias=False)(x)
         x = Activation(lncosh)(x)
     x = Flatten()(x)
-    x = Lambda(lambda y: tf.reduce_sum(y, axis=1, keepdims=True))(x)
+    x = Lambda(lambda y: tensorflow.reduce_sum(y, axis=1, keepdims=True))(x)
     return Model(input_layer, x)
 
 
