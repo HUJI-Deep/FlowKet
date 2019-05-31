@@ -30,19 +30,19 @@ model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 model.summary()
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = MetropolisHastingsLocal(model, batch_size, num_of_chains=16, unused_sampels=16)
-monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
+variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
 
 checkpoint = ModelCheckpoint('ising_fcnn.h5', monitor='energy/energy', save_best_only=True, save_weights_only=True)
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/run_0',
-                                                     generator=monte_carlo_generator,
+                                                     generator=variational_monte_carlo,
                                                      update_freq=1, histogram_freq=1,
                                                      batch_size=batch_size, write_output=False)
 early_stopping = EarlyStopping(monitor='energy/relative_error', min_delta=1e-5)
 
-callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
+callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo,
                                                           true_ground_state_energy=-50.18662388277671) + [
-                MCMCStats(monte_carlo_generator), checkpoint, tensorboard, early_stopping, TerminateOnNaN()]
+                MCMCStats(variational_monte_carlo), checkpoint, tensorboard, early_stopping, TerminateOnNaN()]
 
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=4, callbacks=callbacks,
-                    max_queue_size=0, workers=0)
+model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=steps_per_epoch, epochs=4,
+                    callbacks=callbacks, max_queue_size=0, workers=0)
 model.save_weights('final_ising_fcnn.h5')

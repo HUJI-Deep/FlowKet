@@ -120,8 +120,11 @@ class ExactVariational(object):
             self._update_local_energy()
             self.local_energy_update_end_time = time.time()
 
-    def __call__(self):
+    def to_generator(self):
         while True:
             self.machine_updated()
             for i in range(0, self.num_of_states, self.batch_size):
                 yield self.states[i:i+self.batch_size], self.energy_grad_coefficients[i:i+self.batch_size]
+
+    def __iter__(self):
+        return self.to_generator()

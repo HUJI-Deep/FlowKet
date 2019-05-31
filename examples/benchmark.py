@@ -40,7 +40,8 @@ def run_pyket(args):
     if args.use_stochastic_reconfiguration:
         optimizer = ComplexValuesStochasticReconfiguration(model, predictions_jacobian,
                                                            lr=args.learning_rate, diag_shift=10.0, 
-                                                           iterative_solver=args.use_iterative, use_cholesky=args.use_cholesky, 
+                                                           iterative_solver=args.use_iterative,
+                                                           use_cholesky=args.use_cholesky,
                                                            iterative_solver_max_iterations=None)
         model.compile(optimizer=optimizer, loss=energy_gradient_loss, metrics=optimizer.metrics)
     else:
@@ -51,11 +52,11 @@ def run_pyket(args):
     sampler = MetropolisHastingsHamiltonian(model, args.batch_size, operator,
                                             num_of_chains=args.pyket_num_of_chains,
                                             unused_sampels=numpy.prod(hilbert_state_shape))
-    monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
-    model.fit_generator(monte_carlo_generator(), steps_per_epoch=5, epochs=1, max_queue_size=0, workers=0)
+    variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
+    model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=5, epochs=1, max_queue_size=0, workers=0)
     start_time = time.time()
-    model.fit_generator(monte_carlo_generator(), steps_per_epoch=args.num_of_iterations, epochs=1, max_queue_size=0,
-                        workers=0)
+    model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=args.num_of_iterations, epochs=1,
+                        max_queue_size=0, workers=0)
     end_time = time.time()
     return end_time - start_time
 

@@ -62,7 +62,7 @@ class VariationalMonteCarlo(object):
         else:
             self._update_batch_local_energy_for_balanced_local_connections(local_connections, hamiltonian_values)
 
-    def _next_batch(self):
+    def next(self):
         K.set_session(self._session)
         with self._graph.as_default():
             self.start_time = time.time()
@@ -73,6 +73,12 @@ class VariationalMonteCarlo(object):
             return self.current_batch, numpy.conj(
                 self.current_local_energy - numpy.mean(self.current_local_energy)) / self._batch_size
 
-    def __call__(self):
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
+
+    def to_generator(self):
         while True:
-            yield self._next_batch()
+            yield next(self)

@@ -43,18 +43,18 @@ model.summary()
 conditional_log_probs_model.summary()
 hilbert_state_shape = (10, 10)
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=False)
-monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
+variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
 
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
 run_name = 'heisenberg_2d_%s_keras_gpus_run_%s' % (num_gpus, run_index)
 
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/%s' % run_name,
-                                                     generator=monte_carlo_generator, update_freq=1,
+                                                     generator=variational_monte_carlo, update_freq=1,
                                                      histogram_freq=5, batch_size=batch_size, write_output=False)
-callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
+callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo,
                                                           validation_generator=validation_generator,
                                                           true_ground_state_energy=-251.4624) + [tensorboard]
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=1, callbacks=callbacks,
-                    max_queue_size=0, workers=0)
+model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=steps_per_epoch, epochs=1,
+                    callbacks=callbacks, max_queue_size=0, workers=0)
 orig_model.save_weights('final_%s.h5' % run_name)

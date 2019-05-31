@@ -46,14 +46,14 @@ model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 model.summary()
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=True)
 sampler = FastAutoregressiveSampler(conditional_log_probs_model, batch_size)
-monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
+variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
 
 run_name = 'naqs_complex_ops_%s_dilation_depth_%s_width_%s_adam_lr_%s_run_%s' % \
            (params['complex_ops'], params['depth'], params['width'], params['lr'], run_index)
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/%s' % run_name,
-                                                     generator=monte_carlo_generator, update_freq=1,
+                                                     generator=variational_monte_carlo, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
-callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
+callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo,
                                                           true_ground_state_energy=-35.6175461195) + [tensorboard]
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=15, callbacks=callbacks,
-                    max_queue_size=0, workers=0)
+model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=steps_per_epoch, epochs=15,
+                    callbacks=callbacks, max_queue_size=0, workers=0)

@@ -11,7 +11,7 @@ def default_wave_function_stats_callbacks_factory(generator, validation_generato
                                                   log_in_batch_or_epoch=True):
     callbacks = []
     if validation_generator is not None:
-        callbacks = [GeneratorIterator(validation_generator())]
+        callbacks = [GeneratorIterator(validation_generator)]
     callbacks += [LocalEnergyStats(generator, validation_generator=validation_generator,
                                    true_ground_state_energy=true_ground_state_energy,
                                    log_in_batch_or_epoch=log_in_batch_or_epoch),

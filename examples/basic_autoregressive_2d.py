@@ -26,17 +26,17 @@ model.compile(optimizer=optimizer, loss=energy_gradient_loss)
 model.summary()
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size)
-monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
+variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
 
 validation_sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size * 16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
 tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/2d_monte_carlo_batch_%s_run_1' % batch_size,
-                                                     generator=monte_carlo_generator, update_freq=1,
+                                                     generator=variational_monte_carlo, update_freq=1,
                                                      histogram_freq=1, batch_size=batch_size, write_output=False)
-callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator,
+callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo,
                                                           validation_generator=validation_generator,
                                                           true_ground_state_energy=-50.18662388277671) + [tensorboard]
-model.fit_generator(monte_carlo_generator(), steps_per_epoch=steps_per_epoch, epochs=8, callbacks=callbacks,
+model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=steps_per_epoch, epochs=8, callbacks=callbacks,
                     max_queue_size=0, workers=0)
 model.save_weights('final_2d_ising_fcnn.h5')
