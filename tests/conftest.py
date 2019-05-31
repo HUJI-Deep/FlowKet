@@ -11,3 +11,13 @@ def clear_session_after_test():
     yield
     if K.backend() == 'tensorflow' or K.backend() == 'cntk':
         K.clear_session()
+
+
+@pytest.fixture()
+def netket():
+    try:
+        import netket
+        return netket
+    except ImportError:
+        pytest.skip("This test require installing netket")
+    return None
