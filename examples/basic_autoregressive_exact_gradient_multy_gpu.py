@@ -9,7 +9,7 @@ from pyket.callbacks.exact import default_wave_function_callbacks_factory
 from pyket.machines import SimpleConvNetAutoregressive1D
 from pyket.operators import Ising
 from pyket.optimizers import convert_to_accumulate_gradient_optimizer
-from pyket.optimization import ExactVariational, energy_gradient_loss
+from pyket.optimization import ExactVariational, loss_for_energy_minimization
 
 hilbert_state_shape = [16, ]
 inputs = Input(shape=hilbert_state_shape, dtype='int8')
@@ -29,7 +29,7 @@ convert_to_accumulate_gradient_optimizer(
     optimizer,
     update_params_frequency=exact_variational.num_of_batch_until_full_cycle,
     accumulate_sum_or_mean=True)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 model.summary()
 
 tensorboard = TensorBoard(log_dir='tensorboard_logs/exact_run_multy_gpu_with_keras')

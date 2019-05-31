@@ -10,7 +10,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
     default_wave_function_stats_callbacks_factory
 from pyket.machines import SimpleConvNetAutoregressive1D, ComplexValuesSimpleConvNetAutoregressive1D
 from pyket.operators import Heisenberg
-from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
 from pyket.samplers import FastAutoregressiveSampler
 
 params_grid_config = {
@@ -42,7 +42,7 @@ batch_size = 1000
 steps_per_epoch = 300
 
 optimizer = Adam(lr=params['lr'], beta_1=0.9, beta_2=0.999)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 model.summary()
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=True)
 sampler = FastAutoregressiveSampler(conditional_log_probs_model, batch_size)

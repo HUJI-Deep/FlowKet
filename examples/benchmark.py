@@ -8,7 +8,7 @@ from pyket.layers import ToComplex64, ToComplex128, ComplexConv1D, PeriodicPaddi
 from pyket.layers.complex.tensorflow_ops import lncosh
 from pyket.operators import Heisenberg
 from pyket.optimizers import ComplexValuesStochasticReconfiguration
-from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
 from pyket.samplers import MetropolisHastingsHamiltonian
 
 import tensorflow as tf
@@ -43,10 +43,10 @@ def run_pyket(args):
                                                            iterative_solver=args.use_iterative,
                                                            use_cholesky=args.use_cholesky,
                                                            iterative_solver_max_iterations=None)
-        model.compile(optimizer=optimizer, loss=energy_gradient_loss, metrics=optimizer.metrics)
+        model.compile(optimizer=optimizer, loss=loss_for_energy_minimization, metrics=optimizer.metrics)
     else:
         optimizer = SGD(lr=args.learning_rate)
-        model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+        model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
     model.summary()
     operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=True)
     sampler = MetropolisHastingsHamiltonian(model, args.batch_size, operator,

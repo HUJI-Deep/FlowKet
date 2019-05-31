@@ -13,7 +13,7 @@ from pyket.layers import VectorToComplexNumber, ToFloat32, ToComplex64, Periodic
 from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, \
     make_obc_invariants, make_pbc_invariants
 from pyket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
-from pyket.optimization import ExactVariational, VariationalMonteCarlo, energy_gradient_loss, \
+from pyket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization, \
     energy_plus_sigma_z_square_loss
 from pyket.optimizers import convert_to_accumulate_gradient_optimizer, ComplexValuesStochasticReconfiguration
 from pyket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, \
@@ -49,7 +49,7 @@ steps_per_epoch = logical_steps_per_epoch * logical_actual_ratio
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
 convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=logical_actual_ratio,
                                          accumulate_sum_or_mean=False)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=12, cube_dimention=2)
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 # import netket as nk

@@ -53,6 +53,12 @@ class LinearDepthTwo(Machine):
         return self._predictions
 
 
+def complex_values_linear_1d_model():
+    input_layer = Input((7,))
+    machine = Linear(input_layer)
+    return Model(input_layer, machine.predictions)
+
+
 def real_values_2d_model():
     input_layer = Input((7, 7))
     first_conv_layer = Conv2D(16, kernel_size=3, strides=1)

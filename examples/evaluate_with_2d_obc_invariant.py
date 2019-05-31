@@ -9,7 +9,7 @@ from pyket.layers import LogSpaceComplexNumberHistograms
 from pyket.machines import ConvNetAutoregressive2D
 from pyket.machines.ensemble import make_2d_obc_invariants
 from pyket.operators import Ising
-from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
 from pyket.samplers import AutoregressiveSampler
 
 hilbert_state_shape = [4, 4]
@@ -24,7 +24,7 @@ batch_size = 128
 steps_per_epoch = 500
 
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 model.summary()
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size)

@@ -21,7 +21,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
 from pyket.layers import LogSpaceComplexNumberHistograms
 from pyket.machines import ConvNetAutoregressive2D
 from pyket.operators import Heisenberg
-from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
 from pyket.samplers import FastAutoregressiveSampler
 
 run_index = int(sys.argv[-1].strip())
@@ -41,7 +41,7 @@ validation_sampler = FastAutoregressiveSampler(conditional_log_probs_model, batc
 
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
 optimizer = hvd.DistributedOptimizer(optimizer)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 model.summary()
 conditional_log_probs_model.summary()
 hilbert_state_shape = (10, 10)

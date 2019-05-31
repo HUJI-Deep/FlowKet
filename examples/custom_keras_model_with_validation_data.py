@@ -6,7 +6,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
     default_wave_function_stats_callbacks_factory
 from pyket.layers import VectorToComplexNumber, ToFloat32, LogSpaceComplexNumberHistograms
 from pyket.operators import Ising, cube_shape
-from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
 from pyket.samplers import MetropolisHastingsLocal
 
 hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=4, cube_dimention=2)
@@ -24,7 +24,7 @@ batch_size = 128
 steps_per_epoch = 100
 
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 model.summary()
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)
 sampler = MetropolisHastingsLocal(model, batch_size, num_of_chains=16, unused_sampels=16)

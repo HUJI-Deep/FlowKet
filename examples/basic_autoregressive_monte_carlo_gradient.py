@@ -7,7 +7,7 @@ from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, 
 from pyket.layers import LogSpaceComplexNumberHistograms
 from pyket.machines import SimpleConvNetAutoregressive1D
 from pyket.operators import Ising
-from pyket.optimization import VariationalMonteCarlo, energy_gradient_loss
+from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
 from pyket.samplers import AutoregressiveSampler
 
 
@@ -23,7 +23,7 @@ batch_size = 128
 steps_per_epoch = 500
 
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 model.summary()
 conditional_log_probs_model.summary()
 operator = Ising(h=3.0, hilbert_state_shape=hilbert_state_shape, pbc=False)

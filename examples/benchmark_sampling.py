@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from pyket.optimization import energy_gradient_loss
+from pyket.optimization import loss_for_energy_minimization
 from pyket.machines import ConvNetAutoregressive2D
 from pyket.samplers import AutoregressiveSampler, FastAutoregressiveSampler
 
@@ -18,7 +18,7 @@ predictions, conditional_log_probs = convnet.predictions, convnet.conditional_lo
 model = Model(inputs=inputs, outputs=predictions)
 conditional_log_probs_model = Model(inputs=inputs, outputs=conditional_log_probs)
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999)
-model.compile(optimizer=optimizer, loss=energy_gradient_loss)
+model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
 sampler_cls = AutoregressiveSampler if run_index % 2 == 0 else FastAutoregressiveSampler
 sampler = sampler_cls(conditional_log_probs_model, batch_size=2 ** 10)
 
