@@ -29,7 +29,7 @@ def test_exact_and_monte_carlo_agree(model_builder, operator, batch_size):
                                       [LocalEnergyStats(variational_monte_carlo)])['energy/energy']
         exact_energy = exact_evaluate(exact_variational,
                                       [ExactLocalEnergy(exact_variational)])['energy/energy']
-        assert monte_carlo_energy = pytest.approx(exact_energy)
+        assert monte_carlo_energy == pytest.approx(exact_energy)
 
 
 def test_monte_carlo_and_netket_agree():
