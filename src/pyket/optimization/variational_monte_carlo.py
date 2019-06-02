@@ -22,6 +22,7 @@ class Observable(object):
 
     def _update_batch_local_energy_for_unbalanced_local_connections(self, local_connections, hamiltonian_values,
                                                                     all_use_conn):
+        self.current_local_energy = numpy.zeros((self.variational_monte_carlo._batch_size,), dtype=numpy.complex128)
         flat_log_values = self._get_flat_local_connections_log_values(local_connections, all_use_conn)
         conn_per_sample = all_use_conn.sum(axis=0).astype(numpy.int32)
         idx = 0
