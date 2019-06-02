@@ -1,3 +1,4 @@
+from .bad_eigen_state_stopping import BadEigenStateStopping
 from .generator_iterator import GeneratorIterator
 from .local_energy_stats import LocalEnergyStats
 from .mcmc_stats import MCMCStats
