@@ -57,7 +57,8 @@ print('Chosen params: %s' % str(params))
 
 hilbert_state_shape = (4, 4)
 inputs = Input(shape=hilbert_state_shape, dtype='int8')
-convnet = ConvNetAutoregressive2D(inputs, depth=params['depth'], num_of_channels=params['width'], weights_normalization=params['weights_normalization'])
+convnet = ConvNetAutoregressive2D(inputs, depth=params['depth'], num_of_channels=params['width'],
+                                  weights_normalization=params['weights_normalization'])
 
 predictions, conditional_log_probs = convnet.predictions, convnet.conditional_log_probs
 model = Model(inputs=inputs, outputs=predictions)
@@ -84,12 +85,12 @@ total_spin = NetketOperatorWrapper(total_spin_netket_operator(hilbert_state_shap
 run_name = 'j1j2_4_exact_weights_normalization_%s_depth_%s_width_%s_adam_lr_%s_run_%s' % \
            (params['weights_normalization'], params['depth'], params['width'], params['lr'], run_index)
 tensorboard = TensorBoard(log_dir='tensorboard_logs/%s' % run_name,
-                                                     update_freq='epoch',
-                                                     write_output=False)
+                          update_freq='epoch',
+                          write_output=False)
 callbacks = default_wave_function_callbacks_factory(exact_variational, log_in_batch_or_epoch=False,
-                                                          true_ground_state_energy=true_ground_state_energy) + [ExactObservableCallback(exact_variational, total_spin, 'total_spin', log_in_batch_or_epoch=False), tensorboard]
+                                                    true_ground_state_energy=true_ground_state_energy) + [
+                ExactObservableCallback(exact_variational, total_spin, 'total_spin', log_in_batch_or_epoch=False),
+                tensorboard]
 model.fit_generator(exact_variational.to_generator(), steps_per_epoch=steps_per_epoch, epochs=1000, callbacks=callbacks,
                     max_queue_size=0, workers=0)
 model.save_weights('final_%s.h5' % run_name)
-
-
