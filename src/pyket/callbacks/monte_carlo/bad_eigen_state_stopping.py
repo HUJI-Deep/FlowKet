@@ -12,6 +12,7 @@ class BadEigenStateStopping(Callback):
         self.variance_tol = variance_tol
         self.relative_error_to_stop = relative_error_to_stop
         self.min_epoch = min_epoch
+        self.stopped_epoch = None
 
     def on_epoch_end(self, epoch, logs=None):
         if logs is None:
@@ -32,3 +33,4 @@ class BadEigenStateStopping(Callback):
             self.ground_state_energy_upper_bound)
         if relative_error > self.relative_error_to_stop and variance < self.variance_tol:
             self.model.stop_training = True
+            self.stopped_epoch = epoch
