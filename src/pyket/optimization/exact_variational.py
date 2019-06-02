@@ -19,7 +19,7 @@ class ExactObservable(object):
         self._build_batch_local_connections_arrays()
 
     def _build_wave_function_arrays(self):
-        self.energies = np.zeros_like(shape=(self.exact_variational.num_of_states,), dtype=np.complex128)
+        self.energies = np.zeros(shape=(self.exact_variational.num_of_states,), dtype=np.complex128)
         if self.calculate_variance_of_the_local_operator:
             self.naive_energies = np.zeros_like(self.energies, dtype=np.complex128)
             self.naive_local_energy_minus_energy = np.zeros_like(self.energies, dtype=np.complex128)
@@ -100,8 +100,8 @@ class ExactVariational(object):
         super(ExactVariational, self).__init__()
         self.model = model
         self.operator = operator
-        self._set_batch_size(batch_size)
         self._build_wave_function_arrays(model.input_shape[1:])
+        self._set_batch_size(batch_size)
         self._graph = tensorflow.get_default_graph()
         self.energy_observable = ExactObservable(self, operator, calculate_variance_of_the_local_operator=True)
 
