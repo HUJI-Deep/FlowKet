@@ -102,10 +102,8 @@ class ExactVariational(object):
         self.operator = operator
         self._set_batch_size(batch_size)
         self._build_wave_function_arrays(model.input_shape[1:])
-        self._energy_observable = ExactObservable(self, operator, calculate_variance_of_the_local_operator=True)
         self._graph = tensorflow.get_default_graph()
-        self.current_energy = None
-        self.current_local_energy_variance = None
+        self.energy_observable = ExactObservable(self, operator, calculate_variance_of_the_local_operator=True)
 
     def _build_wave_function_arrays(self, input_size):
         self.input_size = input_size
@@ -140,11 +138,9 @@ class ExactVariational(object):
         np.exp(self.log_probs, out=self.probs)
     
     def _update_local_energy(self):
-        self._energy_observable.update_local_energy()
-        self.current_energy = self._energy_observable.current_energy
-        self.current_local_energy_variance = self._energy_observable.current_local_energy_variance
-        np.multiply(self.probs.astype(np.complex128), self.current_energy, out=self.probs_mult_energy_mean)
-        np.subtract(self._energy_observable.energies, self.probs_mult_energy_mean, out=self.energy_grad_coefficients)
+        self.energy_observable.update_local_energy()
+        np.multiply(self.probs.astype(np.complex128), self.energy_observable.current_energy, out=self.probs_mult_energy_mean)
+        np.subtract(self.energy_observable.energies, self.probs_mult_energy_mean, out=self.energy_grad_coefficients)
 
     def machine_updated(self):
         with self._graph.as_default():

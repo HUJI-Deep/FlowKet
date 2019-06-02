@@ -13,7 +13,7 @@ class ExactObservableCallback(Callback):
 
     def add_observable_to_logs(self, logs):
         self.observable.update_local_energy()
-        logs['Observables/%s' % self.operator_name] = numpy.real(self.observable.current_energy)
+        logs['observables/%s' % self.operator_name] = numpy.real(self.observable.current_energy)
 
     def on_batch_end(self, batch, logs=None):
         if logs is None:
