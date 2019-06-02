@@ -19,7 +19,7 @@ class VariationalMonteCarlo(object):
         self.current_local_energy_variance = None
         self.current_batch = None
 
-    def set_sampler(self, sampler, mini_batch_size):
+    def set_sampler(self, sampler, mini_batch_size=None):
         self.sampler = sampler
         self._batch_size = sampler.batch_size
         self.current_local_energy = numpy.zeros((self._batch_size,), dtype=numpy.complex128)
