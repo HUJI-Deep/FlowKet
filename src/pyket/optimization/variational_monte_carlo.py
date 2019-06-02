@@ -12,14 +12,17 @@ class VariationalMonteCarlo(object):
         super(VariationalMonteCarlo, self).__init__()
         self.model = model
         self.operator = operator
-        self.sampler = sampler
-        self._batch_size = sampler.batch_size
+        self.set_sampler(sampler, mini_batch_size)
         self._graph = tensorflow.get_default_graph()
         self._session = K.get_session()
-        self.current_local_energy = numpy.zeros((self._batch_size,), dtype=numpy.complex128)
         self.current_energy = None
         self.current_local_energy_variance = None
         self.current_batch = None
+
+    def set_sampler(self, sampler, mini_batch_size):
+        self.sampler = sampler
+        self._batch_size = sampler.batch_size
+        self.current_local_energy = numpy.zeros((self._batch_size,), dtype=numpy.complex128)
         if mini_batch_size is None:
             mini_batch_size = sampler.batch_size
         self._mini_batch_size = mini_batch_size
@@ -51,8 +54,8 @@ class VariationalMonteCarlo(object):
         log_val_diff = log_values - log_values[0, :]
         connections_division = numpy.exp(log_val_diff)
         self.current_local_energy = numpy.multiply(hamiltonian_values, connections_division).sum(axis=0)
-        self.current_energy, self.current_local_energy_variance = numpy.mean(self.current_local_energy), numpy.var(
-            numpy.real(self.current_local_energy))
+        self.current_energy = numpy.mean(self.current_local_energy)
+        self.current_local_energy_variance = numpy.var(numpy.real(self.current_local_energy))
 
     def _update_batch_local_energy(self):
         local_connections, hamiltonian_values, all_use_conn = self.operator.find_conn(self.current_batch)
