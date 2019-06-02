@@ -13,6 +13,9 @@ class Observable(object):
         self.variational_monte_carlo = variational_monte_carlo
         self.operator = operator
 
+    def update_batch_size(self, batch_size):
+        self.current_local_energy = numpy.zeros((batch_size,), dtype=numpy.complex128)
+
     def _get_flat_local_connections_log_values(self, local_connections, all_use_conn):
         local_connections_reshape = numpy.moveaxis(local_connections, 1, 0).reshape((-1,)
                                                                                     + local_connections.shape[2:])
@@ -70,7 +73,7 @@ class VariationalMonteCarlo(object):
     def set_sampler(self, sampler, mini_batch_size=None):
         self.sampler = sampler
         self._batch_size = sampler.batch_size
-        self.current_local_energy = numpy.zeros((self._batch_size,), dtype=numpy.complex128)
+        self.energy_observable.update_batch_size(sampler.batch_size)
         if mini_batch_size is None:
             mini_batch_size = sampler.batch_size
         self._mini_batch_size = mini_batch_size
