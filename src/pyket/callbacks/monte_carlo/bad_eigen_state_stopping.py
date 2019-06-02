@@ -13,7 +13,7 @@ class BadEigenStateStopping(Callback):
         self.relative_error_to_stop = relative_error_to_stop
         self.min_epoch = min_epoch
 
-    def on_epoch_end(self, epoch , logs=None):
+    def on_epoch_end(self, epoch, logs=None):
         if logs is None:
             logs = {}
         if 'val_energy/energy' in logs:
