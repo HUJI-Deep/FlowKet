@@ -41,8 +41,8 @@ class VariationalMonteCarlo(object):
             sample_val_division = numpy.exp(sample_log_values - sample_log_values[0])
             self.current_local_energy[i] = numpy.multiply(hamiltonian_values[all_use_conn.astype(numpy.bool)
                                                                              [:, i], i], sample_val_division).sum()
-        self.current_energy, self.current_local_energy_variance = numpy.mean(self.current_local_energy), \
-                                                                  numpy.var(numpy.real(self.current_local_energy))
+        self.current_energy = numpy.mean(self.current_local_energy)
+        self.current_local_energy_variance = numpy.var(numpy.real(self.current_local_energy))
 
     def _update_batch_local_energy_for_balanced_local_connections(self, local_connections, hamiltonian_values):
         flat_conn = local_connections.reshape((-1,) + self.model.input_shape[1:])
