@@ -23,7 +23,7 @@ class LocalEnergyStats(Callback):
         if self.log_in_batch_or_epoch:
             self.add_energy_stats_to_logs(logs, self.generator)
         
-    def on_epoch_end(self, batch, logs=None):
+    def on_epoch_end(self, epoch, logs=None):
         if logs is None:
             logs = {}
         if not self.log_in_batch_or_epoch:
