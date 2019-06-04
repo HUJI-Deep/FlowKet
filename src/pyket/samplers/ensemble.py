@@ -12,4 +12,4 @@ class Ensemble(Sampler):
         assert numpy.all([sampler.batch_size == sampler_list[0].batch_size for sampler in sampler_list])
 
     def __next__(self):
-        return numpy.concatenate([next(sampler) for sampler in self.sampler_list])
+        return numpy.concatenate([next(sampler) for sampler in self.sampler_list], axis=0)
