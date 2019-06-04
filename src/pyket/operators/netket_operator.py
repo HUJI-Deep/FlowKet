@@ -57,6 +57,6 @@ class NetketOperatorWrapper(Operator):
         if self.should_calc_unused:
             all_conn_use = batch_mel != 0.0
         else:
-            all_conn_use = numpy.ones((self.estimated_number_of_local_connections, batch_size))
+            all_conn_use = numpy.ones((self.estimated_number_of_local_connections, batch_size), dtype=numpy.bool)
         all_conn_use[0, :] = True
         return all_conn, batch_mel, all_conn_use
