@@ -80,8 +80,8 @@ class VariationalMonteCarlo(object):
     def _update_importance_sampling_factor(self):
         if self.importance_sampling_model is None:
             return
-        importance_sampling_log_vals = self.importance_sampling_model.predict(self..current_batch, batch_size=self._mini_batch_size)[:, 0]
-        real_log_vals = self.model.predict(self..current_batch, batch_size=self._mini_batch_size)[:, 0]
+        importance_sampling_log_vals = self.importance_sampling_model.predict(self.current_batch, batch_size=self._mini_batch_size)[:, 0]
+        real_log_vals = self.model.predict(self.current_batch, batch_size=self._mini_batch_size)[:, 0]
         self.importance_sampling_coefficients = numpy.exp(2.0 * numpy.real(real_log_vals - importance_sampling_log_vals))
 
     def _fix_sampler_bias_with_importance_sampling(self):
