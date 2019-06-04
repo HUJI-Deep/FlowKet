@@ -18,8 +18,7 @@ class Observable(object):
                                                                                     + local_connections.shape[2:])
         flat_conn = local_connections_reshape[all_use_conn.astype(numpy.bool).T.flatten(), ...]
         return self.variational_monte_carlo.model.predict(flat_conn,
-                                                          batch_size=self.variational_monte_carlo._mini_batch_size)[:,
-               0]
+                                                          batch_size=self.variational_monte_carlo._mini_batch_size)[:, 0]
 
     def _update_batch_local_energy_for_unbalanced_local_connections(self, local_connections, hamiltonian_values,
                                                                     all_use_conn):
@@ -39,8 +38,7 @@ class Observable(object):
     def _update_batch_local_energy_for_balanced_local_connections(self, local_connections, hamiltonian_values):
         flat_conn = local_connections.reshape((-1,) + self.variational_monte_carlo.model.input_shape[1:])
         flat_log_values = self.variational_monte_carlo.model.predict(flat_conn,
-                                                                     batch_size=self.variational_monte_carlo._mini_batch_size)[
-                          :, 0]
+                                                                     batch_size=self.variational_monte_carlo._mini_batch_size)[:, 0]
         log_values = flat_log_values.reshape(local_connections.shape[0:2])
         log_val_diff = log_values - log_values[0, :]
         connections_division = numpy.exp(log_val_diff)
@@ -49,8 +47,7 @@ class Observable(object):
         self.current_local_energy_variance = numpy.var(numpy.real(self.current_local_energy))
 
     def update_batch_local_energy(self):
-        local_connections, hamiltonian_values, all_use_conn = self.operator.find_conn(
-            self.variational_monte_carlo.current_batch)
+        local_connections, hamiltonian_values, all_use_conn = self.operator.find_conn(self.variational_monte_carlo.current_batch)
         if all_use_conn.mean() < 0.95:
             self._update_batch_local_energy_for_unbalanced_local_connections(local_connections, hamiltonian_values,
                                                                              all_use_conn)
@@ -61,11 +58,10 @@ class Observable(object):
 class VariationalMonteCarlo(object):
     """docstring for VariationalMonteCarlo"""
 
-    def __init__(self, model, operator, sampler, mini_batch_size=None, importance_sampling_model=None):
+    def __init__(self, model, operator, sampler, mini_batch_size=None):
         super(VariationalMonteCarlo, self).__init__()
         self.model = model
         self.operator = operator
-        self.importance_sampling_model = importance_sampling_model
         self.set_sampler(sampler, mini_batch_size)
         self._graph = tensorflow.get_default_graph()
         self._session = K.get_session()
@@ -78,26 +74,6 @@ class VariationalMonteCarlo(object):
         if mini_batch_size is None:
             mini_batch_size = sampler.batch_size
         self._mini_batch_size = mini_batch_size
-        self.importance_sampling_coefficients = numpy.ones((self._batch_size,))
-
-    def _update_importance_sampling_factor(self):
-        if self.importance_sampling_model is None:
-            return
-        importance_sampling_log_vals = self.importance_sampling_model.predict(self.current_batch,
-                                                                              batch_size=self._mini_batch_size)[:, 0]
-        real_log_vals = self.model.predict(self.current_batch, batch_size=self._mini_batch_size)[:, 0]
-        self.importance_sampling_coefficients = numpy.exp(
-            2.0 * numpy.real(real_log_vals - importance_sampling_log_vals))
-
-    def _fix_sampler_bias_with_importance_sampling(self):
-        if self.importance_sampling_model is None:
-            return
-        current_local_energy = numpy.multiply(self.energy_observable.current_local_energy,
-                                              self.importance_sampling_coefficients)
-        self.energy_observable.current_energy = numpy.mean(current_local_energy)
-        diff = numpy.real(current_local_energy - self.energy_observable.current_energy)
-        self.energy_observable.current_local_energy_variance = numpy.mean(
-            diff * diff * self.importance_sampling_coefficients)
 
     def _update_batch_local_energy(self):
         self.energy_observable.update_batch_local_energy()
@@ -107,14 +83,11 @@ class VariationalMonteCarlo(object):
         with self._graph.as_default():
             self.start_time = time.time()
             self.current_batch = next(self.sampler)
-            self._update_importance_sampling_factor()
             self.sampling_end_time = time.time()
             self._update_batch_local_energy()
-            self._fix_sampler_bias_with_importance_sampling()
             self.local_energy_end_time = time.time()
-            local_energy_minus_mean = self.energy_observable.current_local_energy - self.energy_observable.current_energy
-            return self.current_batch, self.importance_sampling_coefficients * numpy.conj(
-                local_energy_minus_mean) / self._batch_size
+            local_energy_minus_mean = self.energy_observable.current_local_energy - numpy.mean(self.energy_observable.current_local_energy)
+            return self.current_batch, numpy.conj(local_energy_minus_mean) / self._batch_size
 
     def __iter__(self):
         return self
