@@ -12,10 +12,7 @@ class SamplingTopology(LayerTopology):
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
         dependencies_values = dependencies_values[0]
-        shape = tensorflow.shape(dependencies_values)[0:1]
-        random_batch = tensorflow.random_uniform(shape, dtype=dependencies_values.dtype)
-        return tensorflow.expand_dims(2 * tensorflow.cast(tensorflow.exp(dependencies_values[:, 0]) > random_batch,
-                                                          self.layer.dtype) - 1, axis=-1)
+        return tensorflow.cast(tensorflow.multinomial(dependencies_values, 1, output_dtype=tensorflow.int32), self.layer.dtype)
 
 
 TopologyManager().register_layer_topology(SamplingTopology, InputLayer)

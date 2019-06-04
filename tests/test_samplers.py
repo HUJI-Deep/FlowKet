@@ -67,7 +67,7 @@ def test_sampler_by_l1(sampler_class, machine_input, machine_class, machine_args
         exact_variational = ExactVariational(model, operator, BATCH_SIZE)
         exact_variational._update_wave_function_arrays()
         exact_sampler = ExactSampler(exact_variational, BATCH_SIZE)
-        num_of_samples = max(2 ** 14, 8 * exact_variational.num_of_states)
+        num_of_samples = max(2 ** 16, 16 * exact_variational.num_of_states)
         exact_sampler._set_batch_size(num_of_samples, mini_batch_size=BATCH_SIZE)
         batch_from_exact_sampler= next(exact_sampler)
         sampler = sampler_factory(sampler_class, machine, machine_input, num_of_samples)

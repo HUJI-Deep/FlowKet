@@ -31,10 +31,10 @@ class AutoregressiveSampler(Sampler):
             log_probs = self.conditional_log_probs_machine.predict(batch, batch_size=self.mini_batch_size)
             if len(i) == 1:
                 h = i[0]
-                batch[:, h] = 2 * (numpy.exp(log_probs[:, h, 0]) > random_batch[:, h]) - 1
+                batch[:, h] = numpy.exp(log_probs[:, h, 0]) > random_batch[:, h]
             elif len(i) == 2:
                 h, w = i
-                batch[:, h, w] = 2 * (numpy.exp(log_probs[:, h, w, 0]) > random_batch[:, h, w]) - 1
+                batch[:, h, w] = numpy.exp(log_probs[:, h, w, 0]) > random_batch[:, h, w]
             else:
                 # todo support generalautoregressive models with more than 2 dims
                 raise Exception('AutoregressiveSampler support dims <= 2 ')
