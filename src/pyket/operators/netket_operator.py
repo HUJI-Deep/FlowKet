@@ -3,8 +3,8 @@ import numpy
 from .operator import Operator
 
 
-class NetketOperatorWrapper(Operator):    
-    def __init__(self, netket_operator, hilbert_state_shape, 
+class NetketOperatorWrapper(Operator):
+    def __init__(self, netket_operator, hilbert_state_shape,
                  max_number_of_local_connections=None, should_calc_unused=None):
         assert numpy.prod(hilbert_state_shape) == netket_operator.hilbert.size
         super(NetketOperatorWrapper, self).__init__(hilbert_state_shape)
@@ -31,11 +31,11 @@ class NetketOperatorWrapper(Operator):
 
     def _calculate_num_of_local_connectios_from_netket_operator(self):
         random_state = self.random_states(1)
-        mel, _ , _= self.netket_operator.get_conn(random_state.flatten())
+        mel, _, _ = self.netket_operator.get_conn(random_state.flatten())
         return len(mel)
 
     def find_conn(self, sample):
-        all_conn = numpy.zeros((self.estimated_number_of_local_connections, )+sample.shape)
+        all_conn = numpy.zeros((self.estimated_number_of_local_connections,) + sample.shape)
         batch_mel = numpy.zeros((self.estimated_number_of_local_connections, sample.shape[0]), dtype=numpy.complex128)
         batch_size = sample.shape[0]
         for i in range(batch_size):

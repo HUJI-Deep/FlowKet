@@ -8,11 +8,44 @@ from pyket.callbacks.monte_carlo import LocalEnergyStats
 from pyket.evaluation import evaluate, exact_evaluate
 from pyket.operators import Heisenberg, NetketOperatorWrapper
 from pyket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import ExactSampler
+from pyket.samplers import ExactSampler, Sampler
 from .simple_models import complex_values_linear_1d_model, real_values_1d_model
 
 DEFAULT_TF_GRAPH = tf.get_default_graph()
 ONE_DIM_OPERATOR = Heisenberg(hilbert_state_shape=[7], pbc=True)
+
+
+def test_monte_carlo_update_unbalanced_local_energy():
+    with DEFAULT_TF_GRAPH.as_default():
+        model = complex_values_linear_1d_model()
+
+        sample = np.array([[1, 1, 1, -1, -1, -1, -1],
+                           [1, 1, 1, -1, 1, -1, -1],
+                           [1, -1, 1, 1, -1, -1, -1]])
+        local_connections = np.random.choice([-1, 1], size=(5, 3, 7))
+        local_connections[0, ...] = sample
+        hamiltonian_values = np.array([[2.0, 7j + 8, 0.0, 0.0, 3],
+                                       [0.0, 0.0, 0.0, 0.0, -1.0],
+                                       [5.0, 3j, 0.0, -2, 9]]).T
+        all_use_conn = np.array([[True, True, False, False, True],
+                                 [True, False, False, False, True],
+                                 [True, True, False, True, True]]).T
+
+        class SimpleSampler(Sampler):
+            def __init__(self):
+                super(SimpleSampler, self).__init__((7,), 3)
+
+            def __next__(self):
+                return sample
+
+        variational_monte_carlo = VariationalMonteCarlo(model, None, SimpleSampler())
+        variational_monte_carlo.energy_observable.update_batch_local_energy_for_unbalanced_local_connections(
+            local_connections, hamiltonian_values, all_use_conn)
+        unbalanced_local_energy = variational_monte_carlo.energy_observable.current_local_energy
+        variational_monte_carlo.energy_observable.update_batch_local_energy_for_balanced_local_connections(
+            local_connections, hamiltonian_values)
+        balanced_local_energy = variational_monte_carlo.energy_observable.current_local_energy
+        assert np.allclose(balanced_local_energy, unbalanced_local_energy)
 
 
 @pytest.mark.parametrize('model_builder, operator, batch_size, num_of_mc_iterations', [
