@@ -36,7 +36,7 @@ def j1j2_two_dim_netket_operator(number_of_spins, j2=0.5, pbc=False):
             edge_colors.append([w + L2 * h, w, 1])
 
     g = netket.graph.CustomGraph(edge_colors)
-    hi = netket.hilbert.Spin(s=0.5, graph=g)
+    hi = netket.hilbert.Spin(s=0.5, total_sz=0.0, graph=g)
 
     sigmaz = [[1, 0], [0, -1]]
     sigmax = [[0, 1], [1, 0]]

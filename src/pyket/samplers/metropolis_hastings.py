@@ -129,6 +129,18 @@ class MetropolisHastingsLocal(MetropolisHastingsHastingSymmetricProposal):
         super(MetropolisHastingsLocal, self).__init__(machine, batch_size, **kwargs)
 
 
+class MetropolisHastingsGlobal(MetropolisHastingsHastingSymmetricProposal):
+    """docstring for MetropolisHastingsGlobal"""
+
+    def _next_candidates(self):
+        self.candidates = next(self.global_sampler)
+
+    def __init__(self, machine, batch_size, global_sampler, **kwargs):
+        super(MetropolisHastingsGlobal, self).__init__(machine, batch_size,
+                                                       num_of_chains=global_sampler.batch_size, **kwargs)
+        self.global_sampler = global_sampler
+
+
 class MetropolisHastingsUniform(MetropolisHastingsHastingSymmetricProposal):
     """docstring for MetropoliceUniform"""
 

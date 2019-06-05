@@ -19,7 +19,16 @@ class NetketOperatorWrapper(Operator):
         else:
             if self.should_calc_unused is None:
                 self.should_calc_unused = True
-        
+
+    def random_states(self, num_of_states):
+        import netket
+        random_engine = netket.utils.RandomEngine()
+        hilbert_space = self.netket_operator.hilbert
+        results = numpy.zeros((num_of_states, hilbert_space.size))
+        for i in range(num_of_states):
+            hilbert_space.random_vals(results[i, :], random_engine)
+        return results
+
     def _calculate_num_of_local_connectios_from_netket_operator(self):
         random_state = self.random_states(1)
         mel, _ , _= self.netket_operator.get_conn(random_state.flatten())
