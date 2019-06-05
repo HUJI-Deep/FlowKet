@@ -49,8 +49,6 @@ def sampler_factory(sampler_class, machine, machine_input, num_of_samples):
      {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
     (FastAutoregressiveSampler, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
      {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
-    (FastAutoregressiveSampler, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
-     {'depth': 5, 'num_of_channels': 16, 'weights_normalization': True}),
     (FastAutoregressiveSampler, TWO_DIM_INPUT, ConvNetAutoregressive2D,
      {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
     (MetropolisHastingsLocal, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
