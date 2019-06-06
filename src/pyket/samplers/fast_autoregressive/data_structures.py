@@ -6,9 +6,6 @@ from tensorflow.python.keras.engine.input_layer import InputLayer
 GraphNode = namedtuple('GraphNode', ['layer', 'spatial_location'])
 Dependency = namedtuple('Dependency', ['input_index', 'spatial_location'])
 
-UNVISITED = 0
-TEMPORARY_MARK = 1
-PERMANENT_MARK = 2
 NONE_INT_VALUE = -1
 
 
@@ -25,12 +22,17 @@ class DependencyGraph(object):
         self._outgoing_edges_spatial_index = {}
         self._outgoing_edges_layer_index = {}
         self._outgoing_edges_counter = {}
-        self._vertices_dfs_status = {}
+        self._incoming_edges_counter = {}
+        self._incoming_edges_dfs_status = {}
         self._layer_to_layer_index = {}
         self._layers_shape = {}
+        self.vertices_counter = 0
         for idx, layer in enumerate(self.keras_model.layers):
-            self._create_layer_vertices(layer)
+            self.vertices_counter += self._create_layer_vertices(layer)
             self._layer_to_layer_index[layer] = idx
+        self._queue_spatial_index = numpy.full((self.vertices_counter, ), NONE_INT_VALUE)
+        self._queue_layer_index = numpy.full((self.vertices_counter, ), NONE_INT_VALUE)
+        self._queue_len = 0
 
     def _create_layer_vertices(self, layer):
         output_shape = layer.output_shape
@@ -46,7 +48,11 @@ class DependencyGraph(object):
                                                              NONE_INT_VALUE, dtype=numpy.int32)
         self._outgoing_edges_counter[layer] = numpy.zeros((spatial_size,),
                                                           dtype=numpy.int32)
-        self._vertices_dfs_status[layer] = numpy.full((spatial_size,), UNVISITED, dtype=numpy.int32)
+        self._incoming_edges_counter[layer] = numpy.zeros((spatial_size,),
+                                                          dtype=numpy.int32)
+        self._incoming_edges_dfs_status[layer] = numpy.zeros((spatial_size,),
+                                                             dtype=numpy.int32)
+        return spatial_size
 
     def _increase_layer_num_of_edges(self, layer):
         old_incoming_edges_spatial_index_arr = self._outgoing_edges_spatial_index[layer]
@@ -85,6 +91,7 @@ class DependencyGraph(object):
         from_vertex_spatial_index = self._get_spatial_index(from_vertex)
         edge_index = self._outgoing_edges_counter[from_vertex.layer][from_vertex_spatial_index]
         self._outgoing_edges_counter[from_vertex.layer][from_vertex_spatial_index] += 1
+        self._incoming_edges_counter[to_vertex.layer][to_vertex_spatial_index] += 1
         if self._outgoing_edges_layer_index[from_vertex.layer].shape[-1] <= edge_index:
             self._increase_layer_num_of_edges(from_vertex.layer)
         self._outgoing_edges_spatial_index[from_vertex.layer][
@@ -94,34 +101,24 @@ class DependencyGraph(object):
 
     def topological_sort(self):
         results = []
+        visited_nodes_conter = 0
         self._reset_dfs_status()
-        for vertex in self._unmarked_vertex_iterator():
-            self._dfs_visitor(vertex, results)
-        return [GraphNode(layer=node.layer,
-                          spatial_location=self._spatial_index_to_location(node.spatial_location,
-                                                                           self._layer_to_layer_index[node.layer]))
-                for node in results[::-1]]
+        self._add_zero_incoming_dgree_to_queue()
+        while self._queue_len > 0:
+            layer_index = self._queue_layer_index[self._queue_len]
+            layer = self.keras_model.layers[layer_index]
+            spatial_location = self._spatial_index_to_location(self._queue_spatial_index[self._queue_len], layer_index)
+            results.append(GraphNode(layer=layer, spatial_location=spatial_location))
+            visited_nodes_conter += 1
+            # todo decrease in dgree of node outgoing neighbors
+        if visited_nodes_conter != self.vertices_counter:
+            raise Exception('Dependency graph has cycle, invalid autoregressive model')
+        return results
 
     def _reset_dfs_status(self):
-        for status_arr in self._vertices_dfs_status.values():
-            status_arr[:] = UNVISITED
+        self._queue_len = 0
+        for layer, incoming_edges_counter in self._incoming_edges_counter.items():
+            self._incoming_edges_dfs_status[layer[:] = incoming_edges_counter[:]
 
-    def _unmarked_vertex_iterator(self):
-        for layer in self.keras_model.layers:
-            layer_dfs_status = self._vertices_dfs_status[layer]
-            for i in range(layer_dfs_status.shape[0]):
-                if layer_dfs_status[i] != PERMANENT_MARK:
-                    print('yield')
-                    yield GraphNode(layer=layer, spatial_location=i)
-
-    def _dfs_visitor(self, vertex, dfs_nodes_ordering):
-        if self._vertices_dfs_status[vertex.layer][vertex.spatial_location] == TEMPORARY_MARK:
-            raise Exception('Depedency Graph has cycle, invalid autoregressive model')
-        self._vertices_dfs_status[vertex.layer][vertex.spatial_location] = TEMPORARY_MARK
-        for i in range(self._outgoing_edges_counter[vertex.layer][vertex.spatial_location]):
-            print(self._outgoing_edges_layer_index[vertex.layer][i])
-            outgoing_layer = self.keras_model.layers[self._outgoing_edges_layer_index[vertex.layer][vertex.spatial_location, i]]
-            spatial_index = self._outgoing_edges_spatial_index[vertex.layer][vertex.spatial_location, i]
-            self._dfs_visitor(GraphNode(layer=outgoing_layer, spatial_location=spatial_index), dfs_nodes_ordering)
-        self._vertices_dfs_status[vertex.layer][vertex.spatial_location] = PERMANENT_MARK
-        dfs_nodes_ordering.append(vertex)
+    def _add_zero_incoming_dgree_to_queue(self):
+        pass
