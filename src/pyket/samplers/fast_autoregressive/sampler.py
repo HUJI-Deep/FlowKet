@@ -101,10 +101,10 @@ class FastAutoregressiveSampler(Sampler):
     def _build_sampling_function(self):
         self.sampling_order = list(networkx.topological_sort(self.dependencies_graph))
         for node in self.sampling_order:
-            if len(self.dependencies_graph.pred[node]) == 0:
-                continue
             layer_topology = TopologyManager().get_layer_topology(node.layer)
             dependencies = layer_topology.get_spatial_dependency(node.spatial_location)
+            if len(dependencies) == 0:
+                continue
             activation_array = self._get_or_create_layer_activation_array(node.layer)
             dependencies_values = [self._get_dependency_value(node.layer, dependency) for dependency in dependencies]
             activation_array[node.spatial_location] = layer_topology. \
