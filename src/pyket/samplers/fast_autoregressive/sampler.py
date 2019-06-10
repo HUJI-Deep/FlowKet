@@ -1,11 +1,12 @@
 import itertools
 
 import numpy
+import networkx
 import tensorflow
 from tensorflow.keras import backend as K
 from tensorflow.python.keras.engine.input_layer import InputLayer
 
-from .data_structures import GraphNode, DependencyGraph
+from .data_structures import GraphNode
 from .topology_manager import TopologyManager
 from ..base_sampler import Sampler
 
@@ -87,7 +88,7 @@ class FastAutoregressiveSampler(Sampler):
             self.dependencies_graph.add_edge(probabilities_node, input_node)
 
     def _build_dependency_graph(self):
-        self.dependencies_graph = DependencyGraph(self.model)
+        self.dependencies_graph = networkx.DiGraph()
         visit_layer_predecessors(self.output_layer, visitor=self._dependency_graph_visitor)
         self._add_sampling_probabilities_dependencies()
 
@@ -102,8 +103,7 @@ class FastAutoregressiveSampler(Sampler):
         return tensorflow.reshape(flat_sample, (-1,) + sample_tensors_array.shape)
 
     def _build_sampling_function(self):
-        # self.sampling_order = list(networkx.topological_sort(self.dependencies_graph))
-        self.sampling_order = self.dependencies_graph.topological_sort()
+        self.sampling_order = list(networkx.topological_sort(self.dependencies_graph))
         for node in self.sampling_order:
             layer_topology = TopologyManager().get_layer_topology(node.layer)
             dependencies = layer_topology.get_spatial_dependency(node.spatial_location)
