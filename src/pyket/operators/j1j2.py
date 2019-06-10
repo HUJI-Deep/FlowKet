@@ -56,13 +56,14 @@ def j1j2_two_dim_netket_operator(number_of_spins, j2=0.5, pbc=False):
 
 
 def j1j2_two_dim_operator(hilbert_state_shape, j2=0.5, pbc=True):
+    max_number_of_local_connections = numpy.prod(hilbert_state_shape) * len(hilbert_state_shape) * 2 + 1
     assert len(hilbert_state_shape) == 2
     return NetketOperatorWrapper(
         j1j2_two_dim_netket_operator(tuple(hilbert_state_shape),
                                      j2=j2,
                                      pbc=pbc),
         hilbert_state_shape=hilbert_state_shape,
-        should_calc_unused=True)
+        should_calc_unused=True, max_number_of_local_connections=max_number_of_local_connections)
 
 
 J1J2 = j1j2_two_dim_operator
