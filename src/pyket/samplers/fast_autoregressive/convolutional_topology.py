@@ -13,11 +13,14 @@ from tensorflow.keras.layers import Conv1D, Conv2D, Conv3D
 class ConvolutionalTopology(LayerTopology):
     """docstring for Conv1DTopology"""
 
+    def __init__(self, layer):
+        super(ConvolutionalTopology, self).__init__(layer)
+        self.reshaped_weights = tensorflow.reshape(self.layer.kernel, [-1, self.layer.filters])
+
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
         flat_input = tensorflow.reshape(tensorflow.stack(dependencies_values, axis=1),
                                         shape=[-1, self.layer.input_shape[-1] * numpy.product(self.layer.kernel_size)])
-        reshaped_weights = tensorflow.reshape(self.layer.kernel, [-1, self.layer.filters])
-        results = tensorflow.matmul(flat_input, reshaped_weights)
+        results = tensorflow.matmul(flat_input, self.reshaped_weights)
         if self.layer.use_bias:
             results = tensorflow.nn.bias_add(results, self.layer.bias)
         return results

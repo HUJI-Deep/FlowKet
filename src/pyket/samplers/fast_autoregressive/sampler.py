@@ -1,23 +1,26 @@
 import itertools
 
-import networkx
 import numpy
 import tensorflow
 from tensorflow.keras import backend as K
 from tensorflow.python.keras.engine.input_layer import InputLayer
 
-from .data_structures import GraphNode
+from .data_structures import GraphNode, DependencyGraph
 from .topology_manager import TopologyManager
 from ..base_sampler import Sampler
 
 
-def visit_layer_predecessors(layer, visitor):
+def visit_layer_predecessors(layer, visitor, visited_layers=None):
+    if visited_layers is None:
+        visited_layers = set()
+    visited_layers.add(layer)
     layer_nodes = layer.inbound_nodes
     assert len(layer_nodes) == 1
     inbound_layers = layer_nodes[-1].inbound_layers
     visitor(layer, inbound_layers)
     for inbound_layer in inbound_layers:
-        visit_layer_predecessors(inbound_layer, visitor)
+        if inbound_layer not in visited_layers:
+            visit_layer_predecessors(inbound_layer, visitor, visited_layers)
 
 
 class FastAutoregressiveSampler(Sampler):
@@ -84,7 +87,7 @@ class FastAutoregressiveSampler(Sampler):
             self.dependencies_graph.add_edge(probabilities_node, input_node)
 
     def _build_dependency_graph(self):
-        self.dependencies_graph = networkx.DiGraph()
+        self.dependencies_graph = DependencyGraph(self.model)
         visit_layer_predecessors(self.output_layer, visitor=self._dependency_graph_visitor)
         self._add_sampling_probabilities_dependencies()
 
@@ -99,7 +102,8 @@ class FastAutoregressiveSampler(Sampler):
         return tensorflow.reshape(flat_sample, (-1,) + sample_tensors_array.shape)
 
     def _build_sampling_function(self):
-        self.sampling_order = list(networkx.topological_sort(self.dependencies_graph))
+        # self.sampling_order = list(networkx.topological_sort(self.dependencies_graph))
+        self.sampling_order = self.dependencies_graph.topological_sort()
         for node in self.sampling_order:
             layer_topology = TopologyManager().get_layer_topology(node.layer)
             dependencies = layer_topology.get_spatial_dependency(node.spatial_location)
