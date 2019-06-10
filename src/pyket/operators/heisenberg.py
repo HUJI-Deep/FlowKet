@@ -56,7 +56,7 @@ class HeisenbergFindConn(object):
         # todo support general hilbert_state_shape dimention
         assert (self.ham.dim <= 2)
         if len(self.ham.hilbert_state_shape) == 1:
-            self.ham.hilbert_state_shape = tuple(self.ham.hilbert_state_shape) + (1, )
+            self.ham.hilbert_state_shape = self.ham.hilbert_state_shape + (1, )
         self.all_conn = numpy.zeros((num_of_conn, batch_size) + self.ham.hilbert_state_shape)
         self.all_mel = numpy.zeros((num_of_conn, batch_size))
         self.all_use_conn = numpy.zeros((num_of_conn, batch_size), dtype=numpy.bool)

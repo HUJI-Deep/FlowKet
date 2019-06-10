@@ -15,7 +15,7 @@ class Ising(OperatorOnGrid):
         self.max_number_of_local_connections = numpy.prod(self.hilbert_state_shape) + 1
     
     def find_conn(self, sample):
-        sample_conn = numpy.tile(sample, self.hilbert_state_shape + [1, ] * (len(self.hilbert_state_shape) + 1))
+        sample_conn = numpy.tile(sample, self.hilbert_state_shape + (1, ) * (len(self.hilbert_state_shape) + 1))
         padding_size = ((0, 0), ) + ((0, 1), ) * len(self.hilbert_state_shape)
         if self.pbc:
             padded_sample = numpy.pad(sample, padding_size, mode='wrap')

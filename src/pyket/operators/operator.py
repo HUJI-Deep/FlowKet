@@ -8,7 +8,7 @@ class Operator(abc.ABC):
 
     def __init__(self, hilbert_state_shape):
         super(Operator, self).__init__()
-        self.hilbert_state_shape = hilbert_state_shape
+        self.hilbert_state_shape = tuple(hilbert_state_shape)
         self.max_number_of_local_connections = None
 
     @abc.abstractmethod
@@ -39,6 +39,8 @@ def cube_shape(number_of_spins_in_each_dimention=20, cube_dimention=1,
 
 class OperatorOnGrid(Operator, abc.ABC):
     """docstring for OperatorOnGrid"""
-    def __init__(self, hilbert_state_shape=cube_shape(), pbc=True):
+    def __init__(self, hilbert_state_shape=None, pbc=True):
+        if hilbert_state_shape is None:
+            hilbert_state_shape = cube_shape()
         super(OperatorOnGrid, self).__init__(hilbert_state_shape)
         self.pbc = pbc

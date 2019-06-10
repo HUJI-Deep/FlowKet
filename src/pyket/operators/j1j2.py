@@ -2,7 +2,6 @@ from .netket_operator import NetketOperatorWrapper
 
 import numpy
 import netket
-from netket.graph import Hypercube
 
 
 def j1j2_two_dim_netket_operator(number_of_spins, j2=0.5, pbc=False):
