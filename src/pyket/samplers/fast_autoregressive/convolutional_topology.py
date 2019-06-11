@@ -23,6 +23,8 @@ class ConvolutionalTopology(LayerTopology):
         results = tensorflow.matmul(flat_input, self.reshaped_weights)
         if self.layer.use_bias:
             results = tensorflow.nn.bias_add(results, self.layer.bias)
+        if self.layer.activation is not None:
+            results = self.layer.activation(results)
         return results
 
     def get_spatial_dependency(self, spatial_location):
