@@ -68,7 +68,7 @@ def to_log_wave_function_vector(model, batch_size=2 ** 12, out=None):
     for i in range(0, num_of_states, batch_size):
         batch = decimal_array_to_binary_array(numpy.arange(i, i + batch_size), number_of_spins, False).reshape(
             (batch_size,) + model.input_shape[1:])
-        out[i:i + batch_size] = model.predict(batch)[:, 0]
+        out[i:i + batch_size] = model.predict(batch, batch_size=batch_size)[:, 0]
     return out
 
 

@@ -3,6 +3,7 @@ import time
 from ..exact.utils import binary_array_to_decimal_array, decimal_array_to_binary_array, fsum, complex_norm_log_fsum_exp
 
 import tensorflow
+import tensorflow.keras.backend as K
 import numpy as np
 
 
@@ -100,6 +101,7 @@ class ExactVariational(object):
         super(ExactVariational, self).__init__()
         self.model = model
         self.operator = operator
+        self.wave_function_callable = K.function(inputs=[self.model.input], outputs=[self.model.output])
         self._build_wave_function_arrays(model.input_shape[1:])
         self._set_batch_size(batch_size)
         self._graph = tensorflow.get_default_graph()
@@ -130,7 +132,7 @@ class ExactVariational(object):
 
     def _update_wave_function_arrays(self):
         for i in range(0, self.num_of_states, self.batch_size):
-            self.wave_function[i:i+self.batch_size] = self.model.predict(self.states[i:i+self.batch_size, ...])[:, 0]
+            self.wave_function[i:i+self.batch_size] = self.wave_function_callable(self.states[i:i+self.batch_size, ...])[0][:, 0]
         np.multiply(self.wave_function, 2.0, out=self.psi_squared)
         wave_function_log_norm_squared = complex_norm_log_fsum_exp(self.psi_squared)   
         self.wave_function_norm_squared = np.exp(wave_function_log_norm_squared)
