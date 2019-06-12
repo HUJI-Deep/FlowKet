@@ -4,7 +4,8 @@ import tensorflow
 from tensorflow.keras.layers import Lambda
 from tensorflow.python.ops.parallel_for import gradients
 
-from pyket.layers import LambdaWithOneToOneTopology
+from ..layers import LambdaWithOneToOneTopology
+from ..samplers.fast_autoregressive.dependency_graph import assert_valid_probabilistic_model
 
 
 class Machine(abc.ABC):
@@ -21,6 +22,7 @@ class Machine(abc.ABC):
     def predictions_jacobian(self, params):
         def jacobian(x):
             return gradients.jacobian(tensorflow.real(x), params, use_pfor=self.use_pfor)
+
         return Lambda(jacobian)(self.predictions)
 
 
@@ -83,8 +85,16 @@ class AutoNormalizedAutoregressiveMachine(AutoregressiveMachine):
         pass
 
 
-class DirectSamplingMachine(abc.ABC):
+class AutoregressiveWrapper(AutoNormalizedAutoregressiveMachine):
+    def __init__(self, conditional_wave_functions_model, **kwargs):
+        super(AutoNormalizedAutoregressiveMachine, self).__init__(conditional_wave_functions_model.input, **kwargs)
+        self.conditional_wave_functions_model = conditional_wave_functions_model
+
     @property
-    @abc.abstractmethod
-    def samples(self):
-        pass
+    def unnormalized_conditional_log_wave_function(self):
+        return self.conditional_wave_functions_model.output
+
+
+def keras_conditional_wave_functions_to_wave_function(conditional_wave_functions_model):
+    assert_valid_probabilistic_model(conditional_wave_functions_model)
+    return AutoregressiveWrapper(conditional_wave_functions_model)

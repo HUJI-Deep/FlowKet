@@ -1,27 +1,12 @@
-import itertools
-
-import numpy
 import networkx
+import numpy
 import tensorflow
 from tensorflow.keras import backend as K
 from tensorflow.python.keras.engine.input_layer import InputLayer
 
-from .data_structures import GraphNode
+from .dependency_graph import DependencyGraph
 from .topology_manager import TopologyManager
 from ..base_sampler import Sampler
-
-
-def visit_layer_predecessors(layer, visitor, visited_layers=None):
-    if visited_layers is None:
-        visited_layers = set()
-    visited_layers.add(layer)
-    layer_nodes = layer.inbound_nodes
-    assert len(layer_nodes) == 1
-    inbound_layers = layer_nodes[-1].inbound_layers
-    visitor(layer, inbound_layers)
-    for inbound_layer in inbound_layers:
-        if inbound_layer not in visited_layers:
-            visit_layer_predecessors(inbound_layer, visitor, visited_layers)
 
 
 class FastAutoregressiveSampler(Sampler):
@@ -30,12 +15,9 @@ class FastAutoregressiveSampler(Sampler):
     def __init__(self, conditional_log_probs_machine, batch_size, **kwargs):
         super(FastAutoregressiveSampler, self).__init__(input_size=conditional_log_probs_machine.input_shape[1:],
                                                         batch_size=batch_size, **kwargs)
-        self.model = conditional_log_probs_machine
-        self.input_layer = self.model.get_layer(self.model.input_names[0])
-        self.output_layer = self.model.get_layer(self.model.output_names[0])
+        self.input_layer = conditional_log_probs_machine.get_layer(conditional_log_probs_machine.input_names[0])
+        self.dependencies_graph = DependencyGraph(conditional_log_probs_machine)
         self._layer_to_activation_array = {}
-        self._layer_to_input_layers = {}
-        self._build_dependency_graph()
         self._build_sampling_function()
         self._fake_input = numpy.zeros((self.batch_size, )).tolist()
 
@@ -58,42 +40,8 @@ class FastAutoregressiveSampler(Sampler):
             self._create_layer_activation_array(layer)
         return self._get_layer_activation_array(layer)
 
-    def _dependency_graph_visitor(self, layer, inbound_layers):
-        self._get_or_create_layer_activation_array(layer)
-        self._layer_to_input_layers[layer] = inbound_layers
-        if len(inbound_layers) == 0:
-            return
-        self._add_inbound_layers_dependencies(layer, inbound_layers)
-
-    def _add_inbound_layers_dependencies(self, layer, inbound_layers):
-        activation_array = self._get_or_create_layer_activation_array(layer)
-        for spatial_location in itertools.product(*[range(dim_shape) for dim_shape in
-                                                    activation_array.shape]):
-            self._add_spatial_location_dependencies(layer, inbound_layers, spatial_location)
-
-    def _add_spatial_location_dependencies(self, layer, inbound_layers, spatial_location):
-        spatial_dependencies = TopologyManager().get_layer_topology(layer).get_spatial_dependency(spatial_location)
-        current_node = GraphNode(layer=layer, spatial_location=spatial_location)
-        for dependency in spatial_dependencies:
-            incoming_node = GraphNode(layer=inbound_layers[dependency.input_index],
-                                      spatial_location=dependency.spatial_location)
-            self.dependencies_graph.add_edge(incoming_node, current_node)
-
-    def _add_sampling_probabilities_dependencies(self):
-        self._layer_to_input_layers[self.input_layer] = [self.output_layer]
-        for spatial_location in itertools.product(*[range(dim_shape) for dim_shape in
-                                                    self.model.output_shape[1:-1]]):
-            input_node = GraphNode(layer=self.input_layer, spatial_location=spatial_location)
-            probabilities_node = GraphNode(layer=self.output_layer, spatial_location=spatial_location)
-            self.dependencies_graph.add_edge(probabilities_node, input_node)
-
-    def _build_dependency_graph(self):
-        self.dependencies_graph = networkx.DiGraph()
-        visit_layer_predecessors(self.output_layer, visitor=self._dependency_graph_visitor)
-        self._add_sampling_probabilities_dependencies()
-
     def _get_dependency_value(self, layer, dependency):
-        layer_inputs = self._layer_to_input_layers[layer]
+        layer_inputs = self.dependencies_graph.layer_to_input_layers[layer]
         return self._get_or_create_layer_activation_array(layer_inputs[dependency.input_index])[
             dependency.spatial_location]
 
@@ -103,7 +51,7 @@ class FastAutoregressiveSampler(Sampler):
         return tensorflow.reshape(flat_sample, (-1,) + sample_tensors_array.shape)
 
     def _build_sampling_function(self):
-        self.sampling_order = list(networkx.topological_sort(self.dependencies_graph))
+        self.sampling_order = list(networkx.topological_sort(self.dependencies_graph.graph))
         for node in self.sampling_order:
             layer_topology = TopologyManager().get_layer_topology(node.layer)
             dependencies = layer_topology.get_spatial_dependency(node.spatial_location)
