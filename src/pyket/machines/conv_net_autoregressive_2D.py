@@ -9,7 +9,7 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
     """docstring for ConvNetAutoregressive2D"""
 
     def __init__(self, keras_input_layer, depth, num_of_channels, kernel_size=3, strides=1, activation='relu',
-                 weights_normalization=True, **kwargs):
+                 weights_normalization=True, exponential_norm=True, **kwargs):
         self.depth = depth
         self.num_of_channels = num_of_channels
         self.kernel_size = kernel_size
@@ -17,13 +17,14 @@ class ConvNetAutoregressive2D(AutoNormalizedAutoregressiveMachine):
         self.strides = strides
         self.activation = activation
         self.weights_normalization = weights_normalization
+        self.exponential_norm = exponential_norm
         self._build_unnormalized_conditional_log_wave_function(keras_input_layer)
         super(ConvNetAutoregressive2D, self).__init__(keras_input_layer, **kwargs)
 
     def _conv2d(self, filters, kernel_size):
         conv_layer = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)
         if self.weights_normalization:
-            conv_layer = WeightNormalization(conv_layer, data_init=False)
+            conv_layer = WeightNormalization(conv_layer, exponential_norm=self.exponential_norm)
         return conv_layer
 
     def _activation(self):
