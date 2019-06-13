@@ -5,8 +5,8 @@ from tensorflow.keras import backend as K
 from tensorflow.python.keras.engine.input_layer import InputLayer
 
 from .base_sampler import Sampler
-from ..keras_utils.dependency_graph import DependencyGraph
-from ..keras_utils.topology_manager import TopologyManager
+from ..keras_utils import DependencyGraph
+from ..keras_utils import TopologyManager
 
 
 class FastAutoregressiveSampler(Sampler):

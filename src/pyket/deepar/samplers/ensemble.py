@@ -1,4 +1,4 @@
-from pyket.deepar.samplers.base_sampler import Sampler
+from .base_sampler import Sampler
 
 import numpy
 
