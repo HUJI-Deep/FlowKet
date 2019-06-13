@@ -132,7 +132,7 @@ class ExactVariational(object):
 
     def _update_wave_function_arrays(self):
         for i in range(0, self.num_of_states, self.batch_size):
-            self.wave_function[i:i+self.batch_size] = self.wave_function_callable(self.states[i:i+self.batch_size, ...])[0][:, 0]
+            self.wave_function[i:i+self.batch_size] = self.wave_function_callable([self.states[i:i+self.batch_size, ...]])[0][:, 0]
         np.multiply(self.wave_function, 2.0, out=self.psi_squared)
         wave_function_log_norm_squared = complex_norm_log_fsum_exp(self.psi_squared)   
         self.wave_function_norm_squared = np.exp(wave_function_log_norm_squared)
