@@ -1,7 +1,7 @@
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from ...layers import PeriodicPadding
+from ..layers import PeriodicPadding
 
 from tensorflow.keras.layers import ZeroPadding1D, ZeroPadding2D, ZeroPadding3D
 
@@ -49,7 +49,7 @@ class PeriodicPaddingTopology(LayerTopology):
         return [Dependency(input_index=0, spatial_location=shifted_spatial_location)]
 
 
-TopologyManager().register_layer_topology(PaddingTopology, ZeroPadding1D)
-TopologyManager().register_layer_topology(PaddingTopology, ZeroPadding2D)
-TopologyManager().register_layer_topology(PaddingTopology, ZeroPadding3D)
-TopologyManager().register_layer_topology(PeriodicPaddingTopology, PeriodicPadding)
+TopologyManager().register_layer_topology(ZeroPadding1D, PaddingTopology)
+TopologyManager().register_layer_topology(ZeroPadding2D, PaddingTopology)
+TopologyManager().register_layer_topology(ZeroPadding3D, PaddingTopology)
+TopologyManager().register_layer_topology(PeriodicPadding, PeriodicPaddingTopology)

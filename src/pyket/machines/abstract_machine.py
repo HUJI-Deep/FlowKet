@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Lambda
 from tensorflow.python.ops.parallel_for import gradients
 
 from ..layers import LambdaWithOneToOneTopology
-from ..samplers.fast_autoregressive.dependency_graph import assert_valid_probabilistic_model
+from pyket.deepar.keras_utils.dependency_graph import assert_valid_probabilistic_model
 
 
 class Machine(abc.ABC):

@@ -1,6 +1,6 @@
 import numpy
 
-from .base_sampler import Sampler
+from pyket.deepar.samplers.base_sampler import Sampler
 from ..exact.utils import decimal_array_to_binary_array
 
 

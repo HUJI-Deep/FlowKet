@@ -40,4 +40,4 @@ class ConcatenateTopology(LayerTopology):
             return self._get_spatial_dependency_when_concat_on_non_spatial_dim(spatial_location)
 
 
-TopologyManager().register_layer_topology(ConcatenateTopology, Concatenate)
+TopologyManager().register_layer_topology(Concatenate, ConcatenateTopology)

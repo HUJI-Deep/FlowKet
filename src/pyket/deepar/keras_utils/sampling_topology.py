@@ -1,4 +1,4 @@
-from .data_structures import Dependency
+from pyket.deepar.keras_utils.data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
 
@@ -23,4 +23,4 @@ class PlusMinusOneSamplingTopology(CategorialSamplingTopology):
         return 1 - 2 * batch
 
 
-TopologyManager().register_layer_topology(PlusMinusOneSamplingTopology, InputLayer)
+TopologyManager().register_layer_topology(InputLayer, CategorialSamplingTopology)

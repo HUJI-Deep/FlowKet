@@ -1,7 +1,7 @@
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from ...layers import DownShiftLayer, RightShiftLayer
+from pyket.layers import DownShiftLayer, RightShiftLayer
 
 
 class DownShiftTopology(LayerTopology):
@@ -34,5 +34,5 @@ class RightShiftTopology(LayerTopology):
         return [Dependency(input_index=0, spatial_location=shifted_spatial_location)]
 
 
-TopologyManager().register_layer_topology(DownShiftTopology, DownShiftLayer)
-TopologyManager().register_layer_topology(RightShiftTopology, RightShiftLayer)
+TopologyManager().register_layer_topology(DownShiftLayer, DownShiftTopology)
+TopologyManager().register_layer_topology(RightShiftLayer, RightShiftTopology)

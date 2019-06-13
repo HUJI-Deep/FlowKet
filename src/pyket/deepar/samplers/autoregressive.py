@@ -1,6 +1,6 @@
 import itertools
 
-from .base_sampler import Sampler
+from pyket.deepar.samplers.base_sampler import Sampler
 
 from tqdm import tqdm
 import numpy
@@ -41,6 +41,6 @@ class AutoregressiveSampler(Sampler):
                 if not self.zero_base:
                     batch[:, h, w] = 2 * batch[:, h, w] - 1
             else:
-                # todo support generalautoregressive models with more than 2 dims
+                # todo support general autoregressive models with more than 2 dims
                 raise Exception('AutoregressiveSampler support dims <= 2 ')
         return batch
