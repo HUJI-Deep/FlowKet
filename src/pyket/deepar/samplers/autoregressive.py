@@ -14,7 +14,7 @@ class AutoregressiveSampler(Sampler):
     """docstring for AutoregressiveSampler"""
 
     def __init__(self, conditional_log_probs_machine, batch_size,
-                 use_progress_bar=False, autoregressive_ordering=None, zero_base=False, **kwargs):
+                 use_progress_bar=False, autoregressive_ordering=None, zero_base=True, **kwargs):
         super(AutoregressiveSampler, self).__init__(input_size=conditional_log_probs_machine.input_shape[1:],
                                                     batch_size=batch_size, **kwargs)
         self.conditional_log_probs_machine = conditional_log_probs_machine

@@ -1,6 +1,7 @@
 import functools
 
-from pyket.deepar.layers import CastingLayer
+from ...deepar.layers import CastingLayer
+from ...deepar.graph_analysis import TopologyManager, OneToOneTopology
 
 import tensorflow
 from tensorflow.python.keras.layers import Layer
@@ -30,3 +31,5 @@ class VectorToComplexNumber(Layer):
 
 ToComplex64 = functools.partial(CastingLayer, 'complex64')
 ToComplex128 = functools.partial(CastingLayer, 'complex128')
+
+TopologyManager().register_layer_topology(VectorToComplexNumber, OneToOneTopology)

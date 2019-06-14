@@ -1,11 +1,10 @@
 from tensorflow.keras.layers import Activation, Add, Average, Subtract, Multiply, Maximum, Minimum, \
     LeakyReLU, ELU, ThresholdedReLU, Softmax
 
-from pyket.deepar.keras_utils.data_structures import Dependency
+from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from pyket.layers import VectorToComplexNumber, CastingLayer, ExpandInputDim, \
-    LambdaWithOneToOneTopology
+from ..layers import CastingLayer, ExpandInputDim, LambdaWithOneToOneTopology, ToOneHot, PlusMinusOneToOneHot
 
 
 class OneToOneTopology(LayerTopology):
@@ -34,10 +33,17 @@ class OneToOneTopologyWithIdentity(OneToOneTopology):
         return values
 
 
+class OneHotTopologyWithIdentity(OneToOneTopology):
+    """docstring for OneToOneTopology"""
+
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+        values = dependencies_values[0]
+        return self.layer(values[..., 0])
+
+
 TopologyManager().register_layer_topology(Activation, OneToOneTopology)
 TopologyManager().register_layer_topology(Add, OneToOneTopology)
 TopologyManager().register_layer_topology(CastingLayer, OneToOneTopology)
-TopologyManager().register_layer_topology(VectorToComplexNumber, OneToOneTopology)
 TopologyManager().register_layer_topology(LambdaWithOneToOneTopology, OneToOneTopology)
 TopologyManager().register_layer_topology(Subtract, OneToOneTopology)
 TopologyManager().register_layer_topology(Multiply, OneToOneTopology)
@@ -48,4 +54,6 @@ TopologyManager().register_layer_topology(LeakyReLU, OneToOneTopology)
 TopologyManager().register_layer_topology(ELU, OneToOneTopology)
 TopologyManager().register_layer_topology(ThresholdedReLU, OneToOneTopology)
 TopologyManager().register_layer_topology(Softmax, OneToOneTopology)
+TopologyManager().register_layer_topology(PlusMinusOneToOneHot, OneHotTopologyWithIdentity)
+TopologyManager().register_layer_topology(ToOneHot, OneHotTopologyWithIdentity)
 TopologyManager().register_layer_topology(ExpandInputDim, OneToOneTopologyWithIdentity)

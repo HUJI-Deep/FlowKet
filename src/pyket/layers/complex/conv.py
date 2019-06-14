@@ -5,6 +5,7 @@ import tensorflow
 
 from .base_layer import ComplexLayer
 from .tensorflow_ops import keras_conv_to_complex_conv
+from ...deepar.graph_analysis.convolutional_topology import TopologyManager, ConvolutionalTopology
 
 
 def normalize_tuple(value, n, name):
@@ -134,3 +135,8 @@ class ComplexConv3D(_ComplexConv):
 
     def __init__(self, filters, kernel_size, **kwargs):
         super(ComplexConv3D, self).__init__(3, filters, kernel_size, **kwargs)
+
+
+TopologyManager().register_layer_topology(ComplexConv1D, ConvolutionalTopology)
+TopologyManager().register_layer_topology(ComplexConv2D, ConvolutionalTopology)
+TopologyManager().register_layer_topology(ComplexConv3D, ConvolutionalTopology)

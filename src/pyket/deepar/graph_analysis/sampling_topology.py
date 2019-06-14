@@ -1,4 +1,4 @@
-from pyket.deepar.keras_utils.data_structures import Dependency
+from pyket.deepar.graph_analysis.data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
 
