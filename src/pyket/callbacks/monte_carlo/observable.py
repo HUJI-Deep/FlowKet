@@ -1,22 +1,20 @@
 import numpy
 from tensorflow.keras.callbacks import Callback
 
-from ...optimization.variational_monte_carlo import Observable
-
 
 class ObservableStats(Callback):
-    def __init__(self, generator, operator, operator_name, validation_generator=None,
+    def __init__(self, generator, observable, observabler_name, validation_generator=None,
                  log_in_batch_or_epoch=True, **kwargs):
         super(ObservableStats, self).__init__(**kwargs)
-        self.operator_name = operator_name
+        self.observable_name = observabler_name
         self.generator = generator
         self.validation_generator = validation_generator
-        self.observable = Observable(generator.wave_function, operator)
+        self.observable = observable
         self.log_in_batch_or_epoch = log_in_batch_or_epoch
 
     def add_observable_stats_to_logs(self, logs, generator, prefix=""):
-        observable_value, _, _ = self.observable.estimate(generator.current_batch)
-        logs['%sobservables/%s' % (prefix, self.operator_name)] = numpy.real(observable_value)
+        observable_value, _, _ = self.observable.estimate(generator.wave_function, generator.current_batch)
+        logs['%sobservables/%s' % (prefix, self.observable_name)] = numpy.real(observable_value)
 
     def on_batch_end(self, batch, logs=None):
         if logs is None:
