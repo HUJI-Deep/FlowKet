@@ -3,7 +3,7 @@ import itertools
 from pyket.layers import VectorToComplexNumber, \
     ComplexConv2D, ComplexConv1D, ComplexConv3D, ToComplex64
 from pyket.deepar.layers import LambdaWithOneToOneTopology, RightShiftLayer, DownShiftLayer
-from pyket.samplers.fast_autoregressive import TopologyManager
+from pyket.deepar.graph_analysis import TopologyManager
 
 import pytest
 import numpy as np
