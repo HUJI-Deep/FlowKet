@@ -33,6 +33,10 @@ class VariationalMonteCarlo(object):
         self.current_energy, self.current_local_energy_variance, self.current_local_energy = \
             self.energy_observable.estimate(self.wave_function, self.current_batch)
 
+    def loss_coefficients(self):
+        local_energy_minus_mean = self.current_local_energy - self.current_energy
+        return numpy.conj(local_energy_minus_mean)
+
     def next(self):
         K.set_session(self._session)
         with self._graph.as_default():
@@ -42,10 +46,6 @@ class VariationalMonteCarlo(object):
             self._update_batch_local_energy()
             self.local_energy_end_time = time.time()
             return self.current_batch, self.loss_coefficients() / self._batch_size
-
-    def loss_coefficients(self):
-        local_energy_minus_mean = self.current_local_energy - self.current_energy
-        return numpy.conj(local_energy_minus_mean)
 
     def __iter__(self):
         return self
