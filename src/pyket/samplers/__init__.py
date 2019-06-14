@@ -1,9 +1,8 @@
 import functools
 
-from ..deepar.samplers import Sampler, FastAutoregressiveSampler, \
-    AutoregressiveSampler as ZeroBasedAutoregressiveSampler
+from ..deepar.samplers import Sampler, Ensemble, AutoregressiveSampler as ZeroBasedAutoregressiveSampler
 from .exact_sampler import ExactSampler
-from .ensemble import Ensemble
+from .fast_autoregressive import FastAutoregressiveSampler
 from .metropolis_hastings import MetropolisHastingsSampler, MetropolisHastingsLocal, MetropolisHastingsUniform, \
     MetropolisHastingsHamiltonian
 

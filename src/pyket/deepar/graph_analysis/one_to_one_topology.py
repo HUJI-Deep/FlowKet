@@ -4,7 +4,8 @@ from tensorflow.keras.layers import Activation, Add, Average, Subtract, Multiply
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from ..layers import CastingLayer, ExpandInputDim, LambdaWithOneToOneTopology, ToOneHot, PlusMinusOneToOneHot
+from ..layers import CastingLayer, ExpandInputDim, LambdaWithOneToOneTopology, ToOneHot, PlusMinusOneToOneHot, \
+    NormalizeInLogSpace
 
 
 class OneToOneTopology(LayerTopology):
@@ -54,6 +55,7 @@ TopologyManager().register_layer_topology(LeakyReLU, OneToOneTopology)
 TopologyManager().register_layer_topology(ELU, OneToOneTopology)
 TopologyManager().register_layer_topology(ThresholdedReLU, OneToOneTopology)
 TopologyManager().register_layer_topology(Softmax, OneToOneTopology)
+TopologyManager().register_layer_topology(NormalizeInLogSpace, OneToOneTopology)
 TopologyManager().register_layer_topology(PlusMinusOneToOneHot, OneHotTopologyWithIdentity)
 TopologyManager().register_layer_topology(ToOneHot, OneHotTopologyWithIdentity)
 TopologyManager().register_layer_topology(ExpandInputDim, OneToOneTopologyWithIdentity)

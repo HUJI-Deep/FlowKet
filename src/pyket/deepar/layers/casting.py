@@ -1,6 +1,7 @@
 import functools
 
 from tensorflow.python.keras.layers import Layer
+from tensorflow.python.keras import backend as K
 
 
 class CastingLayer(Layer):

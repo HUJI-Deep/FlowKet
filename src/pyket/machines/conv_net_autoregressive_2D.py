@@ -1,6 +1,6 @@
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
-from ..layers import ToFloat32, DownShiftLayer, RightShiftLayer,\
-    VectorToComplexNumber, WeightNormalization, ExpandInputDim
+from ..layers import VectorToComplexNumber
+from ..deepar.layers import ToFloat32, DownShiftLayer, RightShiftLayer, WeightNormalization, ExpandInputDim
 
 from tensorflow.keras.layers import Activation, Add, Concatenate, Conv2D, ZeroPadding2D
 

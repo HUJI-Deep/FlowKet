@@ -1,7 +1,7 @@
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
-from pyket.layers import DownShiftLayer, RightShiftLayer
+from ..layers import DownShiftLayer, RightShiftLayer
 
 
 class DownShiftTopology(LayerTopology):

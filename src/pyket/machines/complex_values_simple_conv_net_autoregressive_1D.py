@@ -3,7 +3,8 @@ from tensorflow.keras.layers import Activation, ZeroPadding1D
 import tensorflow.keras.backend as K
 
 from .abstract_machine import AutoNormalizedAutoregressiveMachine
-from ..layers import ToComplex64, ToComplex128, DownShiftLayer, ExpandInputDim, ComplexConv1D
+from ..layers import ToComplex64, ToComplex128, ComplexConv1D
+from ..deepar.layers import DownShiftLayer, ExpandInputDim
 from ..layers.complex.tensorflow_ops import crelu, lncosh
 
 
