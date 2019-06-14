@@ -1,9 +1,14 @@
-import functools
-
-from ..deepar.samplers import Sampler, Ensemble, AutoregressiveSampler as ZeroBasedAutoregressiveSampler
+from ..deepar.samplers import Sampler, Ensemble
 from .exact_sampler import ExactSampler
 from .fast_autoregressive import FastAutoregressiveSampler
 from .metropolis_hastings import MetropolisHastingsSampler, MetropolisHastingsLocal, MetropolisHastingsUniform, \
     MetropolisHastingsHamiltonian
 
-AutoregressiveSampler = functools.partial(ZeroBasedAutoregressiveSampler, zero_base=False)
+
+def _build_autoregressive_sampler():
+    import functools
+    from ..deepar.samplers import AutoregressiveSampler as ZeroBasedAutoregressiveSampler
+    return functools.partial(ZeroBasedAutoregressiveSampler, zero_base=False)
+
+
+AutoregressiveSampler = _build_autoregressive_sampler()
