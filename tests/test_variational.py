@@ -39,10 +39,10 @@ def test_monte_carlo_update_unbalanced_local_energy():
                 return sample
 
         variational_monte_carlo = VariationalMonteCarlo(model, None, SimpleSampler())
-        variational_monte_carlo.energy_observable.update_batch_local_energy_for_unbalanced_local_connections(
+        variational_monte_carlo.energy_observable.estimate_optimized_for_unbalanced_local_connections(
             local_connections, hamiltonian_values, all_use_conn)
         unbalanced_local_energy = variational_monte_carlo.energy_observable.current_local_energy
-        variational_monte_carlo.energy_observable.update_batch_local_energy_for_balanced_local_connections(
+        variational_monte_carlo.energy_observable.estimate_optimized_for_balanced_local_connections(
             local_connections, hamiltonian_values)
         balanced_local_energy = variational_monte_carlo.energy_observable.current_local_energy
         assert np.allclose(balanced_local_energy, unbalanced_local_energy)
