@@ -27,5 +27,5 @@ class ObservableStats(Callback):
             logs = {}
         if not self.log_in_batch_or_epoch:
             self.add_observable_stats_to_logs(logs, self.generator)
-        if self.validation_observable is not None:
+        if self.validation_generator is not None:
             self.add_observable_stats_to_logs(logs, self.validation_generator, prefix='val_')
