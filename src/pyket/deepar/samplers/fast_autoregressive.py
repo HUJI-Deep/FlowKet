@@ -19,9 +19,13 @@ class FastAutoregressiveSampler(Sampler):
         self.dependencies_graph = DependencyGraph(conditional_log_probs_machine)
         self._layer_to_activation_array = {}
         self._build_sampling_function()
-        self._fake_input = numpy.zeros((self.batch_size, )).tolist()
+        self._fake_input = numpy.zeros((self.mini_batch_size, )).tolist()
 
     def __next__(self):
+        if self.mini_batch_size < self.batch_size:
+            return numpy.concatenate([self.sampling_function(self._fake_input)[0]
+                                      for _ in range(self.batch_size // self.mini_batch_size)])
+
         return self.sampling_function(self._fake_input)[0]
 
     def _create_layer_activation_array(self, layer):
@@ -29,7 +33,8 @@ class FastAutoregressiveSampler(Sampler):
         if isinstance(layer, InputLayer):
             # we assume the last dim is channels dim in every layer
             output_shape = output_shape + (1,)
-        zeros = tensorflow.zeros(shape=(self.batch_size, output_shape[-1],), dtype=tensorflow.as_dtype(layer.dtype))
+        zeros = tensorflow.zeros(shape=(self.mini_batch_size, output_shape[-1],),
+                                 dtype=tensorflow.as_dtype(layer.dtype))
         self._layer_to_activation_array[layer] = numpy.full(output_shape[1:-1], fill_value=zeros)
 
     def _get_layer_activation_array(self, layer):
