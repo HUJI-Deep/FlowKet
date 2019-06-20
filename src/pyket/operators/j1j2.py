@@ -55,7 +55,7 @@ def j1j2_two_dim_netket_operator(number_of_spins, j2=0.5, pbc=False):
     return netket.operator.GraphOperator(hi, bondops=bond_operator, bondops_colors=bond_color)
 
 
-def j1j2_two_dim_operator(hilbert_state_shape, j2=0.5, pbc=True):
+def j1j2_two_dim_operator(hilbert_state_shape, j2=0.5, pbc=False):
     max_number_of_local_connections = numpy.prod(hilbert_state_shape) * len(hilbert_state_shape) * 2 + 1
     assert len(hilbert_state_shape) == 2
     return NetketOperatorWrapper(

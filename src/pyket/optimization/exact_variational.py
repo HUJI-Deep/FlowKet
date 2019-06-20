@@ -99,9 +99,8 @@ class ExactVariational(object):
     """docstring for ExactVariational"""
     def __init__(self, model, operator, batch_size):
         super(ExactVariational, self).__init__()
-        self.model = model
         self.operator = operator
-        self.wave_function_callable = K.function(inputs=[self.model.input], outputs=[self.model.output])
+        self.wave_function_callable = K.function(inputs=[model.input], outputs=[model.output])
         self._build_wave_function_arrays(model.input_shape[1:])
         self._set_batch_size(batch_size)
         self._graph = tensorflow.get_default_graph()
