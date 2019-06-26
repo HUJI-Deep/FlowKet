@@ -11,7 +11,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Add, Activation, Concatenate, Conv1D, Conv2D, Conv3D, \
     Input, Subtract, Multiply, Average, Maximum, Minimum, LeakyReLU, PReLU, ELU, ThresholdedReLU, Softmax, \
-    ZeroPadding1D, ZeroPadding2D, ZeroPadding3D
+    ZeroPadding1D, ZeroPadding2D, ZeroPadding3D, Reshape
 
 DEFAULT_TF_GRAPH = tf.get_default_graph()
 
@@ -25,6 +25,8 @@ DEFAULT_TF_GRAPH = tf.get_default_graph()
     (Maximum(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Minimum(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Activation('relu'), Input((6, 6, 5)), 32),
+    (Reshape((36, 5)), Input((6, 6, 5)), 32),
+    (Reshape((20, 6, 5)), Input((6, 5, 4, 5)), 32),
     (LeakyReLU(), Input((6, 6, 5)), 32),
     (ELU(), Input((6, 6, 5)), 32),
     (ThresholdedReLU(), Input((6, 6, 5)), 32),
@@ -76,6 +78,11 @@ def test_apply_layer_for_single_spatial_location(layer, input_layer, batch_size)
         else:
             batch = np.random.choice(100, size=(batch_size,) + layer.input_shape[1:]).astype(np.float32)
         output_values = output_function(batch)
+        print('#'*30)
+        print(output_values[0])
+        print('#'*30)
+        print(output_values[1])
+        print('#'*30)
         assert np.allclose(output_values[0], output_values[1], rtol=1e-3, atol=1e-4)
 
 

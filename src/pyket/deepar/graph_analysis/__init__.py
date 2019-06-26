@@ -5,5 +5,6 @@ from .dependency_graph import DependencyGraph
 from .masking_topology import DownShiftTopology, RightShiftTopology
 from .one_to_one_topology import OneToOneTopology, OneToOneTopologyWithIdentity
 from .padding_topology import PaddingTopology
+from .reshape_topology import ReshapeTopology
 from .sampling_topology import PlusMinusOneSamplingTopology, CategorialSamplingTopology
 from .topology_manager import TopologyManager

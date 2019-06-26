@@ -1,13 +1,8 @@
-import itertools
-
-from pyket.deepar.samplers.base_sampler import Sampler
+from .base_sampler import Sampler
+from ..ordering import raster as raster_ordering
 
 from tqdm import tqdm
 import numpy
-
-
-def raster_autoregressive_order(input_size):
-    return itertools.product(*[range(dim_size) for dim_size in input_size])
 
 
 class AutoregressiveSampler(Sampler):
@@ -20,12 +15,12 @@ class AutoregressiveSampler(Sampler):
         self.conditional_log_probs_machine = conditional_log_probs_machine
         self.use_progress_bar = use_progress_bar
         if autoregressive_ordering is None:
-            autoregressive_ordering = raster_autoregressive_order
+            autoregressive_ordering = raster_ordering
         self.autoregressive_ordering = autoregressive_ordering
         self.zero_base = zero_base
 
     def __next__(self):
-        batch = numpy.empty((self.batch_size,) + self.input_size)
+        batch = numpy.zeros((self.batch_size,) + self.input_size)
         random_batch = numpy.random.rand(*((self.batch_size,) + self.input_size))
         progress = tqdm if self.use_progress_bar else lambda x: x
         for i in progress(list(self.autoregressive_ordering(self.input_size))):
