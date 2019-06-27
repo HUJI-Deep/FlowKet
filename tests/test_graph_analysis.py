@@ -2,7 +2,7 @@ import itertools
 
 from pyket.layers import VectorToComplexNumber, \
     ComplexConv2D, ComplexConv1D, ComplexConv3D, ToComplex64
-from pyket.deepar.layers import LambdaWithOneToOneTopology, RightShiftLayer, DownShiftLayer
+from pyket.deepar.layers import LambdaWithOneToOneTopology, RightShiftLayer, DownShiftLayer, GatherLayer
 from pyket.deepar.graph_analysis import TopologyManager
 
 import pytest
@@ -11,7 +11,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Add, Activation, Concatenate, Conv1D, Conv2D, Conv3D, \
     Input, Subtract, Multiply, Average, Maximum, Minimum, LeakyReLU, PReLU, ELU, ThresholdedReLU, Softmax, \
-    ZeroPadding1D, ZeroPadding2D, ZeroPadding3D
+    ZeroPadding1D, ZeroPadding2D, ZeroPadding3D, Reshape
 
 DEFAULT_TF_GRAPH = tf.get_default_graph()
 
@@ -25,6 +25,11 @@ DEFAULT_TF_GRAPH = tf.get_default_graph()
     (Maximum(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Minimum(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Activation('relu'), Input((6, 6, 5)), 32),
+    (Reshape((36, 5)), Input((6, 6, 5)), 32),
+    (Reshape((20, 6, 5)), Input((6, 5, 4, 5)), 32),
+    (GatherLayer([1, 4, 2], axis=1), Input((6, 5)), 32),
+    (GatherLayer([1, 4, 2], axis=2), Input((6, 5)), 32),
+    (GatherLayer([1, 4, 2], axis=2), Input((6, 7, 5)), 32),
     (LeakyReLU(), Input((6, 6, 5)), 32),
     (ELU(), Input((6, 6, 5)), 32),
     (ThresholdedReLU(), Input((6, 6, 5)), 32),
@@ -76,6 +81,11 @@ def test_apply_layer_for_single_spatial_location(layer, input_layer, batch_size)
         else:
             batch = np.random.choice(100, size=(batch_size,) + layer.input_shape[1:]).astype(np.float32)
         output_values = output_function(batch)
+        print('#' * 30)
+        print(output_values[0])
+        print('#' * 30)
+        print(output_values[1])
+        print('#' * 30)
         assert np.allclose(output_values[0], output_values[1], rtol=1e-3, atol=1e-4)
 
 
@@ -94,7 +104,9 @@ def get_layer_output_with_topology_manager(has_multiple_inputs, input_layer, lay
                                                 (-1,) + (1,) * len(dependency.spatial_location) + (-1,)))
         if len(dependencies_values) == 0:
             output_values.append(
-                tf.zeros(tf.concat([tf.shape(layer.output)[:1]] + [[1]] * len(spatial_location) + [tf.shape(layer.output)[-1:]], axis=0), dtype=layer.dtype))
+                tf.zeros(tf.concat(
+                    [tf.shape(layer.output)[:1]] + [[1]] * len(spatial_location) + [tf.shape(layer.output)[-1:]],
+                    axis=0), dtype=layer.dtype))
         else:
             output_values.append(
                 layer_topology.apply_layer_for_single_spatial_location(spatial_location, dependencies_values))

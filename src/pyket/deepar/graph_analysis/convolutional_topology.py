@@ -10,10 +10,13 @@ from .topology_manager import TopologyManager
 
 
 class ConvolutionalTopology(LayerTopology):
-    """docstring for Conv1DTopology"""
+    """docstring for ConvolutionalTopology"""
 
     def __init__(self, layer):
         super(ConvolutionalTopology, self).__init__(layer)
+        if self.layer.padding != 'valid':
+            raise Exception("THis topology support only valid padding, you could use "
+                            "ZeroPadding1D, ZeroPadding2D, ZeroPadding3D for padding")
         self.reshaped_weights = tensorflow.reshape(self.layer.kernel, [-1, self.layer.filters])
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):

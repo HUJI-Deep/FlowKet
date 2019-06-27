@@ -17,9 +17,9 @@ class Observable(BaseObservable):
         super(Observable, self).__init__()
         self.operator = operator
 
-    def estimate_optimized_for_unbalanced_local_connections(self, wave_function, local_connections,
-                                                            hamiltonian_values,
-                                                            all_use_conn):
+    def local_values_optimized_for_unbalanced_local_connections(self, wave_function, local_connections,
+                                                                hamiltonian_values,
+                                                                all_use_conn):
         batch_size = all_use_conn.shape[1]
         local_values = numpy.zeros((batch_size,), dtype=numpy.complex128)
         flat_log_values = get_flat_local_connections_log_values(wave_function, local_connections, all_use_conn)
@@ -33,7 +33,7 @@ class Observable(BaseObservable):
                                                                 [:, i], i], sample_val_division).sum()
         return local_values
 
-    def estimate_optimized_for_balanced_local_connections(self, wave_function, local_connections, hamiltonian_values):
+    def local_values_optimized_for_balanced_local_connections(self, wave_function, local_connections, hamiltonian_values):
         flat_conn = local_connections.reshape((-1,) + self.operator.hilbert_state_shape)
         flat_log_values = wave_function(flat_conn)[:, 0]
         log_values = flat_log_values.reshape(local_connections.shape[0:2])
@@ -44,11 +44,11 @@ class Observable(BaseObservable):
     def local_values(self, wave_function, configurations):
         local_connections, hamiltonian_values, all_use_conn = self.operator.find_conn(configurations)
         if all_use_conn.mean() < 0.95:
-            return self.estimate_optimized_for_unbalanced_local_connections(wave_function,
-                                                                            local_connections,
-                                                                            hamiltonian_values,
-                                                                            all_use_conn)
+            return self.local_values_optimized_for_unbalanced_local_connections(wave_function,
+                                                                                local_connections,
+                                                                                hamiltonian_values,
+                                                                                all_use_conn)
         else:
-            return self.estimate_optimized_for_balanced_local_connections(wave_function,
-                                                                          local_connections,
-                                                                          hamiltonian_values)
+            return self.local_values_optimized_for_balanced_local_connections(wave_function,
+                                                                              local_connections,
+                                                                              hamiltonian_values)

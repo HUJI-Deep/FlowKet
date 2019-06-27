@@ -23,7 +23,7 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
 
     def __init__(self, keras_input_layer, depth, num_of_channels, kernel_size=3,
                  use_dilation=True, max_dilation_rate=None, activation='relu',
-                 weights_normalization=True, **kwargs):
+                 weights_normalization=True, should_expand_input_dim=True, **kwargs):
         self.depth = depth
         self.num_of_channels = num_of_channels
         self.kernel_size = kernel_size
@@ -31,6 +31,7 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
         self.max_dilation_rate = max_dilation_rate
         self.activation = activation
         self.weights_normalization = weights_normalization
+        self.should_expand_input_dim = should_expand_input_dim
         self._build_unnormalized_conditional_log_wave_function(keras_input_layer)
         super(SimpleConvNetAutoregressive1D, self).__init__(keras_input_layer, **kwargs)
 
@@ -40,7 +41,9 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
 
     def _build_unnormalized_conditional_log_wave_function(self, keras_input_layer):
         dilation_rate = 1
-        x = ExpandInputDim()(keras_input_layer)
+        x = keras_input_layer
+        if self.should_expand_input_dim:
+            x = ExpandInputDim()(x)
         x = ToFloat32()(x)
         for i in range(self.depth - 1):
             x = causal_conv_1d(x, filters=self.num_of_channels,

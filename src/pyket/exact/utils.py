@@ -84,6 +84,7 @@ def log_fsum_exp(arr):
 
 
 def netket_vector_to_exact_variational_vector(netket_vector, netket_operator, exact_variational):
+    import netket
     hilbert_index = netket.hilbert.HilbertIndex(netket_operator.hilbert)
     netket_hilbert_index = numpy.zeros(exact_variational.num_of_states, dtype=numpy.int32)
     for i in range(exact_variational.num_of_states):
