@@ -18,7 +18,7 @@ class SimpleCustomOrderingAutoregressive(AutoNormalizedAutoregressiveMachine):
         one_dim_model = SimpleConvNetAutoregressive1D(self._build_input(keras_input_layer), depth,
                                                       num_of_channels, should_expand_input_dim=False,
                                                       **kwargs)
-        self._build_output(one_dim_model._unnormalized_conditional_log_wave_function)
+        self._build_output(one_dim_model.unnormalized_conditional_log_wave_function)
         super(SimpleCustomOrderingAutoregressive, self).__init__(keras_input_layer)
 
     def _build_input(self, keras_input_layer):
