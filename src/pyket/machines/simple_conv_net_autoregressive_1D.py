@@ -24,7 +24,7 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
     """docstring for ConvNetAutoregressive1D"""
 
     def __init__(self, keras_input_layer, depth, num_of_channels, kernel_size=3,
-                 use_dilation=True, add_skip_connections=True, max_dilation_rate=None, activation='relu',
+                 use_dilation=True, add_skip_connections=False, max_dilation_rate=None, activation='relu',
                  weights_normalization=True, should_expand_input_dim=True, **kwargs):
         self.depth = depth
         self.num_of_channels = num_of_channels
@@ -60,5 +60,5 @@ class SimpleConvNetAutoregressive1D(AutoNormalizedAutoregressiveMachine):
                     dilation_rate *= 2
         x = DownShiftLayer()(x)
         x = causal_conv_1d(x, filters=4, kernel_size=1,
-                           weights_normalization=self.weights_normalization)
+                               weights_normalization=self.weights_normalization)
         self._unnormalized_conditional_log_wave_function = VectorToComplexNumber()(x)
