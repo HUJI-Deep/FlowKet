@@ -22,7 +22,7 @@ def zigzag(input_size):
                 move = right
         if move == up_right:
             can_right = x + 1 < input_size[1]
-            move = up_right if can_right and y > 0 else down
+            move = up_right if can_right and y > 0 else right
             if not can_right:
                 move = down
         order.append(move(x, y))

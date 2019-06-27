@@ -11,7 +11,7 @@ def causal_conv_1d(x, filters, kernel_size, weights_normalization, dilation_rate
         x = ZeroPadding1D(padding=(padding, 0))(x)
     conv_layer = Conv1D(filters=filters, kernel_size=kernel_size, strides=1, dilation_rate=dilation_rate)
     if weights_normalization:
-        conv_layer = WeightNormalization(conv_layer, data_init=False)
+        conv_layer = WeightNormalization(conv_layer)
     x = conv_layer(x)
     if activation is not None:
         x = Activation(activation)(x)

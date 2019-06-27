@@ -38,12 +38,9 @@ class ReshapeTopology(LayerTopology):
             flat_spatial_location += dim_location
 
         input_spatial_location = []
-        print('next')
         for factor in self.input_multiplications_factors[::-1]:
-            print("%s, %s" % (flat_spatial_location, factor))
             input_spatial_location.append(flat_spatial_location % factor)
             flat_spatial_location = flat_spatial_location // factor
-        print(input_spatial_location)
 
         return [Dependency(input_index=0, spatial_location=tuple(input_spatial_location[::-1]))]
 

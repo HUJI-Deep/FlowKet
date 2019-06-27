@@ -47,6 +47,10 @@ class FastAutoregressiveSampler(Sampler):
 
     def _get_dependency_value(self, layer, dependency):
         layer_inputs = self.dependencies_graph.layer_to_input_layers[layer]
+        print(layer)
+        print(layer_inputs[dependency.input_index])
+        print(self._get_or_create_layer_activation_array(layer_inputs[dependency.input_index]).shape)
+        print(dependency.spatial_location)
         return self._get_or_create_layer_activation_array(layer_inputs[dependency.input_index])[
             dependency.spatial_location]
 
