@@ -4,7 +4,7 @@ import tensorflow
 from tensorflow.keras.layers import Lambda
 from tensorflow.python.ops.parallel_for import gradients
 
-from pyket.layers import ToComplex64
+from pyket.layers import ToComplex64, EqualUpDownSpins
 from ..deepar.layers import LambdaWithOneToOneTopology, CombineAutoregressiveConditionals, \
     NormalizeInLogSpace, PlusMinusOneToOneHot
 from ..deepar.graph_analysis.dependency_graph import assert_valid_probabilistic_model
@@ -47,9 +47,12 @@ class AutoregressiveMachine(Machine):
 
 
 class AutoNormalizedAutoregressiveMachine(AutoregressiveMachine):
-    def __init__(self, keras_input_layer, **kwargs):
+    def __init__(self, keras_input_layer, equal_up_down_spins=False, **kwargs):
+        x = self.unnormalized_conditional_log_wave_function
+        if equal_up_down_spins:
+            x = EqualUpDownSpins()([x, keras_input_layer])
         self._conditional_log_wave_function = NormalizeInLogSpace(norm_type=2, name='conditional_log_wave_function')\
-            (self.unnormalized_conditional_log_wave_function)
+            (x)
         self._conditional_log_probs = LambdaWithOneToOneTopology(
             lambda x: tensorflow.real(x) * 2.0)(self._conditional_log_wave_function)
         super(AutoNormalizedAutoregressiveMachine, self).__init__(keras_input_layer, **kwargs)
