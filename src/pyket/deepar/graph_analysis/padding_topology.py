@@ -17,6 +17,8 @@ class PaddingTopology(LayerTopology):
         self.prefix_padding = tuple([dim[0] for dim in self.padding])
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+        if not isinstance(dependencies_values, list):
+            return self.get_zeros(dependencies_values)
         return dependencies_values[0]
 
     def get_spatial_dependency(self, spatial_location):

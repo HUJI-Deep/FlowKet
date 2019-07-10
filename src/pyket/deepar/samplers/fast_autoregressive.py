@@ -16,24 +16,24 @@ class FastAutoregressiveSampler(Sampler):
         super(FastAutoregressiveSampler, self).__init__(input_size=conditional_log_probs_machine.input_shape[1:],
                                                         batch_size=batch_size, **kwargs)
         self.input_layer = conditional_log_probs_machine.get_layer(conditional_log_probs_machine.input_names[0])
+        self.batch_size_t = K.placeholder(dtype='int32', shape=())
         self.dependencies_graph = DependencyGraph(conditional_log_probs_machine)
         self._layer_to_activation_array = {}
         self._build_sampling_function()
-        self._fake_input = numpy.zeros((self.mini_batch_size, )).tolist()
 
     def __next__(self):
         if self.mini_batch_size < self.batch_size:
-            return numpy.concatenate([self.sampling_function(self._fake_input)[0]
+            return numpy.concatenate([self.sampling_function(self.mini_batch_size)[0]
                                       for _ in range(self.batch_size // self.mini_batch_size)])
 
-        return self.sampling_function(self._fake_input)[0]
+        return self.sampling_function(self.mini_batch_size)[0]
 
     def _create_layer_activation_array(self, layer):
         output_shape = layer.output_shape
         if isinstance(layer, InputLayer):
             # we assume the last dim is channels dim in every layer
             output_shape = output_shape + (1,)
-        zeros = tensorflow.zeros(shape=(self.mini_batch_size, output_shape[-1],),
+        zeros = tensorflow.zeros(shape=(self.batch_size_t, output_shape[-1],),
                                  dtype=tensorflow.as_dtype(layer.dtype))
         self._layer_to_activation_array[layer] = numpy.full(output_shape[1:-1], fill_value=zeros)
 
@@ -60,11 +60,12 @@ class FastAutoregressiveSampler(Sampler):
         for node in self.sampling_order:
             layer_topology = TopologyManager().get_layer_topology(node.layer)
             dependencies = layer_topology.get_spatial_dependency(node.spatial_location)
-            if len(dependencies) == 0:
-                continue
             activation_array = self._get_or_create_layer_activation_array(node.layer)
-            dependencies_values = [self._get_dependency_value(node.layer, dependency) for dependency in dependencies]
+            if len(dependencies) == 0:
+                dependencies_values = self.batch_size_t
+            else:
+                dependencies_values = [self._get_dependency_value(node.layer, dependency) for dependency in dependencies]
             activation_array[node.spatial_location] = layer_topology. \
                 apply_layer_for_single_spatial_location(node.spatial_location, dependencies_values)
         sample = self._extract_the_sample()
-        self.sampling_function = K.function(inputs=[], outputs=[sample])
+        self.sampling_function = K.function(inputs=[self.batch_size_t], outputs=[sample])

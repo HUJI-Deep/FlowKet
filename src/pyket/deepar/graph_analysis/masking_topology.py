@@ -8,8 +8,9 @@ class DownShiftTopology(LayerTopology):
     """docstring for OneToOneTopology"""
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
-        if len(dependencies_values) == 0:
-            raise Exception("can't infer the batch size")
+        if spatial_location[0] == 0:
+            batch_size = dependencies_values
+            return self.get_zeros(batch_size)
         return dependencies_values[0]
 
     def get_spatial_dependency(self, spatial_location):
@@ -23,8 +24,9 @@ class RightShiftTopology(LayerTopology):
     """docstring for OneToOneTopology"""
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
-        if len(dependencies_values) == 0:
-            raise Exception("can't infer the batch size")
+        if spatial_location[1] == 0:
+            batch_size = dependencies_values
+            return self.get_zeros(batch_size)
         return dependencies_values[0]
 
     def get_spatial_dependency(self, spatial_location):
