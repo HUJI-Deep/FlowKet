@@ -7,7 +7,7 @@ from tensorflow.keras.layers import Lambda
 from ..deepar.layers import LambdaWithOneToOneTopology
 
 
-LOG_ZERO = -1e+30
+LOG_ZERO = -1e+300
 
 
 def equal_up_down_spins_function(x):
