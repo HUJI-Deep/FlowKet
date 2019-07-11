@@ -46,7 +46,11 @@ class DependencyGraph(object):
             if isinstance(layer, InputLayer):
                 # we assume the last dim is channels dim in every layer
                 output_shape = output_shape + (1,)
-            self.layer_to_output_shape[layer] = output_shape[1:-1]
+            if isinstance(output_shape, list):
+                # todo handel multiple outputs we can find the real dependency with Node.tensor_indices
+                pass
+            else:
+                self.layer_to_output_shape[layer] = output_shape[1:-1]
 
     def _dependency_graph_visitor(self, layer, inbound_layers):
         self.layer_to_input_layers[layer] = inbound_layers
