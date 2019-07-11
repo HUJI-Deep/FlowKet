@@ -11,13 +11,13 @@ from ..layers import CastingLayer, ExpandInputDim, LambdaWithOneToOneTopology, T
 class OneToOneTopology(LayerTopology):
     """docstring for OneToOneTopology"""
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         values = dependencies_values
         if len(values) == 1:
             values = values[0]
         return self.layer(values)
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         layer_inputs = self.layer.input
         if not isinstance(layer_inputs, list):
             layer_inputs = [layer_inputs]
@@ -27,7 +27,7 @@ class OneToOneTopology(LayerTopology):
 class OneToOneTopologyWithIdentity(OneToOneTopology):
     """docstring for OneToOneTopology"""
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         values = dependencies_values
         if len(values) == 1:
             values = values[0]
@@ -37,7 +37,7 @@ class OneToOneTopologyWithIdentity(OneToOneTopology):
 class OneHotTopologyWithIdentity(OneToOneTopology):
     """docstring for OneToOneTopology"""
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         values = dependencies_values[0]
         return self.layer(values[..., 0])
 

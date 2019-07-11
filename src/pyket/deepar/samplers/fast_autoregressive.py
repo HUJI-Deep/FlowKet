@@ -2,7 +2,6 @@ import networkx
 import numpy
 import tensorflow
 from tensorflow.keras import backend as K
-from tensorflow.python.keras.engine.input_layer import InputLayer
 
 from .base_sampler import Sampler
 from ..graph_analysis.dependency_graph import DependencyGraph
@@ -29,29 +28,28 @@ class FastAutoregressiveSampler(Sampler):
         return self.sampling_function(self.mini_batch_size)[0]
 
     def _create_layer_activation_array(self, layer):
-        output_shape = layer.output_shape
-        if isinstance(layer, InputLayer):
-            # we assume the last dim is channels dim in every layer
-            output_shape = output_shape + (1,)
-        zeros = tensorflow.zeros(shape=(self.batch_size_t, output_shape[-1],),
-                                 dtype=tensorflow.as_dtype(layer.dtype))
-        self._layer_to_activation_array[layer] = numpy.full(output_shape[1:-1], fill_value=zeros)
+        self._layer_to_activation_array[layer] = []
+        for output_index, output_shape in enumerate(self.dependencies_graph.layer_to_output_shape[layer]):
+            zeros = TopologyManager().get_layer_topology(layer).get_zeros(self.batch_size_t, output_index)
+            self._layer_to_activation_array[layer].append(numpy.full(output_shape, fill_value=zeros))
 
-    def _get_layer_activation_array(self, layer):
-        return self._layer_to_activation_array[layer]
+    def _get_layer_activation_array(self, layer, output_index):
+        return self._layer_to_activation_array[layer][output_index]
 
-    def _get_or_create_layer_activation_array(self, layer):
+    def _get_or_create_layer_activation_array(self, layer, output_index):
         if layer not in self._layer_to_activation_array:
             self._create_layer_activation_array(layer)
-        return self._get_layer_activation_array(layer)
+        return self._get_layer_activation_array(layer, output_index)
 
     def _get_dependency_value(self, layer, dependency):
         layer_inputs = self.dependencies_graph.layer_to_input_layers[layer]
-        return self._get_or_create_layer_activation_array(layer_inputs[dependency.input_index])[
+        inputs_indices = self.dependencies_graph.layer_to_input_indices[layer]
+        return self._get_or_create_layer_activation_array(layer_inputs[dependency.input_index],
+                                                          inputs_indices[dependency.input_index])[
             dependency.spatial_location]
 
     def _extract_the_sample(self):
-        sample_tensors_array = self._get_layer_activation_array(self.input_layer)
+        sample_tensors_array = self._get_layer_activation_array(self.input_layer, output_index=0)
         flat_sample = tensorflow.stack(sample_tensors_array.flatten().tolist(), axis=1)
         return tensorflow.reshape(flat_sample, (-1,) + sample_tensors_array.shape)
 
@@ -59,8 +57,8 @@ class FastAutoregressiveSampler(Sampler):
         self.sampling_order = list(networkx.topological_sort(self.dependencies_graph.graph))
         for node in self.sampling_order:
             layer_topology = TopologyManager().get_layer_topology(node.layer)
-            dependencies = layer_topology.get_spatial_dependency(node.spatial_location)
-            activation_array = self._get_or_create_layer_activation_array(node.layer)
+            dependencies = layer_topology.get_spatial_dependency(node.spatial_location, output_index=node.output_index)
+            activation_array = self._get_or_create_layer_activation_array(node.layer, node.output_index)
             if len(dependencies) == 0:
                 dependencies_values = self.batch_size_t
             else:

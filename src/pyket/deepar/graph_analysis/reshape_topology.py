@@ -28,10 +28,10 @@ class ReshapeTopology(LayerTopology):
         self.input_multiplications_factors = self.layer.input_shape[1:-1]
         self.output_multiplications_factors = self.target_shape[:-1]
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         return dependencies_values[0]
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         flat_spatial_location = 0
         for dim_location, multiplication_factor in zip(spatial_location, self.output_multiplications_factors):
             flat_spatial_location *= multiplication_factor

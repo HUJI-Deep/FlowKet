@@ -14,12 +14,12 @@ class GatherTopology(LayerTopology):
             self.axis = len(self.layer.input_shape) - self.axis
         self.features_gathering = self.axis == len(self.layer.input_shape) - 1
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         if self.features_gathering:
             return self.layer(dependencies_values[0])
         return dependencies_values[0]
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         if self.features_gathering:
             input_spatial_location = spatial_location
         else:
