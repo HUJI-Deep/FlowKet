@@ -7,6 +7,22 @@ from .topology_manager import TopologyManager
 from tensorflow.keras.layers import Reshape
 
 
+def to_flat_spatial_location(spatial_location, spatial_shape):
+    flat_spatial_location = 0
+    for dim_location, multiplication_factor in zip(spatial_location, spatial_shape):
+        flat_spatial_location *= multiplication_factor
+        flat_spatial_location += dim_location
+    return flat_spatial_location
+
+
+def from_flat_index_to_spatial_location(flat_index, spatial_shape):
+    input_spatial_location = []
+    for factor in spatial_shape[::-1]:
+        input_spatial_location.append(flat_index % factor)
+        flat_index = flat_index // factor
+    return tuple(input_spatial_location[::-1])
+
+
 class ReshapeTopology(LayerTopology):
     """docstring for PaddingTopology"""
 
@@ -21,28 +37,17 @@ class ReshapeTopology(LayerTopology):
             if total_size % numpy.prod(self.target_shape) != 0:
                 raise Exception('bad target shape')
             self.target_shape = self.target_shape[:] + (
-            -1 * total_size // numpy.prod(self.target_shape),) + self.target_shape[minus_one_idx + 1:]
+                -1 * total_size // numpy.prod(self.target_shape),) + self.target_shape[minus_one_idx + 1:]
         if self.target_shape[-1] != self.layer.input_shape[-1]:
             raise Exception("can't move information between spatial and features dimensions")
-
-        self.input_multiplications_factors = self.layer.input_shape[1:-1]
-        self.output_multiplications_factors = self.target_shape[:-1]
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
         return dependencies_values[0]
 
     def get_spatial_dependency(self, spatial_location):
-        flat_spatial_location = 0
-        for dim_location, multiplication_factor in zip(spatial_location, self.output_multiplications_factors):
-            flat_spatial_location *= multiplication_factor
-            flat_spatial_location += dim_location
-
-        input_spatial_location = []
-        for factor in self.input_multiplications_factors[::-1]:
-            input_spatial_location.append(flat_spatial_location % factor)
-            flat_spatial_location = flat_spatial_location // factor
-
-        return [Dependency(input_index=0, spatial_location=tuple(input_spatial_location[::-1]))]
+        flat_spatial_location = to_flat_spatial_location(spatial_location, self.layer.input_shape[1:-1])
+        input_spatial_location = from_flat_index_to_spatial_location(flat_spatial_location, self.target_shape[:-1])
+        return [Dependency(input_index=0, spatial_location=input_spatial_location)]
 
 
 TopologyManager().register_layer_topology(Reshape, ReshapeTopology)
