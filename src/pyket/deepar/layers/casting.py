@@ -18,5 +18,7 @@ class CastingLayer(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-ToFloat32 = functools.partial(CastingLayer, 'float32')
-ToFloat64 = functools.partial(CastingLayer, 'float64')
+ToFloat32 = functools.update_wrapper(functools.partial(CastingLayer, 'float32'), CastingLayer)
+ToFloat64 = functools.update_wrapper(functools.partial(CastingLayer, 'float64'), CastingLayer)
+ToFloat32.__module__ = CastingLayer.__module__
+ToFloat64.__module__ = CastingLayer.__module__

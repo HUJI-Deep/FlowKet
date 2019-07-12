@@ -16,12 +16,12 @@ class PaddingTopology(LayerTopology):
             self.padding = (self.padding, )
         self.prefix_padding = tuple([dim[0] for dim in self.padding])
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         if not isinstance(dependencies_values, list):
-            return self.get_zeros(dependencies_values)
+            return self.get_zeros(dependencies_values, output_index)
         return dependencies_values[0]
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         for location, (prefix, _), input_shape in \
                 zip(spatial_location, self.padding, self.layer.input_shape[1:-1]):
             if location < prefix or location - prefix >= input_shape:
@@ -42,10 +42,10 @@ class PeriodicPaddingTopology(LayerTopology):
                 dim_padding = dim_padding[0]
             self.padding.append(dim_padding)
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         return dependencies_values[0]
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         shifted_spatial_location = tuple([(location - padding) % input_shape for location, padding, input_shape in
                                           zip(spatial_location, self.padding, self.layer.input_shape[1:-1])])
         return [Dependency(input_index=0, spatial_location=shifted_spatial_location)]

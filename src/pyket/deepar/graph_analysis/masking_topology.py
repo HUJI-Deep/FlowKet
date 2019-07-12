@@ -7,13 +7,13 @@ from ..layers import DownShiftLayer, RightShiftLayer
 class DownShiftTopology(LayerTopology):
     """docstring for OneToOneTopology"""
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         if spatial_location[0] == 0:
             batch_size = dependencies_values
-            return self.get_zeros(batch_size)
+            return self.get_zeros(batch_size, output_index)
         return dependencies_values[0]
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         if spatial_location[0] == 0:
             return []
         shifted_spatial_location = (spatial_location[0] - 1,) + spatial_location[1:]
@@ -23,13 +23,13 @@ class DownShiftTopology(LayerTopology):
 class RightShiftTopology(LayerTopology):
     """docstring for OneToOneTopology"""
 
-    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
+    def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         if spatial_location[1] == 0:
             batch_size = dependencies_values
-            return self.get_zeros(batch_size)
+            return self.get_zeros(batch_size, output_index)
         return dependencies_values[0]
 
-    def get_spatial_dependency(self, spatial_location):
+    def get_spatial_dependency(self, spatial_location, output_index=0):
         if spatial_location[1] == 0:
             return []
         shifted_spatial_location = spatial_location[:1] + (spatial_location[1] - 1,) + spatial_location[2:]

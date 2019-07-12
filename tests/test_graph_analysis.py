@@ -19,6 +19,7 @@ DEFAULT_TF_GRAPH = tf.get_default_graph()
 @pytest.mark.parametrize('layer, input_layer, batch_size', [
     (Concatenate(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Add(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
+    (Add(), [Input((6, 6, 5)), Input((1, 1, 5))], 32),
     (Subtract(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Multiply(), [Input((6, 6, 5)), Input((6, 6, 5))], 32),
     (Average(), [Input((6, 6, 5)), Input((6, 6, 5)), Input((6, 6, 5))], 32),
