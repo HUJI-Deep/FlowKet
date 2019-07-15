@@ -94,6 +94,6 @@ def netket_vector_to_exact_variational_vector(netket_vector, netket_operator, ex
 
 def vector_to_machine(wave_function_vector):
     def machine(batch):
-        return wave_function_vector[binary_array_to_decimal_array(batch)][:, numpy.newaxis]
+        return wave_function_vector[binary_array_to_decimal_array(numpy.reshape(batch, (batch.shape[0], -1)))][..., numpy.newaxis]
 
     return machine
