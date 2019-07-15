@@ -38,7 +38,7 @@ def binary_to_decimal(binary_digits):
 
 def binary_array_to_decimal_array(binary_digits, out=None):
     if out is None:
-        out = numpy.zeros((binary_digits.shape[:-1]))
+        out = numpy.zeros((binary_digits.shape[:-1]), dtype='int32')
     power = 1
     for i in range(binary_digits.shape[-1]):
         out += (binary_digits[..., i] == 1) * power

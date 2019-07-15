@@ -13,6 +13,7 @@ from tensorflow.keras.models import Model
 
 from tensorflow.python.keras import backend as K
 
+from .conv_net_autoregressive_2D_with_latent_alternations import ConvNetAutoregressive2DWithLatentAlternations
 
 ONE_DIM_INPUT = Input(shape=(10,), dtype='int8')
 TWO_DIM_INPUT = Input(shape=(4, 3), dtype='int8')
@@ -43,18 +44,21 @@ def sampler_factory(sampler_class, machine, machine_input, num_of_samples):
 
 
 @pytest.mark.parametrize('sampler_class, machine_input, machine_class, machine_args', [
-    (AutoregressiveSampler, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
-     {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
-    (AutoregressiveSampler, TWO_DIM_INPUT, ConvNetAutoregressive2D,
+
+    (FastAutoregressiveSampler, TWO_DIM_INPUT, ConvNetAutoregressive2DWithLatentAlternations,
      {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
-    (FastAutoregressiveSampler, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
-     {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
-    (FastAutoregressiveSampler, TWO_DIM_INPUT, ConvNetAutoregressive2D,
-     {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
-    (MetropolisHastingsLocal, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
-     {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
-    (MetropolisHastingsLocal, TWO_DIM_INPUT, ConvNetAutoregressive2D,
-     {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
+    # (AutoregressiveSampler, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
+    #  {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
+    # (AutoregressiveSampler, TWO_DIM_INPUT, ConvNetAutoregressive2D,
+    #  {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
+    # (FastAutoregressiveSampler, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
+    #  {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
+    # (FastAutoregressiveSampler, TWO_DIM_INPUT, ConvNetAutoregressive2D,
+    #  {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
+    # (MetropolisHastingsLocal, ONE_DIM_INPUT, SimpleConvNetAutoregressive1D,
+    #  {'depth': 5, 'num_of_channels': 16, 'weights_normalization': False}),
+    # (MetropolisHastingsLocal, TWO_DIM_INPUT, ConvNetAutoregressive2D,
+    #  {'depth': 2, 'num_of_channels': 16, 'weights_normalization': False}),
 ])
 def test_sampler_by_l1(sampler_class, machine_input, machine_class, machine_args):
     # this test based on https://arxiv.org/pdf/1308.3946.pdf
@@ -67,7 +71,7 @@ def test_sampler_by_l1(sampler_class, machine_input, machine_class, machine_args
         exact_sampler = ExactSampler(exact_variational, BATCH_SIZE)
         num_of_samples = max(2 ** 16, 16 * exact_variational.num_of_states)
         exact_sampler._set_batch_size(num_of_samples, mini_batch_size=BATCH_SIZE)
-        batch_from_exact_sampler= next(exact_sampler)
+        batch_from_exact_sampler = next(exact_sampler)
         sampler = sampler_factory(sampler_class, machine, machine_input, num_of_samples)
         batch_from_sampler = next(sampler)
         sampler_chosen_idx = binary_array_to_decimal_array(batch_from_sampler.reshape((num_of_samples, -1)))
