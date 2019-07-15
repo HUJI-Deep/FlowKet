@@ -31,5 +31,8 @@ class LayerTopology(abc.ABC):
         output_shape = self.layer.output_shape
         if isinstance(output_shape, tuple):
             output_shape = [output_shape]
+        dtype = tensorflow.float32
+        if self.layer.dtype is not None:
+            dtype = self.layer.dtype
         return tensorflow.zeros(shape=(batch_size, output_shape[output_index][-1],),
-                                dtype=tensorflow.as_dtype(self.layer.dtype))
+                                dtype=tensorflow.as_dtype(dtype))

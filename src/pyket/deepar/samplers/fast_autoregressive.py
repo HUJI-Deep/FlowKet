@@ -25,7 +25,7 @@ class FastAutoregressiveSampler(Sampler):
             return numpy.concatenate([self.sampling_function(self.mini_batch_size)[0]
                                       for _ in range(self.batch_size // self.mini_batch_size)])
 
-        return self.sampling_function(self.mini_batch_size)[0]
+        return self.sampling_function([self.mini_batch_size])[0]
 
     def _create_layer_activation_array(self, layer):
         self._layer_to_activation_array[layer] = []
