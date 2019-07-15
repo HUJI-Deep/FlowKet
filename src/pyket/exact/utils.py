@@ -90,3 +90,10 @@ def netket_vector_to_exact_variational_vector(netket_vector, netket_operator, ex
     for i in range(exact_variational.num_of_states):
         netket_hilbert_index[i] = hilbert_index.state_to_number(exact_variational.states[i, ...].reshape((-1, 1)))
     return netket_vector[netket_hilbert_index]
+
+
+def vector_to_machine(wave_function_vector):
+    def machine(batch):
+        return wave_function_vector[binary_array_to_decimal_array(batch)][:, numpy.newaxis]
+
+    return machine

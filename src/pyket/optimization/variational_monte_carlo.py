@@ -5,7 +5,7 @@ import numpy
 import tensorflow
 from tensorflow.python.keras import backend as K
 
-from ..observables.monte_carlo import Observable
+from ..observables.monte_carlo import Observable, BaseObservable
 
 
 class VariationalMonteCarlo(object):
@@ -20,7 +20,9 @@ class VariationalMonteCarlo(object):
         self._session = K.get_session()
         self.current_batch = None
         self.wave_function = functools.partial(self.model.predict, batch_size=self._mini_batch_size)
-        self.energy_observable = Observable(operator)
+        self.energy_observable = operator
+        if not isinstance(self.energy_observable, BaseObservable):
+            self.energy_observable = Observable(operator)
 
     def set_sampler(self, sampler, mini_batch_size=None):
         self.sampler = sampler
