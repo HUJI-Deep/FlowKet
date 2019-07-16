@@ -27,7 +27,7 @@ class NetketOperatorWrapper(Operator):
         results = numpy.zeros((num_of_states, hilbert_space.size))
         for i in range(num_of_states):
             hilbert_space.random_vals(results[i, :], random_engine)
-        return results
+        return numpy.reshape(results, (num_of_states, ) + self.hilbert_state_shape)
 
     def _calculate_num_of_local_connectios_from_netket_operator(self):
         random_state = self.random_states(1)
