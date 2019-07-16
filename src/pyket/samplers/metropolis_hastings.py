@@ -89,7 +89,7 @@ class MetropolisHastingsSampler(Sampler):
         return r_hat, variance, correlations_sum, effective_sample_size
 
 
-class MetropolisHastingsHastingSymmetricProposal(MetropolisHastingsSampler):
+class MetropolisHastingsSymmetricProposal(MetropolisHastingsSampler):
     """docstring for MetropoliceHastingSymmetricProposal"""
 
     @abc.abstractmethod
@@ -112,10 +112,10 @@ class MetropolisHastingsHastingSymmetricProposal(MetropolisHastingsSampler):
         return self.accepts.sum()
 
     def __init__(self, machine, batch_size, **kwargs):
-        super(MetropolisHastingsHastingSymmetricProposal, self).__init__(machine, batch_size, **kwargs)
+        super(MetropolisHastingsSymmetricProposal, self).__init__(machine, batch_size, **kwargs)
 
 
-class MetropolisHastingsLocal(MetropolisHastingsHastingSymmetricProposal):
+class MetropolisHastingsLocal(MetropolisHastingsSymmetricProposal):
     """docstring for MetropoliceLocal"""
 
     def _next_candidates(self):
@@ -125,11 +125,26 @@ class MetropolisHastingsLocal(MetropolisHastingsHastingSymmetricProposal):
         numpy.copyto(self.candidates, self.sample)
         self.candidates[idx_for_dim] *= -1
 
-    def __init__(self, machine, batch_size, **kwargs):
-        super(MetropolisHastingsLocal, self).__init__(machine, batch_size, **kwargs)
+
+class MetropolisHastingsExchange(MetropolisHastingsSymmetricProposal):
+    """docstring for MetropoliceLocal"""
+
+    def _next_candidates(self):
+        idx = [range(self.num_of_chains)]
+        idx_2 = [range(self.num_of_chains)]
+        for dim_size in self.sample.shape[1:]:
+            dim_idx = numpy.random.randint(low=dim_size, size=self.num_of_chains)
+            dim_idx_move = numpy.random.randint(low=-1, high=2, size=self.num_of_chains)
+            idx.append(dim_idx)
+            idx_2.append((dim_idx + dim_idx_move) % dim_size) 
+        idx, idx_2 = tuple(idx), tuple(idx_2)
+        numpy.copyto(self.candidates, self.sample)
+        temp = self.candidates[idx]
+        self.candidates[idx] = self.candidates[idx_2]
+        self.candidates[idx_2] = temp
 
 
-class MetropolisHastingsGlobal(MetropolisHastingsHastingSymmetricProposal):
+class MetropolisHastingsGlobal(MetropolisHastingsSymmetricProposal):
     """docstring for MetropolisHastingsGlobal"""
 
     def _next_candidates(self):
@@ -141,7 +156,7 @@ class MetropolisHastingsGlobal(MetropolisHastingsHastingSymmetricProposal):
         self.global_sampler = global_sampler
 
 
-class MetropolisHastingsUniform(MetropolisHastingsHastingSymmetricProposal):
+class MetropolisHastingsUniform(MetropolisHastingsSymmetricProposal):
     """docstring for MetropoliceUniform"""
 
     def _next_candidates(self):
