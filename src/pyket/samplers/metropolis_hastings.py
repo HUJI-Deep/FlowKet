@@ -106,7 +106,8 @@ class MetropolisHastingsSymmetricProposal(MetropolisHastingsSampler):
         log_ratio = numpy.multiply(numpy.subtract(numpy.real(candidates_machine_values),
                                                   numpy.real(self.sample_machine_values),
                                                   out=self.first_temp_out_real), 2.0, out=self.second_temp_out_real)
-        numpy.greater(numpy.exp(log_ratio), numpy.random.uniform(size=num_of_chains), out=self.accepts)
+        log_ratio = numpy.minimum(log_ratio, 0, out=self.first_temp_out_real)
+        numpy.greater(numpy.exp(log_ratio, out=self.second_temp_out_real), numpy.random.uniform(size=num_of_chains), out=self.accepts)
         self.sample[self.accepts, ...] = self.candidates[self.accepts, ...]
         self.sample_machine_values[self.accepts] = candidates_machine_values[self.accepts]
         return self.accepts.sum()
