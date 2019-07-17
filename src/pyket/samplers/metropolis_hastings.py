@@ -128,7 +128,7 @@ class MetropolisHastingsLocal(MetropolisHastingsSymmetricProposal):
 
 
 class MetropolisHastingsExchange(MetropolisHastingsSymmetricProposal):
-    """docstring for MetropoliceLocal"""
+    """docstring for MetropolisHastingsExchange"""
 
     def _next_candidates(self):
         idx = [range(self.num_of_chains)]
