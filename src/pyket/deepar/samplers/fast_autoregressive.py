@@ -20,6 +20,11 @@ class FastAutoregressiveSampler(Sampler):
         self._layer_to_activation_array = {}
         self._build_sampling_function()
 
+    def copy_with_new_batch_size(self, batch_size):
+        new_sampler = copy.copy(self)
+        new_sampler.batch_size = batch_size
+        return new_sampler
+
     def __next__(self):
         if self.mini_batch_size < self.batch_size:
             return numpy.concatenate([self.sampling_function(self.mini_batch_size)[0]
