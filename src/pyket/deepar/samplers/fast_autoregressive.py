@@ -1,3 +1,5 @@
+import copy
+
 import networkx
 import numpy
 import tensorflow
