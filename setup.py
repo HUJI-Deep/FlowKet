@@ -10,9 +10,9 @@ from os.path import splitext
 from setuptools import setup, find_packages
 
 setup(name='pyket',
-      version='0.0.1',
+      version='0.1',
       description='VMC framework for Tensorflow',
-      url='https://github.com/HUJI-Deep/AutoregressiveQuantumModel',
+      url='https://github.com/HUJI-Deep/PyKet',
       author='Noam Wies',
       author_email='noam.wies@mail.huji.ac.il',
       license='MIT',
@@ -30,6 +30,6 @@ setup(name='pyket',
       project_urls={
           # 'Documentation': 'https://pyket.readthedocs.io/',
           # 'Changelog': 'https://pyket.readthedocs.io/en/latest/changelog.html',
-          'Issue Tracker': 'https://github.com/noamwies/Pyket/issues',
+          'Issue Tracker': 'https://github.com/HUJI-Deep/PyKet/issues',
       },
       )
