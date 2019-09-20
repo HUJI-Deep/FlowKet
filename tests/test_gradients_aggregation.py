@@ -46,6 +46,28 @@ def test_update_just_when_need():
     assert w_after_second_call == -1.5
 
 
+def test_changing_the_update_frequency():
+    optimizer = SGD(lr=1.0)
+    model, get_w, get_sgd_iteration = get_simple_linear_model(optimizer, 1, False)
+    optimizer.set_update_params_frequency(2)
+    w_before_call = get_w()
+    model.fit(x=np.array([[2.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
+    w_after_first_call = get_w()
+    global_step_after_first_call = get_sgd_iteration()
+    model.fit(x=np.array([[3.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
+    w_after_second_call = get_w()
+    global_step_after_second_call = get_sgd_iteration()
+    optimizer.set_update_params_frequency(1)
+    model.fit(x=np.array([[1.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
+    w_after_third_call = get_w()
+    assert global_step_after_first_call == 0
+    assert global_step_after_second_call == 1
+    assert w_before_call == 1.0
+    assert w_after_first_call == 1.0
+    assert w_after_second_call == -1.5
+    assert w_after_third_call == -2.5
+
+
 def test_reset_after_update():
     model, get_w, get_sgd_iteration = get_simple_linear_model(SGD(lr=1.0), 1, False)
     model.fit(x=np.array([[2.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
