@@ -114,7 +114,7 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
         return jacobian_complex - mean_grad
 
     def get_stochastic_reconfiguration_matrix_vector_product_via_jvp(self, complex_vector):
-        mean_pred = tf.reduce_mean(tf.real(self.predictions_keras_model.output))
+        mean_pred = tf.reduce_mean(tf.math.real(self.predictions_keras_model.output))
         mean_grad = tensors_to_column(self.get_model_parameters_complex_value_gradients(mean_pred))
         jvp = self.get_predictions_jacobian_vector_product(complex_vector, conjugate_jacobian=True)
         ok_remainder = tf.squeeze(tf.matmul(tensors_to_column(complex_vector), mean_grad, transpose_a=True))

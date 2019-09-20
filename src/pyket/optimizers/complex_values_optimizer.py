@@ -41,8 +41,8 @@ class ComplexValuesOptimizer(Optimizer):
 
     def apply_complex_gradient(self, flat_gradient):
         conj_flat_gradient = tf.conj(flat_gradient)
-        real_gradients = column_to_tensors(self.model_real_weights, tf.real(conj_flat_gradient))
-        imag_gradients = column_to_tensors(self.model_imag_weights, tf.imag(conj_flat_gradient))
+        real_gradients = column_to_tensors(self.model_real_weights, tf.math.real(conj_flat_gradient))
+        imag_gradients = column_to_tensors(self.model_imag_weights, tf.math.imag(conj_flat_gradient))
         updates = []
         for p, g in zip(self.model_real_weights + self.model_imag_weights, real_gradients + imag_gradients):
             new_p = p + self.lr * g
@@ -72,5 +72,5 @@ class ComplexValuesOptimizer(Optimizer):
     def from_complex_vector_to_tensors(self, complex_vector):
 
         return [tf.concat([r, i], axis=0) for r, i in
-                zip(column_to_tensors(self.model_real_weights, tf.real(complex_vector)),
-                    column_to_tensors(self.model_real_weights, tf.imag(complex_vector)))]
+                zip(column_to_tensors(self.model_real_weights, tf.math.real(complex_vector)),
+                    column_to_tensors(self.model_real_weights, tf.math.imag(complex_vector)))]

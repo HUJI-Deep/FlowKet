@@ -106,15 +106,15 @@ def complex_values_jacobians_to_real_parts(jacobians):
     layer_jacobians_real_weights = []
     for jacobian in jacobians:
         jacobian = tf.conj(jacobian)
-        layer_jacobians_real_weights.append(tf.real(jacobian))
-        layer_jacobians_real_weights.append(tf.imag(jacobian))
+        layer_jacobians_real_weights.append(tf.math.real(jacobian))
+        layer_jacobians_real_weights.append(tf.math.imag(jacobian))
     return layer_jacobians_real_weights
 
 
 def gradient_per_example(loss, keras_model):
     results = []
     layers_with_params = [layer for layer in keras_model.layers if layer.count_params() > 0]
-    activations_grads = tf.gradients(tf.real(loss), [layer.output for layer in layers_with_params])
+    activations_grads = tf.gradients(tf.math.real(loss), [layer.output for layer in layers_with_params])
     for layer, activations_grad in zip(layers_with_params, activations_grads):
         layer_jacobians = JacobianManager().get_layer_jacobian(layer).jacobian(activations_grad)
         if isinstance(layer, ComplexLayer):
@@ -124,7 +124,7 @@ def gradient_per_example(loss, keras_model):
 
 
 def predictions_jacobian(keras_model):
-    return Lambda(lambda x: gradient_per_example(tf.real(x), keras_model))(keras_model.output)
+    return Lambda(lambda x: gradient_per_example(tf.math.real(x), keras_model))(keras_model.output)
 
 
 JacobianManager().register_layer_jacobian(DenseJacobian, Dense)
