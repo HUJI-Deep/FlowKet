@@ -13,6 +13,20 @@ In addition to an MCMC energy gradient estimator, we have also implemented our n
 }
 ```
 
+## Installation
+
+PyKet assumes Tensorflow is already part of the enviornment. We currently support Tensorflow 1.10-1.13, but plan to extend support to all >=1.10+ and 2.0.
+
+We plan to submit our library to PyPI, but meanwhile to install PyKet simply use pip as follows:
+```bash
+pip install -e "git+https://github.com/HUJI-Deep/PyKet.git#egg=pyket"
+```
+
+If you wish to work on extending our library, you can clone our project and instead run:
+```bash
+pip install -e /path/to/local/repo
+```
+
 ## Basic Tutorial
 
 While we are working on writing a proper tutorial on using the framework, we suggest going through the example files.
