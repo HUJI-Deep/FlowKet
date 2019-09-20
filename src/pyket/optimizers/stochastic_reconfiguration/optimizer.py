@@ -110,11 +110,11 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
 
     def get_wave_function_jacobian_minus_mean(self):
         jacobian_complex = self.get_predictions_jacobian()
-        mean_grad = tf.reduce_mean(jacobian_complex, axis=0, keepdims=True)
+        mean_grad = tf.math.reduce_mean(jacobian_complex, axis=0, keepdims=True)
         return jacobian_complex - mean_grad
 
     def get_stochastic_reconfiguration_matrix_vector_product_via_jvp(self, complex_vector):
-        mean_pred = tf.reduce_mean(tf.math.real(self.predictions_keras_model.output))
+        mean_pred = tf.math.reduce_mean(tf.math.real(self.predictions_keras_model.output))
         mean_grad = tensors_to_column(self.get_model_parameters_complex_value_gradients(mean_pred))
         jvp = self.get_predictions_jacobian_vector_product(complex_vector, conjugate_jacobian=True)
         ok_remainder = tf.squeeze(tf.matmul(tensors_to_column(complex_vector), mean_grad, transpose_a=True))
@@ -171,10 +171,10 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
     def _update_s_matrix_stats(self, num_of_complex_params_t, s):
         if not self.add_s_matrix_stats:
             return tf.no_op(), tf.no_op()
-        abs_eigvals = tf.abs(tf.linalg.eigvalsh(s))
-        tol = K.epsilon() * tf.cast(num_of_complex_params_t, abs_eigvals.dtype) * tf.reduce_max(
-            tf.abs(s))  # see https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.matrix_rank.html
+        abs_eigvals = tf.math.abs(tf.linalg.eigvalsh(s))
+        tol = K.epsilon() * tf.cast(num_of_complex_params_t, abs_eigvals.dtype) * tf.math.reduce_max(
+            tf.math.abs(s))  # see https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.matrix_rank.html
         filtered_eigvals = tf.boolean_mask(abs_eigvals, abs_eigvals > tol)
         updated_s_matrix_rank = K.update(self.s_matrix_rank, tf.count_nonzero(filtered_eigvals))
-        updated_s_matrix_min_eigval = K.update(self.s_matrix_min_eigval, tf.reduce_min(filtered_eigvals))
+        updated_s_matrix_min_eigval = K.update(self.s_matrix_min_eigval, tf.math.reduce_min(filtered_eigvals))
         return updated_s_matrix_min_eigval, updated_s_matrix_rank

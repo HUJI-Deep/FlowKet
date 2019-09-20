@@ -27,7 +27,7 @@ class ComplexLayer(Layer):
                                initializer=complex_initializer.get_imag_part_initializer(),
                                dtype=dtype,
                                trainable=trainable)
-        minus_imag = tensorflow.multiply(imag, -1., 'conj_imag')
+        minus_imag = tensorflow.math.multiply(imag, -1., 'conj_imag')
         self.real_weights.append(real)
         self.imag_weights.append(imag)
         self.weights_for_complex_value_params_gradient_conjugate.append(real)

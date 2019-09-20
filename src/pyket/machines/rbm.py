@@ -44,7 +44,7 @@ class RBM(RBMBase):
                          use_bias=False,
                          dtype=self.layers_dtype,
                          kernel_initializer=self.initializer)(x)
-        y = Lambda(lambda t: tensorflow.reduce_sum(t, axis=-1, keepdims=True))(self._lnthetas)
+        y = Lambda(lambda t: tensorflow.math.reduce_sum(t, axis=-1, keepdims=True))(self._lnthetas)
         return Add()([x, y])
 
 
@@ -56,10 +56,10 @@ class RBMSym(RBMBase):
                                                           kernel_initializer=self.initializer,
                                                           bias_initializer=self.initializer)(x)
         x = Flatten()(x)
-        x = Lambda(lambda t: tensorflow.reduce_sum(t, axis=-1, keepdims=True))(x)
+        x = Lambda(lambda t: tensorflow.math.reduce_sum(t, axis=-1, keepdims=True))(x)
         x = ComplexDense(units=1,
                          use_bias=False,
                          dtype=self.layers_dtype,
                          kernel_initializer=self.initializer)(x)
-        y = Lambda(lambda t: tensorflow.reduce_sum(t, axis=-1, keepdims=True))(self._lnthetas)
+        y = Lambda(lambda t: tensorflow.math.reduce_sum(t, axis=-1, keepdims=True))(self._lnthetas)
         return Add()([x, y])

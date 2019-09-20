@@ -71,7 +71,7 @@ class _RealPartInitializer(Initializer):
 
     def __call__(self, shape, dtype=None, partition_info=None):
         self.whole_initializer.next_complex_nummber(shape, dtype=dtype)
-        return tensorflow.cos(self.whole_initializer.phase) * self.whole_initializer.modulus
+        return tensorflow.math.cos(self.whole_initializer.phase) * self.whole_initializer.modulus
 
 
 class _ImagPartInitializer(Initializer):
@@ -83,14 +83,14 @@ class _ImagPartInitializer(Initializer):
 
     def __call__(self, shape, dtype=None, partition_info=None):
         self.whole_initializer.next_complex_nummber(shape, dtype=dtype)
-        return tensorflow.sin(self.whole_initializer.phase) * self.whole_initializer.modulus
+        return tensorflow.math.sin(self.whole_initializer.phase) * self.whole_initializer.modulus
 
 
 def random_rayleigh(shape, scale):
     scale_squared = scale * scale
     x = tensorflow.random_normal(shape, stddev=scale_squared)
     y = tensorflow.random_normal(shape, stddev=scale_squared)
-    return tensorflow.sqrt(x * x + y * y)
+    return tensorflow.math.sqrt(x * x + y * y)
 
 
 def to_int_shape(shape):

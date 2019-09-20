@@ -14,14 +14,14 @@ def build_ensemble(predictions, probabilistic=True):
     joint_predictions = Concatenate(axis=-1)(predictions)
 
     def probabilistic_ensemble(x):
-        new_real = 0.5 * tensorflow.reduce_logsumexp(tensorflow.real(x) * 2.0, axis=-1,
+        new_real = 0.5 * tensorflow.math.reduce_logsumexp(tensorflow.math.real(x) * 2.0, axis=-1,
                                                      keepdims=True) - 0.5 * numpy.log(len(predictions))
-        new_imag = angle(tensorflow.reduce_mean(
-            tensorflow.exp(tensorflow.complex(tensorflow.zeros_like(new_real), tensorflow.imag(x))), axis=-1,
+        new_imag = angle(tensorflow.math.reduce_mean(
+            tensorflow.math.exp(tensorflow.complex(tensorflow.zeros_like(new_real), tensorflow.math.imag(x))), axis=-1,
             keepdims=True))
         return tensorflow.complex(new_real, new_imag)
     def average_ensemble(x):
-        return complex_log(tensorflow.reduce_mean(tensorflow.exp(x), axis=-1, keepdims=True))
+        return complex_log(tensorflow.math.reduce_mean(tensorflow.math.exp(x), axis=-1, keepdims=True))
 
     ensemble = probabilistic_ensemble if probabilistic else average_ensemble
     return Lambda(ensemble)(joint_predictions)

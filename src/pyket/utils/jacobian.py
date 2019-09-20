@@ -77,7 +77,7 @@ class ConvJacobian(LayerJacobian):
         if is_1d_conv:
             kernel_jacobian = kernel_jacobian[:, :, 0, :, :]
         spatial_axes = tuple(range(1, len(K.int_shape(activations_grad)) - 1))
-        bias_jacobian = tf.reduce_sum(activations_grad, axis=spatial_axes)
+        bias_jacobian = tf.math.reduce_sum(activations_grad, axis=spatial_axes)
         if self.layer.use_bias:
             return [kernel_jacobian, bias_jacobian]
         else:

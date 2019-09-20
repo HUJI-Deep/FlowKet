@@ -23,7 +23,7 @@ class Machine(abc.ABC):
 
     def predictions_jacobian(self, params):
         def jacobian(x):
-            return gradients.jacobian(tensorflow.real(x), params, use_pfor=self.use_pfor)
+            return gradients.jacobian(tensorflow.math.real(x), params, use_pfor=self.use_pfor)
 
         return Lambda(jacobian)(self.predictions)
 
@@ -54,7 +54,7 @@ class AutoNormalizedAutoregressiveMachine(AutoregressiveMachine):
         self._conditional_log_wave_function = NormalizeInLogSpace(norm_type=2, name='conditional_log_wave_function')\
             (x)
         self._conditional_log_probs = LambdaWithOneToOneTopology(
-            lambda x: tensorflow.real(x) * 2.0)(self._conditional_log_wave_function)
+            lambda x: tensorflow.math.real(x) * 2.0)(self._conditional_log_wave_function)
         super(AutoNormalizedAutoregressiveMachine, self).__init__(keras_input_layer, **kwargs)
 
     @property
