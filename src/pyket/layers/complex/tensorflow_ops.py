@@ -62,7 +62,7 @@ def extract_complex_image_patches(images, ksizes, strides, rates, padding, clip_
                                                         name='imag')
         if clip_imag_part:
             #             todo support this on gpu ?
-            imag_patches = tensorflow.math.floormod((imag_patches, 2 * math.pi)
+            imag_patches = tensorflow.math.floormod(imag_patches, 2 * math.pi)
         return tensorflow.complex(real_patches, imag_patches)
 
 
