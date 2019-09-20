@@ -35,7 +35,7 @@ class CopyNormaInitializer(Initializer):
         flat = tf.reshape(self.variable.initial_value, [-1, shape[-1]])
         norm = tf.linalg.norm(flat, axis=0)
         if self.exponential_norm:
-            norm = tf.log(norm + 1e-10)
+            norm = tf.math.log(norm + 1e-10)
         return tf.reshape(norm, shape)
 
 
@@ -127,7 +127,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         with tf.name_scope('compute_weights'):
             g = self.g
             if self.exponential_norm:
-                g = tf.exp(g)
+                g = tf.math.exp(g)
             self.layer.kernel = tf.nn.l2_normalize(
                 self.v, axis=self.kernel_norm_axes) * g
 
