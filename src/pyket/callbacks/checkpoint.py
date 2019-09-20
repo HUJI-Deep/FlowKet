@@ -53,7 +53,7 @@ class CheckpointByTime(Callback):
         if batch_end_time - self.last_save_time < self.save_frequency_in_minutes * 60:
             return
         logs = logs or {}
-        filepath = self.filepath.format(batch=batch + 1, **logs)
+        filepath = self.filepath.format(**logs)
         if self.save_weights_only:
             self.model.save_weights(filepath, overwrite=True)
             save_optimizer_weights(self.model, filepath, self.current_epoch, batch)
