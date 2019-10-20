@@ -16,7 +16,7 @@ class VariationalMonteCarlo(MiniBatchGenerator):
         super(VariationalMonteCarlo, self).__init__(sampler.batch_size, mini_batch_size)
         self.model = model
         self.operator = operator
-        self.set_sampler(sampler, mini_batch_size)
+        self.sampler = sampler
         self._graph = tensorflow.get_default_graph()
         self._session = K.get_session()
         self.current_batch = None
@@ -27,9 +27,7 @@ class VariationalMonteCarlo(MiniBatchGenerator):
 
     def set_sampler(self, sampler, mini_batch_size=None):
         self.sampler = sampler
-        update_params_frequency = self.set_batch_size(sampler.batch_size, mini_batch_size)
-        self.model.optimizer.set_update_params_frequency(update_params_frequency)
-        return update_params_frequency
+        return self.set_batch_size(sampler.batch_size, mini_batch_size)
 
     def _update_batch_local_energy(self):
         self.current_energy, self.current_local_energy_variance, self.current_local_energy = \
