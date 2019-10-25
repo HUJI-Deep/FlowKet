@@ -20,7 +20,7 @@ class VariationalMonteCarlo(MiniBatchGenerator):
         self._graph = tensorflow.get_default_graph()
         self._session = K.get_session()
         self.current_batch = None
-        self.wave_function = functools.partial(self.model.predict, batch_size=self._mini_batch_size)
+        self.wave_function = functools.partial(self.model.predict, batch_size=self.mini_batch_size)
         self.energy_observable = operator
         if not isinstance(self.energy_observable, BaseObservable):
             self.energy_observable = Observable(operator)

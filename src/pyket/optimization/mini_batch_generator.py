@@ -13,7 +13,7 @@ class MiniBatchGenerator(object):
         # should return batch & loss coefficients
         pass
 
-    def set_batch_size(batch_size, mini_batch_size=None):
+    def set_batch_size(self, batch_size, mini_batch_size=None):
         if mini_batch_size is None:
             mini_batch_size = batch_size
         if mini_batch_size > batch_size:
@@ -24,7 +24,7 @@ class MiniBatchGenerator(object):
         self.update_params_frequency = math.ceil(self.batch_size / float(self.mini_batch_size))
         return self.update_params_frequency
 
-    def next_mini_batch_size():
+    def next_mini_batch_size(self):
         if self._idx + self.mini_batch_size > self.batch_size:
             self._x, self._y = self.next_batch()
             self._idx = 0

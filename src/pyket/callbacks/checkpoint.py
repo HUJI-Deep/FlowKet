@@ -21,6 +21,7 @@ def load_optimizer_weights(model, filepath):
         return
     with open(filepath, 'rb') as f:
         weight_values, epoch, batch = pickle.load(f)
+    model._make_train_function()
     model.optimizer.set_weights(weight_values)
     return epoch, batch
 
