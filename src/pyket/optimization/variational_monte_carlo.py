@@ -12,15 +12,17 @@ from ..observables.monte_carlo import Observable, BaseObservable
 class VariationalMonteCarlo(MiniBatchGenerator):
     """docstring for VariationalMonteCarlo"""
 
-    def __init__(self, model, operator, sampler, mini_batch_size=None):
+    def __init__(self, model, operator, sampler, mini_batch_size=None, wave_function_evaluation_batch_size=None):
         super(VariationalMonteCarlo, self).__init__(sampler.batch_size, mini_batch_size)
+        if wave_function_evaluation_batch_size is None:
+            wave_function_evaluation_batch_size = self.mini_batch_size
         self.model = model
         self.operator = operator
         self.sampler = sampler
         self._graph = tensorflow.get_default_graph()
         self._session = K.get_session()
         self.current_batch = None
-        self.wave_function = functools.partial(self.model.predict, batch_size=self.mini_batch_size)
+        self.wave_function = functools.partial(self.model.predict, batch_size=wave_function_evaluation_batch_size)
         self.energy_observable = operator
         if not isinstance(self.energy_observable, BaseObservable):
             self.energy_observable = Observable(operator)
