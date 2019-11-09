@@ -56,7 +56,7 @@ class CheckpointByTime(Callback):
             save_optimizer_weights(self.model, filepath, self.current_epoch, batch)
         else:
             self.model.save(filepath, overwrite=True)
-        self.last_save_time = batch_end_time
+        self.last_save_time = time.time()
         
     def on_batch_end(self, batch, logs=None):
         batch_end_time = time.time()
