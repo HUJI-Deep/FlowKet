@@ -3,20 +3,20 @@ from keras.layers import Input, Dense, Flatten, Reshape
 from keras.models import Model
 from keras.optimizers import SGD, RMSprop, Adam, TFOptimizer
 
-from pyket.callbacks import TensorBoard
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, MCMCStats, LocalEnergyStats, LocalStats, \
+from flowket.callbacks import TensorBoard
+from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, MCMCStats, LocalEnergyStats, LocalStats, \
     SigmaZStats, OperatorStats, WaveFunctionValuesCache
-# from pyket.callbacks.exact import LocalEnergyStats, LocalStats, AbsoluteSigmaZ, OperatorStats, WaveFunctionValuesCache
-from pyket.evaluation import evaluate, exact_evaluate
-from pyket.layers import VectorToComplexNumber, ToFloat32, ToComplex64, PeriodicPadding, ComplexConv1D, ComplexConv2D, \
+# from flowket.callbacks.exact import LocalEnergyStats, LocalStats, AbsoluteSigmaZ, OperatorStats, WaveFunctionValuesCache
+from flowket.evaluation import evaluate, exact_evaluate
+from flowket.layers import VectorToComplexNumber, ToFloat32, ToComplex64, PeriodicPadding, ComplexConv1D, ComplexConv2D, \
     LogSpaceComplexNumberHistograms
-from pyket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, \
+from flowket.machines import RBM, DBM, SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D, ResNet18, \
     make_obc_invariants, make_pbc_invariants
-from pyket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
-from pyket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization, \
+from flowket.operators import NetketOperatorWrapper, Ising, Heisenberg, cube_shape
+from flowket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization, \
     energy_plus_sigma_z_square_loss
-from pyket.optimizers import convert_to_accumulate_gradient_optimizer, ComplexValuesStochasticReconfiguration
-from pyket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, \
+from flowket.optimizers import convert_to_accumulate_gradient_optimizer, ComplexValuesStochasticReconfiguration
+from flowket.samplers import MetropolisHastingsLocal, MetropolisHastingsHamiltonian, AutoregressiveSampler, \
     FastAutoregressiveSampler, Ensemble
 
 inputs = Input(shape=(12, 12), dtype='int8')

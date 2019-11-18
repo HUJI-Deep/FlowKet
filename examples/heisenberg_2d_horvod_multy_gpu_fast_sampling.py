@@ -16,13 +16,13 @@ config.gpu_options.allow_growth = True
 config.gpu_options.visible_device_list = str(hvd.local_rank())
 K.set_session(tf.Session(config=config))
 
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
+from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
     default_wave_function_stats_callbacks_factory
-from pyket.layers import LogSpaceComplexNumberHistograms
-from pyket.machines import ConvNetAutoregressive2D
-from pyket.operators import Heisenberg
-from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import FastAutoregressiveSampler
+from flowket.layers import LogSpaceComplexNumberHistograms
+from flowket.machines import ConvNetAutoregressive2D
+from flowket.operators import Heisenberg
+from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import FastAutoregressiveSampler
 
 run_index = int(sys.argv[-1].strip())
 

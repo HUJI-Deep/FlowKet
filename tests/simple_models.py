@@ -5,9 +5,10 @@ from tensorflow.keras.layers import Activation, Input, Conv1D, Conv2D, Dense, Ze
 from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.models import Model
 
-from pyket.layers import ExpandInputDim, ComplexConv1D, ComplexConv2D, ComplexDense, ToComplex64, PeriodicPadding
-from pyket.layers.complex.tensorflow_ops import lncosh
-from pyket.machines import Machine
+from flowket.deepar.layers import ExpandInputDim, PeriodicPadding
+from flowket.layers import ComplexConv1D, ComplexConv2D, ComplexDense, ToComplex64
+from flowket.layers.complex.tensorflow_ops import lncosh
+from flowket.machines import Machine
 
 
 class Linear(Machine):

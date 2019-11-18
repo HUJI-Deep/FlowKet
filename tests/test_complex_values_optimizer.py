@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Input, Multiply, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.python.keras import backend as K
 
-from pyket.optimizers import ComplexValuesOptimizer
+from flowket.optimizers import ComplexValuesOptimizer
 
 DEFAULT_TF_GRAPH = tensorflow.get_default_graph()
 ONE_DIM_INPUT = Input(shape=(16,), dtype='int8')

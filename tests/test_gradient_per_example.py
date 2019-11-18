@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.python.ops.parallel_for import gradients
 import keras.backend as K
 
-from pyket.utils.jacobian import gradient_per_example
+from flowket.utils.jacobian import gradient_per_example
 
 from .simple_models import real_values_2d_model, complex_values_2d_model, real_values_1d_model, complex_values_1d_model
 
