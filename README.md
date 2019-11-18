@@ -1,4 +1,4 @@
-![](https://github.com/actions/hello-world/workflows/Greet%20Everyone/badge.svg?branch=feature-1)
+![Build Status](https://github.com/actions/hello-world/workflows/Greet%20Everyone/badge.svg?branch=feature-1)
 
 # FlowKet - A Python framework for variational Monte-Carlo simulations on top of Tensorflow
 
