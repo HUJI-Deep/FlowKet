@@ -1,5 +1,3 @@
-![Build Status](https://github.com/actions/hello-world/workflows/Greet%20Everyone/badge.svg?branch=feature-1)
-
 # FlowKet - A Python framework for variational Monte-Carlo simulations on top of Tensorflow
 
 FlowKet is our framework for running variational Monte-Carlo simulations of quantum many-body systems. It supports any Keras model for representing a parameterized unnormalized wave-function, e.g., Restricted Boltzman Machines and ConvNets, with real or complex-valued parameters. We have implemented a standard Markov-Chain Monte-Carlo (MCMC) energy gradient estimator for this general case, which can be used to approximate the ground state of a quantum system according to a given Hamiltonian. The neural-network-based approach for representing wave-fucntions was shown to be a promising method for solving the many-body problem, often matching or even surpassing the precision of other competing methods.

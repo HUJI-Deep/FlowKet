@@ -39,6 +39,9 @@ class ComplexValuesOptimizer(Optimizer):
         with K.name_scope(self.__class__.__name__):
             self.lr = K.variable(lr, name='lr')
 
+    def get_config(self):
+        return super.get_config()
+
     def apply_complex_gradient(self, flat_gradient):
         conj_flat_gradient = tf.conj(flat_gradient)
         real_gradients = column_to_tensors(self.model_real_weights, tf.math.real(conj_flat_gradient))
