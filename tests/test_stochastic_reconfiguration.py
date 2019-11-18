@@ -41,10 +41,16 @@ def test_compute_wave_function_gradient_covariance_inverse_multiplication(input_
     with DEFAULT_TF_GRAPH.as_default():
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
+        if tensorflow.__version__ >= '1.14':
+            optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
                                                            conjugate_gradient_tol=1e-6,
                                                            iterative_solver=iterative,
                                                            iterative_solver_max_iterations=None, name='optimizer')
+        else:
+            optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
+                                                               conjugate_gradient_tol=1e-6,
+                                                               iterative_solver=iterative,
+                                                               iterative_solver_max_iterations=None)
         complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
         jacobian_minus_mean = machine.manual_jacobian - tensorflow.reduce_mean(machine.manual_jacobian, axis=0,
                                                                                keepdims=True)
@@ -75,9 +81,14 @@ def test_stochastic_reconfiguration_matrix_vector_product_via_jvp(input_layer, b
     with DEFAULT_TF_GRAPH.as_default():
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
-                                                           conjugate_gradient_tol=1e-6,
-                                                           iterative_solver_max_iterations=None, name='optimizer')
+        if tensorflow.__version__ >= '1.14':
+            optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
+                                                               conjugate_gradient_tol=1e-6,
+                                                               iterative_solver_max_iterations=None, name='optimizer')
+        else:
+            optimizer = ComplexValuesStochasticReconfiguration(model, machine.predictions_jacobian, diag_shift=diag_shift,
+                                                               conjugate_gradient_tol=1e-6,
+                                                               iterative_solver_max_iterations=None)
         complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
         jacobian_minus_mean = machine.manual_jacobian - tensorflow.reduce_mean(machine.manual_jacobian, axis=0,
                                                                                keepdims=True)
