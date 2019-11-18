@@ -73,7 +73,7 @@ early_stopping = EarlyStopping(monitor='relative_energy_error', min_delta=1e-5)
 callbacks = [LocalEnergyStats(generator, true_ground_state_energy=-457.0416241),
              wave_function_cache,
              LocalStats("Energy Again", sampler=sampler, operator=operator, cache=wave_function_cache),
-             SigmaZStats(monte_carlo_generator=generator), checkpoint, tensorנoard, early_stopping, TerminateOnNaN()]
+             SigmaZStats(monte_carlo_generator=generator), checkpoint, tensorboard, early_stopping, TerminateOnNaN()]
 model.fit_generator(generator, steps_per_epoch=steps_per_epoch, epochs=80, callbacks=callbacks, max_queue_size=0)
 model.save_weights('final_ising_fcnn.h5')
 
