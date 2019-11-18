@@ -37,7 +37,4 @@ jobs:
         pip install pytest
         pip install scipy
         cd 
-        echo $GITHUB_WORKSPACE
-        echo $HOME
-        pwd
         pytest $GITHUB_WORKSPACE/tests
