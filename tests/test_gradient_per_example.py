@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 from tensorflow.python.ops.parallel_for import gradients
-import keras.backend as K
+import tensorflow.keras..backend as K
 
 from flowket.utils.jacobian import gradient_per_example
 

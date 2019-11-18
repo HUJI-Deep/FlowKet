@@ -35,6 +35,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
+        pip install scipy
         cd 
         echo $GITHUB_WORKSPACE
         echo $HOME

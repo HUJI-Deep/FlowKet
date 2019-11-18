@@ -1,6 +1,6 @@
 import itertools
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 import numpy as np
 import pytest
 import tensorflow as tf
