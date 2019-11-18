@@ -31,8 +31,12 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install FlowKet
       run: |
-        pip install .
+        pip install -e .
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest tests
+        cd 
+        echo $GITHUB_WORKSPACE
+        echo $HOME
+        pwd
+        pytest $GITHUB_WORKSPACE/tests
