@@ -113,7 +113,7 @@ def get_layer_output_with_topology_manager(has_multiple_inputs, input_layer, lay
         else:
             output_values.append(
                 layer_topology.apply_layer_for_single_spatial_location(spatial_location, dependencies_values))
-    output_shape = (-1,) + layer.output_shape[1:]
+    output_shape = (-1,) + layer.get_output_shape_at(0)[1:]
     output_of_apply_layer_for_single_spatial_location = tf.reshape(tf.stack(output_values, axis=1),
                                                                    output_shape)
     return output_of_apply_layer_for_single_spatial_location

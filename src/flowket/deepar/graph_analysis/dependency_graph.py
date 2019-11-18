@@ -44,7 +44,7 @@ class DependencyGraph(object):
 
     def _calculate_layers_output_shape(self):
         for layer in self.model.layers:
-            output_shape = layer.output_shape
+            output_shape = layer.get_output_shape_at(0)
             if isinstance(layer, InputLayer):
                 # we assume the last dim is channels dim in every layer
                 output_shape = output_shape + (1,)

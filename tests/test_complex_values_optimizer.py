@@ -26,7 +26,7 @@ def test_get_predictions_jacobian(input_layer, machine_class, batch_size):
     with DEFAULT_TF_GRAPH.as_default():
         machine = machine_class(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian)
+        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, name='optimizer')
         jacobian_function = K.function(inputs=[input_layer], outputs=[optimizer.get_predictions_jacobian()])
         manual_jacobian_function = K.function(inputs=[input_layer], outputs=[machine.manual_jacobian])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
@@ -49,7 +49,7 @@ def test_get_complex_value_gradients(input_layer, batch_size, conjugate_gradient
     with DEFAULT_TF_GRAPH.as_default():
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian)
+        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, name='optimizer')
         loss = Multiply()([machine.predictions, machine.predictions])
         manual_gradients_layer = Lambda(
             lambda x: tensorflow.reshape(tensorflow.reduce_sum(2.0 * x[0] * x[1], axis=0),
