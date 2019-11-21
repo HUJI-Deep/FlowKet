@@ -4,14 +4,22 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from glob import glob
-from os.path import basename
-from os.path import splitext
+from os import path
+from os.path import basename, splitext
 
 from setuptools import setup, find_packages
 
+
+# read the contents of your README file
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(name='flowket',
-      version='0.2',
+      version='0.2.1',
       description='VMC framework for Tensorflow',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       url='https://github.com/HUJI-Deep/FlowKet',
       author='Noam Wies',
       author_email='noam.wies@mail.huji.ac.il',

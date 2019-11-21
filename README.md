@@ -17,12 +17,12 @@ In addition to an MCMC energy gradient estimator, we have also implemented our n
 
 FlowKet assumes Tensorflow is already part of the enviornment. We currently support Tensorflow 1.10-1.13, but plan to extend support to all >=1.10+ and 2.0.
 
-We plan to submit our library to PyPI, but meanwhile to install FlowKet simply use pip as follows:
+The recommended way to intall FlowKet is via PyPI:
 ```bash
-pip install -e "git+https://github.com/HUJI-Deep/FlowKet.git#egg=FlowKet"
+pip install flowket
 ```
 
-If you wish to work on extending our library, you can clone our project and instead run:
+Alternatively if you wish to work on extending our library, you can clone our project and instead run:
 ```bash
 pip install -e /path/to/local/repo
 ```
