@@ -1,12 +1,12 @@
 import itertools
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 import numpy as np
 import pytest
 import tensorflow as tf
 from tensorflow.keras.layers import Input
 
-from pyket.machines.ensemble import make_2d_obc_invariants, make_pbc_invariants
+from flowket.machines.ensemble import make_2d_obc_invariants, make_pbc_invariants
 
 from .simple_models import real_values_2d_model, real_values_1d_model
 
@@ -74,5 +74,5 @@ def test_make_pbc_invariants(model_builder, batch_size):
                                  itertools.product(*[range(dim_size) for dim_size in shape])]
 
         vals = [invariant_model_func([transformation])[0] for transformation in batch_transformations]
-        allclose = [np.allclose(vals[0], another_val) for another_val in vals[1:]]
+        allclose = [np.allclose(vals[0], another_val, rtol=1e-3) for another_val in vals[1:]]
         assert np.all(allclose)

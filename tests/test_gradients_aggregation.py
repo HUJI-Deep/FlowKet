@@ -1,4 +1,4 @@
-from pyket.optimizers import convert_to_accumulate_gradient_optimizer
+from flowket.optimizers import convert_to_accumulate_gradient_optimizer
 
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.models import Model

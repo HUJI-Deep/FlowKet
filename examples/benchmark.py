@@ -3,13 +3,14 @@ import time
 import numpy
 import netket as nk
 
-from pyket.utils.jacobian import predictions_jacobian as get_predictions_jacobian
-from pyket.layers import ToComplex64, ToComplex128, ComplexConv1D, PeriodicPadding
-from pyket.layers.complex.tensorflow_ops import lncosh
-from pyket.operators import Heisenberg
-from pyket.optimizers import ComplexValuesStochasticReconfiguration
-from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import MetropolisHastingsHamiltonian
+from flowket.utils.jacobian import predictions_jacobian as get_predictions_jacobian
+from flowket.layers import ToComplex64, ToComplex128, ComplexConv1D
+from flowket.deepar.layers import PeriodicPadding
+from flowket.layers.complex.tensorflow_ops import lncosh
+from flowket.operators import Heisenberg
+from flowket.optimizers import ComplexValuesStochasticReconfiguration
+from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import MetropolisHastingsHamiltonian
 
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Flatten, Activation, Lambda
@@ -101,20 +102,20 @@ def run_netket(args):
 
 def define_args_parser():
     parser = argparse.ArgumentParser(description='Benchmark settings.')
-    parser.add_argument('framework', choices=['pyket', 'netket'])
+    parser.add_argument('framework', choices=['flowket', 'netket'])
     parser.add_argument('-learning_rate', '-l', nargs='?', default=0.0001, type=float, help='The learning rate')
     parser.add_argument('-input_size', '-i', nargs='?', default=20, type=int, help='Number of spins in the input')
     parser.add_argument('-batch_size', '-b', nargs='?', default=1000, type=int, help='The batch size in each iteration')
     parser.add_argument('-kernel_size', '-k', nargs='?', default=4, type=int, help='The kernel size of each conv layer')
     parser.add_argument('-depth', '-d', nargs='?', default=2, type=int, help='Num of conv layers before sum pooling')
     parser.add_argument('-width', '-w', nargs='?', default=4, type=int, help='Num of output channels in eachconv layer')
-    parser.add_argument('-pyket_num_of_chains', nargs='?', default=20, type=int, help='Num of parralel mcmc in pyket')
+    parser.add_argument('-pyket_num_of_chains', nargs='?', default=20, type=int, help='Num of parralel mcmc in flowket')
     parser.add_argument('-num_of_iterations', nargs='?', default=20, type=int, help='Num of iterations to benchmark')
     parser.add_argument('-use_cholesky', action='store_true', help='use cholesky solver in SR')
     parser.add_argument('-use_iterative',action='store_true', help='use iterative solver in SR')
-    parser.add_argument('-pyket_on_cpu', '-cpu',  action='store_true', help='force running pyket on cpu')
+    parser.add_argument('-pyket_on_cpu', '-cpu',  action='store_true', help='force running flowket on cpu')
     parser.add_argument('-use_stochastic_reconfiguration', '-sr',  action='store_true', help='Use stochastic Reconfiguration')
-    parser.add_argument('-fast_jacobian', action='store_true', help='use pyket custom code for jacobian (still have bugs)')
+    parser.add_argument('-fast_jacobian', action='store_true', help='use flowket custom code for jacobian (still have bugs)')
     parser.add_argument('-no_pfor', action='store_true', help="don't use tensorflow pfor")
     return parser
 
@@ -122,7 +123,7 @@ def define_args_parser():
 def run(args):
     if args.framework == 'netket':
         time_in_seconds = run_netket(args)
-    elif args.framework == 'pyket':
+    elif args.framework == 'flowket':
         if args.pyket_on_cpu:
             with tf.device('/cpu:0'):
                 time_in_seconds = run_pyket(args)

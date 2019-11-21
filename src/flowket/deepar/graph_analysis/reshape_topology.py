@@ -45,8 +45,8 @@ class ReshapeTopology(LayerTopology):
         return dependencies_values[0]
 
     def get_spatial_dependency(self, spatial_location):
-        flat_spatial_location = to_flat_spatial_location(spatial_location, self.layer.input_shape[1:-1])
-        input_spatial_location = from_flat_index_to_spatial_location(flat_spatial_location, self.target_shape[:-1])
+        flat_spatial_location = to_flat_spatial_location(spatial_location, self.target_shape[:-1])
+        input_spatial_location = from_flat_index_to_spatial_location(flat_spatial_location, self.layer.input_shape[1:-1])
         return [Dependency(input_index=0, spatial_location=input_spatial_location)]
 
 

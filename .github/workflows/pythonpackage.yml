@@ -9,8 +9,8 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.5, 3.6, 3.7]
-        tensorflow-version: [1.10.0, 1.10.1, 1.11.0, 1.12.2, 1.13.1]
+        python-version: [3.5]
+        tensorflow-version: [1.10.0, 1.11.0, 1.12.0, 1.13.1]
 
     steps:
     - uses: actions/checkout@v1
@@ -21,8 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install tensorflow-cpu==${{ matrix.tensorflow-version }}
+        pip install tensorflow==${{ matrix.tensorflow-version }}
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -30,7 +29,12 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Install FlowKet
+      run: |
+        pip install -e .
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest
+        pip install scipy
+        cd 
+        pytest $GITHUB_WORKSPACE/tests

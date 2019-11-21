@@ -46,3 +46,10 @@ def make_pbc_invariants(keras_input_layer, predictions_model, apply_also_obc_inv
     inputs = [Roll(list(i))(keras_input_layer) for i in itertools.product(*[range(dim_size) for dim_size in shape])]
     ensemble_prediction = build_ensemble([predictions_model(x) for x in inputs], probabilistic)
     return Model(inputs=keras_input_layer, outputs=ensemble_prediction)
+
+
+def make_up_down_invariant(keras_input_layer, predictions_model, probabilistic=True):
+    shape = K.int_shape(keras_input_layer)[1:]
+    inputs = [keras_input_layer, Lambda(lambda x:x * -1)(keras_input_layer)]
+    ensemble_prediction = build_ensemble([predictions_model(x) for x in inputs], probabilistic)
+    return Model(inputs=keras_input_layer, outputs=ensemble_prediction)

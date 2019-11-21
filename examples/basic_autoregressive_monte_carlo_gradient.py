@@ -2,13 +2,13 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
+from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
     default_wave_function_stats_callbacks_factory
-from pyket.layers import LogSpaceComplexNumberHistograms
-from pyket.machines import SimpleConvNetAutoregressive1D
-from pyket.operators import Ising
-from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import AutoregressiveSampler
+from flowket.layers import LogSpaceComplexNumberHistograms
+from flowket.machines import SimpleConvNetAutoregressive1D
+from flowket.operators import Ising
+from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import AutoregressiveSampler
 
 
 hilbert_state_shape = [16, ]
