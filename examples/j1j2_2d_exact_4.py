@@ -6,14 +6,14 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from pyket.callbacks import TensorBoard
-from pyket.callbacks.exact import default_wave_function_callbacks_factory, ExactObservableCallback
-from pyket.operators.j1j2 import J1J2
-from pyket.operators import NetketOperatorWrapper
-from pyket.machines import ConvNetAutoregressive2D
-from pyket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import FastAutoregressiveSampler
-from pyket.optimizers import convert_to_accumulate_gradient_optimizer
+from flowket.callbacks import TensorBoard
+from flowket.callbacks.exact import default_wave_function_callbacks_factory, ExactObservableCallback
+from flowket.operators.j1j2 import J1J2
+from flowket.operators import NetketOperatorWrapper
+from flowket.machines import ConvNetAutoregressive2D
+from flowket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import FastAutoregressiveSampler
+from flowket.optimizers import convert_to_accumulate_gradient_optimizer
 
 import numpy
 import netket

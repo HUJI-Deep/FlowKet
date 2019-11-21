@@ -21,6 +21,7 @@ def load_optimizer_weights(model, filepath):
         return
     with open(filepath, 'rb') as f:
         weight_values, epoch, batch = pickle.load(f)
+    model._make_train_function()
     model.optimizer.set_weights(weight_values)
     return epoch, batch
 
@@ -48,18 +49,25 @@ class CheckpointByTime(Callback):
         self.last_save_time = time.time()
         self.current_epoch = 0
 
-    def on_batch_end(self, batch, logs=None):
-        batch_end_time = time.time()
-        if batch_end_time - self.last_save_time < self.save_frequency_in_minutes * 60:
-            return
-        logs = logs or {}
+    def _save(self, logs, batch):
         filepath = self.filepath.format(**logs)
         if self.save_weights_only:
             self.model.save_weights(filepath, overwrite=True)
             save_optimizer_weights(self.model, filepath, self.current_epoch, batch)
         else:
             self.model.save(filepath, overwrite=True)
-        self.last_save_time = batch_end_time
+        self.last_save_time = time.time()
+        
+    def on_batch_end(self, batch, logs=None):
+        batch_end_time = time.time()
+        if batch_end_time - self.last_save_time < self.save_frequency_in_minutes * 60:
+            return
+        logs = logs or {}
+        self._save(logs, batch)
 
     def on_epoch_begin(self, epoch, logs=None):
         self.current_epoch = epoch
+
+    def on_train_end(self, logs=None):
+        self.current_epoch += 1
+        self._save(logs, 0)

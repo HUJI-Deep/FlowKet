@@ -2,12 +2,12 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from pyket.callbacks import TensorBoard
-from pyket.callbacks.exact import default_wave_function_callbacks_factory
-from pyket.machines import SimpleConvNetAutoregressive1D
-from pyket.operators import Ising
-from pyket.optimization import ExactVariational, loss_for_energy_minimization
-from pyket.optimizers import convert_to_accumulate_gradient_optimizer
+from flowket.callbacks import TensorBoard
+from flowket.callbacks.exact import default_wave_function_callbacks_factory
+from flowket.machines import SimpleConvNetAutoregressive1D
+from flowket.operators import Ising
+from flowket.optimization import ExactVariational, loss_for_energy_minimization
+from flowket.optimizers import convert_to_accumulate_gradient_optimizer
 
 hilbert_state_shape = [16, ]
 inputs = Input(shape=hilbert_state_shape, dtype='int8')

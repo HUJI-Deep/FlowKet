@@ -2,12 +2,13 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Reshape, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, MCMCStats, \
+from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, MCMCStats, \
     default_wave_function_stats_callbacks_factory
-from pyket.layers import VectorToComplexNumber, ToFloat32, LogSpaceComplexNumberHistograms
-from pyket.operators import Ising, cube_shape
-from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import MetropolisHastingsLocal
+from flowket.layers import VectorToComplexNumber, LogSpaceComplexNumberHistograms
+from flowket.deepar.layers import ToFloat32
+from flowket.operators import Ising, cube_shape
+from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import MetropolisHastingsLocal
 
 hilbert_state_shape = cube_shape(number_of_spins_in_each_dimention=4, cube_dimention=2)
 inputs = Input(shape=hilbert_state_shape, dtype='int8')

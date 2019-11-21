@@ -3,13 +3,13 @@ from tensorflow.keras.models import Model
 
 import numpy
 
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
+from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
     default_wave_function_stats_callbacks_factory, MCMCStats
-from pyket.machines import RBMSym
-from pyket.operators import Heisenberg
-from pyket.optimizers import ComplexValuesStochasticReconfiguration
-from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import MetropolisHastingsHamiltonian
+from flowket.machines import RBMSym
+from flowket.operators import Heisenberg
+from flowket.optimizers import ComplexValuesStochasticReconfiguration
+from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import MetropolisHastingsHamiltonian
 
 hilbert_state_shape = (20, 1)
 inputs = Input(shape=hilbert_state_shape, dtype='int8')

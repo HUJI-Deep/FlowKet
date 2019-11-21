@@ -9,10 +9,10 @@ from os.path import splitext
 
 from setuptools import setup, find_packages
 
-setup(name='pyket',
-      version='0.1',
+setup(name='flowket',
+      version='0.2',
       description='VMC framework for Tensorflow',
-      url='https://github.com/HUJI-Deep/PyKet',
+      url='https://github.com/HUJI-Deep/FlowKet',
       author='Noam Wies',
       author_email='noam.wies@mail.huji.ac.il',
       license='MIT',
@@ -30,6 +30,6 @@ setup(name='pyket',
       project_urls={
           # 'Documentation': 'https://pyket.readthedocs.io/',
           # 'Changelog': 'https://pyket.readthedocs.io/en/latest/changelog.html',
-          'Issue Tracker': 'https://github.com/HUJI-Deep/PyKet/issues',
+          'Issue Tracker': 'https://github.com/HUJI-Deep/FlowKet/issues',
       },
       )

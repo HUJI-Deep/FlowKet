@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Input, Multiply, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.python.keras import backend as K
 
-from pyket.optimizers import ComplexValuesOptimizer
+from flowket.optimizers import ComplexValuesOptimizer
 
 DEFAULT_TF_GRAPH = tensorflow.get_default_graph()
 ONE_DIM_INPUT = Input(shape=(16,), dtype='int8')
@@ -26,7 +26,10 @@ def test_get_predictions_jacobian(input_layer, machine_class, batch_size):
     with DEFAULT_TF_GRAPH.as_default():
         machine = machine_class(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian)
+        if tensorflow.__version__ >= '1.14':
+            optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, name='optimizer')
+        else:
+            optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian)
         jacobian_function = K.function(inputs=[input_layer], outputs=[optimizer.get_predictions_jacobian()])
         manual_jacobian_function = K.function(inputs=[input_layer], outputs=[machine.manual_jacobian])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1
@@ -49,7 +52,10 @@ def test_get_complex_value_gradients(input_layer, batch_size, conjugate_gradient
     with DEFAULT_TF_GRAPH.as_default():
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian)
+        if tensorflow.__version__ >= '1.14':
+            optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, name='optimizer')
+        else:
+            optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian)
         loss = Multiply()([machine.predictions, machine.predictions])
         manual_gradients_layer = Lambda(
             lambda x: tensorflow.reshape(tensorflow.reduce_sum(2.0 * x[0] * x[1], axis=0),
@@ -80,7 +86,10 @@ def test_apply_complex_gradient(input_layer, batch_size):
     with DEFAULT_TF_GRAPH.as_default():
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
-        optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, lr=1.0)
+        if tensorflow.__version__ >= '1.14':
+            optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, name='optimizer', lr=1.0)
+        else:
+            optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, lr=1.0)
         complex_vector_t = K.placeholder(shape=(model.count_params() // 2, 1), dtype=tensorflow.complex64)
         predictions_function = K.function(inputs=[input_layer], outputs=[machine.predictions])
         sample = numpy.random.choice(2, (batch_size,) + K.int_shape(input_layer)[1:]) * 2 - 1

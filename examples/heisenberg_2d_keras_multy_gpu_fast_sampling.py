@@ -6,13 +6,13 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import multi_gpu_model
 
-from pyket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
+from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
     default_wave_function_stats_callbacks_factory
-from pyket.layers import LogSpaceComplexNumberHistograms
-from pyket.machines import ConvNetAutoregressive2D
-from pyket.operators import Heisenberg
-from pyket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import FastAutoregressiveSampler
+from flowket.layers import LogSpaceComplexNumberHistograms
+from flowket.machines import ConvNetAutoregressive2D
+from flowket.operators import Heisenberg
+from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import FastAutoregressiveSampler
 
 run_index = int(sys.argv[-1].strip())
 num_gpus = [1, 2, 4][run_index % 3]

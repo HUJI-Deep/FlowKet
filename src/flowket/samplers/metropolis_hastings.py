@@ -1,6 +1,6 @@
 import abc
 
-from pyket.deepar.samplers.base_sampler import Sampler
+from ..deepar.samplers.base_sampler import Sampler
 
 import numpy
 
