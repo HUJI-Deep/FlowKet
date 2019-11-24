@@ -58,7 +58,7 @@ def depth_to_max_mini_batch(depth):
     res = 1
     for k, val in mapping.items():
         if depth >= k:
-            res = min(res, v)
+            res = min(res, val)
     return res
 
 
