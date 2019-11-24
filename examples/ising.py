@@ -106,7 +106,7 @@ def run(params, batch_size_list, epochs_list):
             operator, 
             validation_sampler, 
             mini_batch_size=mini_batch_size)
-        optimizer.set_update_params_frequency(variational_monte_carlo.update_params_frequency)
+        model.optimizer.set_update_params_frequency(variational_monte_carlo.update_params_frequency)
         tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/%s' % run_name,
                                                              generator=variational_monte_carlo, 
                                                              update_freq='epoch',
