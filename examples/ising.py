@@ -36,7 +36,7 @@ def build_model(hilbert_state_shape, depth, width, weights_normalization, learni
 
     optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.9)
     convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, 
-        accumulate_sum_or_mean=False)
+        accumulate_sum_or_mean=True)
     model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
     model.summary()
     sampler = FastAutoregressiveSampler(conditional_log_probs_model, 16)
@@ -98,14 +98,15 @@ def run(params, batch_size_list, epochs_list):
         validation_sampler = sampler.copy_with_new_batch_size(min(batch_size * 8, 2**15), 
             mini_batch_size=mini_batch_size)
         assert batch_size < mini_batch_size or batch_size % mini_batch_size == 0
-        if batch_size > mini_batch_size:
-            batch_size = mini_batch_size
-        sampler = sampler.copy_with_new_batch_size(batch_size)
-        variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
+        sampler = sampler.copy_with_new_batch_size(batch_size, mini_batch_size)
+        variational_monte_carlo = VariationalMonteCarlo(model, 
+            operator, 
+            sampler, 
+            mini_batch_size=mini_batch_size)
         validation_generator = VariationalMonteCarlo(model, 
             operator, 
             validation_sampler, 
-            mini_batch_size=mini_batch_size)
+            wave_function_evaluation_batch_size=mini_batch_size)
         model.optimizer.set_update_params_frequency(variational_monte_carlo.update_params_frequency)
         tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/%s' % run_name,
                                                              generator=variational_monte_carlo, 
