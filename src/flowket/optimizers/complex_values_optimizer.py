@@ -37,7 +37,10 @@ class ComplexValuesOptimizer(Optimizer):
         self.model_real_weights = get_model_real_weights(self.predictions_keras_model)
         self.model_imag_weights = get_model_imag_weights(self.predictions_keras_model)
         with K.name_scope(self.__class__.__name__):
-            self.lr = K.variable(lr, name='lr')
+            if tf.__version__ >= '1.14':
+                self._set_hyper('learning_rate', kwargs.get('lr', lr))
+            else:
+                self.lr = K.variable(lr, name='lr')
 
     def get_config(self):
         return super.get_config()

@@ -5,6 +5,7 @@ from flowket.samplers import AutoregressiveSampler, ExactSampler, FastAutoregres
 from flowket.operators import Operator
 from flowket.optimization import ExactVariational
 
+import functools
 import numpy
 import pytest
 import tensorflow
@@ -31,7 +32,10 @@ class IdentityOperator(Operator):
 
 
 def sampler_factory(sampler_class, machine, machine_input, num_of_samples):
-    if issubclass(sampler_class, MetropolisHastingsSampler):
+    sampler_class_obj = sampler_class
+    while isinstance(sampler_class_obj, functools.partial):
+        sampler_class_obj = sampler_class.func
+    if issubclass(sampler_class_obj, MetropolisHastingsSampler):
         input_size = numpy.product(list(K.int_shape(machine_input)[1:]))
         model = Model(inputs=machine_input, outputs=machine.predictions)
         return sampler_class(model, num_of_samples, mini_batch_size=BATCH_SIZE,

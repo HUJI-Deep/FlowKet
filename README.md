@@ -15,7 +15,7 @@ In addition to an MCMC energy gradient estimator, we have also implemented our n
 
 ## Installation
 
-FlowKet assumes Tensorflow is already part of the enviornment. We currently support Tensorflow 1.10-1.13, but plan to extend support to all >=1.10+ and 2.0.
+FlowKet assumes Tensorflow is already part of the enviornment. We currently support Tensorflow 1.10-1.14, but plan to extend support to all >=1.10+ and 2.0.
 
 The recommended way to intall FlowKet is via PyPI:
 ```bash
