@@ -50,7 +50,7 @@ def test_make_2d_obc_invariants(model_builder, batch_size):
                                  transform_sample(batch, num_of_rotations=3, flip=True)
                                  ]
         vals = [invariant_model_func([transformation])[0] for transformation in batch_transformations]
-        allclose = [np.allclose(vals[0], another_val) for another_val in vals[1:]]
+        allclose = [np.allclose(vals[0], another_val, rtol=1e-3) for another_val in vals[1:]]
         assert np.all(allclose)
 
 

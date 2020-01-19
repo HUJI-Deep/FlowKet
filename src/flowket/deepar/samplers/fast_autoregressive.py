@@ -24,10 +24,7 @@ class FastAutoregressiveSampler(Sampler):
 
     def copy_with_new_batch_size(self, batch_size, mini_batch_size=None):
         new_sampler = copy.copy(self)
-        new_sampler.batch_size = batch_size
-        if mini_batch_size is None:
-            mini_batch_size = batch_size
-        new_sampler.mini_batch_size = mini_batch_size
+        new_sampler._set_batch_size(batch_size, mini_batch_size)
         return new_sampler
 
     def __next__(self):

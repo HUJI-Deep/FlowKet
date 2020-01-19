@@ -10,7 +10,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.5]
-        tensorflow-version: [1.10.0, 1.11.0, 1.12.0, 1.13.1]
+        tensorflow-version: [1.10.0, 1.11.0, 1.12.0, 1.13.1, 1.14.0]
 
     steps:
     - uses: actions/checkout@v1

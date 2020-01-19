@@ -80,9 +80,9 @@ def test_apply_layer_for_single_spatial_location(layer, input_layer, batch_size)
                                      outputs=[layer_output_with_topology_manager, normal_output])
         if has_multiple_inputs:
             batch = [np.random.rand(*((batch_size,) + layer_input_shape[1:])) for layer_input_shape in
-                     layer.input_shape]
+                     layer.get_input_shape_at(0)]
         else:
-            batch = [np.random.choice(100, size=(batch_size,) + layer.input_shape[1:]).astype(np.float32)]
+            batch = [np.random.choice(100, size=(batch_size,) + layer.get_input_shape_at(0)[1:]).astype(np.float32)]
         output_values = output_function(batch)
         print('#' * 30)
         print(output_values[0])
