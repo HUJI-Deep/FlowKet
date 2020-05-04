@@ -8,8 +8,8 @@ from run_evaluation import run, create_evaluation_config_parser
 def main():
     parser = argparse.ArgumentParser(prog='Ising NAQS')
     subparsers = parser.add_subparsers()
-    parser_train = subparsers.add_parser('train', help='train ising model')
-    parser_eval = subparsers.add_parser('eval', help='eval ising model')
+    parser_train = subparsers.add_parser('train', help='train Ising model')
+    parser_eval = subparsers.add_parser('eval', help='eval Ising model')
     parser_train.set_defaults(func=train)
     parser_eval.set_defaults(func=run)
 
