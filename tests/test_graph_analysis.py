@@ -1,9 +1,9 @@
 import itertools
 
-from pyket.layers import VectorToComplexNumber, \
+from flowket.layers import VectorToComplexNumber, \
     ComplexConv2D, ComplexConv1D, ComplexConv3D, ToComplex64
-from pyket.deepar.layers import LambdaWithOneToOneTopology, RightShiftLayer, DownShiftLayer, GatherLayer
-from pyket.deepar.graph_analysis import TopologyManager
+from flowket.deepar.layers import LambdaWithOneToOneTopology, RightShiftLayer, DownShiftLayer, GatherLayer
+from flowket.deepar.graph_analysis import TopologyManager
 
 import pytest
 import numpy as np
@@ -74,13 +74,15 @@ def test_apply_layer_for_single_spatial_location(layer, input_layer, batch_size)
         layer_output_with_topology_manager = get_layer_output_with_topology_manager(has_multiple_inputs,
                                                                                     input_layer,
                                                                                     layer)
+        if not isinstance(input_layer, list):
+            input_layer = [input_layer]
         output_function = K.function(inputs=input_layer,
                                      outputs=[layer_output_with_topology_manager, normal_output])
         if has_multiple_inputs:
             batch = [np.random.rand(*((batch_size,) + layer_input_shape[1:])) for layer_input_shape in
-                     layer.input_shape]
+                     layer.get_input_shape_at(0)]
         else:
-            batch = np.random.choice(100, size=(batch_size,) + layer.input_shape[1:]).astype(np.float32)
+            batch = [np.random.choice(100, size=(batch_size,) + layer.get_input_shape_at(0)[1:]).astype(np.float32)]
         output_values = output_function(batch)
         print('#' * 30)
         print(output_values[0])
@@ -111,7 +113,7 @@ def get_layer_output_with_topology_manager(has_multiple_inputs, input_layer, lay
         else:
             output_values.append(
                 layer_topology.apply_layer_for_single_spatial_location(spatial_location, dependencies_values))
-    output_shape = (-1,) + layer.output_shape[1:]
+    output_shape = (-1,) + layer.get_output_shape_at(0)[1:]
     output_of_apply_layer_for_single_spatial_location = tf.reshape(tf.stack(output_values, axis=1),
                                                                    output_shape)
     return output_of_apply_layer_for_single_spatial_location

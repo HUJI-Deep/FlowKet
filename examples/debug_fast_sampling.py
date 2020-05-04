@@ -6,9 +6,9 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
-from pyket.optimization import loss_for_energy_minimization
-from pyket.machines import ConvNetAutoregressive2D
-from pyket.samplers import AutoregressiveSampler, FastAutoregressiveSampler
+from flowket.optimization import loss_for_energy_minimization
+from flowket.machines import ConvNetAutoregressive2D
+from flowket.samplers import AutoregressiveSampler, FastAutoregressiveSampler
 
 inputs = Input(shape=(10, 10), dtype='int8')
 convnet = ConvNetAutoregressive2D(inputs, depth=40, num_of_channels=32, weights_normalization=False)

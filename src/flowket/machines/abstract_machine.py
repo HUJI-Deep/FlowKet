@@ -4,7 +4,7 @@ import tensorflow
 from tensorflow.keras.layers import Lambda
 from tensorflow.python.ops.parallel_for import gradients
 
-from pyket.layers import ToComplex64, EqualUpDownSpins
+from ..layers import ToComplex64, EqualUpDownSpins
 from ..deepar.layers import LambdaWithOneToOneTopology, CombineAutoregressiveConditionals, \
     NormalizeInLogSpace, PlusMinusOneToOneHot
 from ..deepar.graph_analysis.dependency_graph import assert_valid_probabilistic_model

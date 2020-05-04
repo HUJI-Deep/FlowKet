@@ -3,12 +3,12 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 
-from pyket.callbacks.exact import ExactLocalEnergy
-from pyket.callbacks.monte_carlo import LocalEnergyStats
-from pyket.evaluation import evaluate, exact_evaluate
-from pyket.operators import Heisenberg, NetketOperatorWrapper
-from pyket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization
-from pyket.samplers import ExactSampler, Sampler
+from flowket.callbacks.exact import ExactLocalEnergy
+from flowket.callbacks.monte_carlo import LocalEnergyStats
+from flowket.evaluation import evaluate, exact_evaluate
+from flowket.operators import Heisenberg, NetketOperatorWrapper
+from flowket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.samplers import ExactSampler, Sampler
 from .simple_models import complex_values_linear_1d_model, real_values_1d_model
 
 DEFAULT_TF_GRAPH = tf.get_default_graph()
@@ -38,11 +38,11 @@ def test_monte_carlo_update_unbalanced_local_energy():
             def __next__(self):
                 return sample
 
-        variational_monte_carlo = VariationalMonteCarlo(model, None, SimpleSampler())
+        variational_monte_carlo = VariationalMonteCarlo(model, Heisenberg(hilbert_state_shape=(7, )), SimpleSampler())
         unbalanced_local_energy = np.mean(variational_monte_carlo.energy_observable.local_values_optimized_for_unbalanced_local_connections(
-            local_connections, hamiltonian_values, all_use_conn))
+            variational_monte_carlo .wave_function, local_connections, hamiltonian_values, all_use_conn))
         balanced_local_energy = np.mean(variational_monte_carlo.energy_observable.local_values_optimized_for_balanced_local_connections(
-            local_connections, hamiltonian_values))
+            variational_monte_carlo .wave_function, local_connections, hamiltonian_values))
         assert np.allclose(balanced_local_energy, unbalanced_local_energy)
 
 
@@ -90,12 +90,12 @@ def test_monte_carlo_and_netket_agree(netket):
     sa = netket.sampler.ExactSampler(machine=ma)
     op = netket.optimizer.Sgd(learning_rate=0.00)
 
-    pyket_model = complex_values_linear_1d_model()
-    exact_variational = ExactVariational(pyket_model,
+    flowket_model = complex_values_linear_1d_model()
+    exact_variational = ExactVariational(flowket_model,
                                          NetketOperatorWrapper(ha, (input_size,)), batch_size)
     exact_logs = exact_evaluate(exact_variational,
                                 [ExactLocalEnergy(exact_variational)])
-    real_weights, imag_weights = pyket_model.get_weights()
+    real_weights, imag_weights = flowket_model.get_weights()
     ma.parameters = (real_weights + imag_weights * -1j).flatten()
     gs = netket.variational.Vmc(
         hamiltonian=ha,

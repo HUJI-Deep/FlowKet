@@ -14,7 +14,11 @@ def visit_layer_predecessors(layer, visitor, visited_layers=None, layer_output_i
     layer_nodes = layer.inbound_nodes
     assert len(layer_nodes) == 1
     inbound_layers = layer_nodes[-1].inbound_layers
+    if not isinstance(inbound_layers, list):
+        inbound_layers = [inbound_layers]
     tensor_indices = layer_nodes[-1].tensor_indices
+    if not isinstance(tensor_indices, list):
+        tensor_indices = [tensor_indices]
     visitor(layer, layer_output_index, inbound_layers, tensor_indices)
     for tensor_indice, inbound_layer in zip(tensor_indices, inbound_layers):
         if (tensor_indice, inbound_layer) not in visited_layers:
@@ -44,7 +48,7 @@ class DependencyGraph(object):
 
     def _calculate_layers_output_shape(self):
         for layer in self.model.layers:
-            output_shape = layer.output_shape
+            output_shape = layer.get_output_shape_at(0)
             if isinstance(layer, InputLayer):
                 # we assume the last dim is channels dim in every layer
                 output_shape = output_shape + (1,)

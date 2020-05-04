@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 import tensorflow as tf
 from tensorflow.python.ops.parallel_for import gradients
-import keras.backend as K
+import tensorflow.keras.backend as K
 
-from pyket.utils.jacobian import gradient_per_example
+from flowket.utils.jacobian import gradient_per_example
 
 from .simple_models import real_values_2d_model, complex_values_2d_model, real_values_1d_model, complex_values_1d_model
 
@@ -32,5 +32,5 @@ def test_equal_to_builtin_jacobian(model_builder, batch_size):
         batch = np.random.rand(*size)
         gradient_per_example_vals = gradient_per_example_func([batch])
         tensorflow_jacobian_vals = tensorflow_jacobian_func([batch])
-        allclose = [np.allclose(a, b, rtol=1e-4) for a, b in zip(gradient_per_example_vals, tensorflow_jacobian_vals)]
+        allclose = [np.allclose(a, b, rtol=1e-3) for a, b in zip(gradient_per_example_vals, tensorflow_jacobian_vals)]
         assert np.all(allclose)

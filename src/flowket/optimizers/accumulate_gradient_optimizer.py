@@ -6,7 +6,10 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
     if update_params_frequency < 1:
         raise ValueError('update_params_frequency must be >= 1')
     print('update_params_frequency: %s' % update_params_frequency)
-    print('accumulate_sum_or_mean: %s' % accumulate_sum_or_mean)
+    if accumulate_sum_or_mean:
+        print('using sum of gradients')
+    else:
+        print('using gradients mean')
     orig_get_gradients = orig_optimizer.get_gradients
     orig_get_updates = orig_optimizer.get_updates
     orig_optimizer.accumulated_iterations = K.variable(0, dtype='int64', name='accumulated_iterations')

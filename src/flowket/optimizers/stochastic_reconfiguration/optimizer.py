@@ -166,7 +166,10 @@ class ComplexValuesStochasticReconfiguration(ComplexValuesOptimizer):
             self.conjugate_gradient_residual_norm = K.variable(0.0, name='conjugate_gradient_residual_norm',
                                                                dtype='float64')
             self.s_matrix_rank = K.variable(0, dtype='int64', name='s_matrix_rank')
-        self.weights = [self.iterations, self.diag_shift]
+        if tf.__version__ >= '1.14':
+            self._weights += [self.iterations, self.diag_shift]
+        else:
+            self.weights = [self.iterations, self.diag_shift]
 
     def _update_s_matrix_stats(self, num_of_complex_params_t, s):
         if not self.add_s_matrix_stats:

@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Lambda, Conv1D, Conv2D, Dense
 
-from pyket.deepar.utils.singleton import Singleton
+from flowket.deepar.utils.singleton import Singleton
 
 from ..layers import ComplexConv1D, ComplexConv2D, ComplexDense, ComplexLayer
 from ..layers.complex.tensorflow_ops import extract_complex_image_patches
