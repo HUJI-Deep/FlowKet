@@ -21,16 +21,16 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
         K.set_value(self.update_params_frequency, update_params_frequency)
 
     def set_weights_ema(self):
-        return tensorflow.group(*[K.update(p, e_p / (1 - K.pow(ema_decay, self.total_iterations))) for e_p, p in zip(self.params_ema, self.params_for_ema_tracking)])
+        return K.get_session().run(tensorflow.group(*[K.update(p, e_p / (1 - K.pow(ema_decay, self.total_iterations))) for e_p, p in zip(self.params_ema, self.params_for_ema_tracking)]))
 
     def updated_get_gradients(self, loss, params):
         return self.accumulate_gradient_accumulators
 
     def updated_get_updates(self, loss, params):
-        self.accumulate_gradient_accumulators = [K.zeros(K.int_shape(p), dtype=K.dtype(p), name=p.name + '_gradient_accumulators') for p in params]
+        self.accumulate_gradient_accumulators = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         if ema_decay > 0:
             self.params_for_ema_tracking = params
-            self.params_ema = [K.zeros(K.int_shape(p), dtype=K.dtype(p), name=p.name + '_ema') for p in params]
+            self.params_ema = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         updates_accumulated_iterations = K.update_add(self.accumulated_iterations, 1)
         new_grads = orig_get_gradients(loss, params)
         if not accumulate_sum_or_mean:

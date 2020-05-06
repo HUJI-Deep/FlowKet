@@ -95,7 +95,7 @@ def test_update_ema_just_when_need():
     assert w_before_call == 1.0
     assert w_after_first_call == 1.0
     assert w_after_second_call == -1.5
-    assert w_after_set_ema == -1.5
+    assert w_after_set_ema == pytest.approx(-1.5)
 
 
 def test_ema():
@@ -108,4 +108,4 @@ def test_ema():
     w_after_set_ema = get_w()
     assert w_after_first_call == -1.0
     assert w_after_second_call == -4.0
-    assert w_after_set_ema == pytest.approx(-2.5789)
+    assert w_after_set_ema == pytest.approx(-2.5789473684210527)
