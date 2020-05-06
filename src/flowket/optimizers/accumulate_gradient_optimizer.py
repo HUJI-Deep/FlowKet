@@ -39,13 +39,12 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
 
 
         def update_function():
-            updated_params = pass
             with tensorflow.control_dependencies(orig_get_updates(loss, params)):
                 reset_grads = [K.update(p, K.zeros(K.int_shape(p), dtype=K.dtype(p))) for p in
                                 self.accumulate_gradient_accumulators]
                 if ema_decay > 0:
                     reset_grads += [K.update_add(self.total_iterations, 1)]
-                    reset_grads += [K.update(e_p, (e_p * ema_decay) + (1 - ema_decay) * p) for e_p, p in zip(self.params_ema, updated_params)]
+                    reset_grads += [K.update(e_p, (e_p * ema_decay) + (1 - ema_decay) * p) for e_p, p in zip(self.params_ema, params)]
             return tensorflow.group(*(reset_grads + [updates_accumulated_iterations]))
 
         def just_store_function():

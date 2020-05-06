@@ -101,6 +101,7 @@ def test_update_ema_just_when_need():
 def test_ema():
     model, get_w, get_sgd_iteration, set_weights_ema = get_simple_linear_model(SGD(lr=1.0), 1, False, .9)
     model.fit(x=np.array([[2.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
+    w_after_first_call = get_w()
     model.fit(x=np.array([[3.0]], dtype=np.float32), y=np.array([[0.0]], dtype=np.float32), batch_size=1)
     w_after_second_call = get_w()
     set_weights_ema()
