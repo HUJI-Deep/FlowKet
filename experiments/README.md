@@ -28,7 +28,7 @@ python3 ising_runner.py --gamma 4 eval --weights_path weights/ising_4.h5
 python3 heisenberg_runner.py eval --weights_path weights/heisenberg.h5
 ```
 
-### Ising (2^15 sampels)
+#### Ising (2^15 sampels)
 
 
   | energy | energy per spin | energy variance | \|Mz\|
@@ -39,7 +39,7 @@ python3 heisenberg_runner.py eval --weights_path weights/heisenberg.h5
 3.5 | -524.5172088 | -3.642480616 | 0.000647 | 0.1106881036
 4 | -593.5389339 | -4.121798152 | 0.000777 | 0.09679073758
 
-### Heisenberg (2^19 sampels)
+#### Heisenberg (2^19 sampels)
 
 | energy    | energy per spin | energy variance |
 |-----------|-----------------|-----------------|
