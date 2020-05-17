@@ -4,7 +4,8 @@ import tensorflow.keras.backend as K
 import numpy as np
 import pytest
 import tensorflow as tf
-from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Input, Lambda
+from tensorflow.keras.models import Model
 
 from flowket.machines.ensemble import make_2d_obc_invariants, make_pbc_invariants, build_ensemble, build_symmetrization_ensemble
 

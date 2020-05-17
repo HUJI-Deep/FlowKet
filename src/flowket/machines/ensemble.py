@@ -35,9 +35,9 @@ def build_symmetrization_ensemble(symmetrization_inputs, predictions_model, prob
     shape = K.int_shape(symmetrization_inputs[0])[1:]
     joint_inputs = Lambda(lambda x:tensorflow.reshape(tensorflow.stack(x, axis=1), (-1, ) + shape))(symmetrization_inputs)
     joint_predictions = predictions_model(joint_inputs)
-    reshaped_predictions = Lambda(lambda x:tensorflow.reshape((-1, len(symmetrization_inputs))))(joint_predictions)
+    reshaped_predictions = Lambda(lambda x:tensorflow.reshape(x, (-1, len(symmetrization_inputs))))(joint_predictions)
     ensemble = functools.partial(probabilistic_ensemble_op, 
-        ensemble_size=len(inputs)) if probabilistic else average_ensemble_op
+        ensemble_size=len(symmetrization_inputs)) if probabilistic else average_ensemble_op
     return Lambda(ensemble)(reshaped_predictions)
 
 
