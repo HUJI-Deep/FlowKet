@@ -101,6 +101,6 @@ def test_build_symmetrization_ensemble(model_builder, batch_size):
         size = (batch_size,) + K.int_shape(keras_model.input)[1:]
         batch = np.random.rand(*size)
 
-        symmetrization_model_vals = symmetrization_model_func(batch)[0]
-        ensemble_model_vals = ensemble_model_func(batch)[0]
+        symmetrization_model_vals = symmetrization_model_func([batch])[0]
+        ensemble_model_vals = ensemble_model_func([batch])[0]
         assert np.allclose(symmetrization_model_vals, ensemble_model_vals, rtol=1e-3)
