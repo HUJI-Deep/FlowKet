@@ -47,13 +47,13 @@ class NetketOperatorWrapper(Operator):
             sample_conn, sample_mel = self.netket_operator.get_conn(flat_input)
             conn_list.append(sample_conn)
             mel_list.append(sample_mel)
-            assert np.all(sample_conn[0,:] == flat_input)
-        self.estimated_number_of_local_connections = max(np.max([len(x) for x in mel_list]), self.estimated_number_of_local_connections)
+            assert numpy.all(sample_conn[0,:] == flat_input)
+        self.estimated_number_of_local_connections = max(numpy.max([len(x) for x in mel_list]), self.estimated_number_of_local_connections)
         all_conn = numpy.zeros((self.estimated_number_of_local_connections,) + sample.shape)
         batch_mel = numpy.zeros((self.estimated_number_of_local_connections, sample.shape[0]), dtype=numpy.complex128)
         for i in range(batch_size):
-            all_conn[:len(sample_conn_list), i, ...] = sample_conn_list[i].reshape(sample.shape[1:])
-            batch_mel[:len(sample_conn_list), i] = sample_mel[i]
+            all_conn[:len(conn_list), i, ...] = conn_list[i].reshape(sample.shape[1:])
+            batch_mel[:len(mel_list), i] = mel_list[i]
         if self.should_calc_unused:
             all_conn_use = batch_mel != 0.0
         else:
