@@ -31,16 +31,44 @@ class NetketOperatorWrapper(Operator):
 
     def _calculate_num_of_local_connectios_from_netket_operator(self):
         random_state = self.random_states(1)
-        mel, _, _ = self.netket_operator.get_conn(random_state.flatten())
+        res = self.netket_operator.get_conn(random_state.flatten())
+        self.old_netket = len(res) == 3
+        if self.old_netket:
+            mel, _, _ = res
+        else:
+            _, mel = res
         return len(mel)
 
-    def find_conn(self, sample):
+    def new_netket_find_conn(self, sample):
+        conn_list, mel_list = [], []
+        batch_size = sample.shape[0]
+        for i in range(batch_size):
+            flat_input = sample[i, ...].flatten()
+            sample_conn, sample_mel = self.netket_operator.get_conn(flat_input)
+            conn_list.append(sample_conn)
+            mel_list.append(sample_mel)
+            assert np.all(sample_conn[0,:] == flat_input)
+        self.estimated_number_of_local_connections = max(np.max([len(x) for x in mel_list]), self.estimated_number_of_local_connections)
+        all_conn = numpy.zeros((self.estimated_number_of_local_connections,) + sample.shape)
+        batch_mel = numpy.zeros((self.estimated_number_of_local_connections, sample.shape[0]), dtype=numpy.complex128)
+        for i in range(batch_size):
+            all_conn[:len(sample_conn_list), i, ...] = sample_conn_list[i].reshape(sample.shape[1:])
+            batch_mel[:len(sample_conn_list), i] = sample_mel[i]
+        if self.should_calc_unused:
+            all_conn_use = batch_mel != 0.0
+        else:
+            all_conn_use = numpy.ones((self.estimated_number_of_local_connections, batch_size), dtype=numpy.bool)
+        all_conn_use[0, :] = True
+        return all_conn, batch_mel, all_conn_use
+
+    def old_netket_find_conn(self, sample):
         all_conn = numpy.zeros((self.estimated_number_of_local_connections,) + sample.shape)
         batch_mel = numpy.zeros((self.estimated_number_of_local_connections, sample.shape[0]), dtype=numpy.complex128)
         batch_size = sample.shape[0]
         for i in range(batch_size):
             flat_input = sample[i, ...].flatten()
-            sample_mel, to_change_idx_list, to_change_vals_list = self.netket_operator.get_conn(flat_input)
+            sample_conn_list, sample_mel = self.netket_operator.get_conn(flat_input)
+            # sample_mel, to_change_idx_list, to_change_vals_list = self.netket_operator.get_conn(flat_input)
             if len(sample_mel) > self.estimated_number_of_local_connections:
                 print('wrong max_number_of_local_connections fixing and continue recursively')
                 self.estimated_number_of_local_connections = len(sample_mel)
@@ -69,3 +97,8 @@ class NetketOperatorWrapper(Operator):
             all_conn_use = numpy.ones((self.estimated_number_of_local_connections, batch_size), dtype=numpy.bool)
         all_conn_use[0, :] = True
         return all_conn, batch_mel, all_conn_use
+
+    def find_conn(self, sample):
+        if self.old_netket:
+            return self.old_netket_find_conn(sample)
+        return self.new_netket_find_conn(sample)
