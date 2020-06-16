@@ -12,6 +12,7 @@ class NetketOperatorWrapper(Operator):
         self.should_calc_unused = should_calc_unused
         self.max_number_of_local_connections = max_number_of_local_connections
         self.estimated_number_of_local_connections = max_number_of_local_connections
+        self._check_if_old_netket()
         if max_number_of_local_connections is None:
             self.estimated_number_of_local_connections = self._calculate_num_of_local_connectios_from_netket_operator()
             if self.should_calc_unused is None:
@@ -29,10 +30,13 @@ class NetketOperatorWrapper(Operator):
             hilbert_space.random_vals(results[i, :], random_engine)
         return numpy.reshape(results, (num_of_states, ) + self.hilbert_state_shape)
 
+    def _check_if_old_netket(self):
+        res = self.netket_operator.get_conn(numpy.array([1]*self.netket_operator.hilbert.size))
+        self.old_netket = len(res) == 3
+
     def _calculate_num_of_local_connectios_from_netket_operator(self):
         random_state = self.random_states(1)
         res = self.netket_operator.get_conn(random_state.flatten())
-        self.old_netket = len(res) == 3
         if self.old_netket:
             mel, _, _ = res
         else:
