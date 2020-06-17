@@ -78,7 +78,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.normalize_per_output_channel = normalize_per_output_channel
         self.exponential_norm = exponential_norm
-        self.built = False
 
     def build(self, input_shape):
         """Build `Layer`"""
@@ -87,8 +86,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         if not self.layer.built:
             self.layer.build(input_shape)
-        if not self.built:
-            self.built = True
+
             if not hasattr(self.layer, 'kernel'):
                 raise ValueError('`WeightNormalization` must wrap a layer that'
                                  ' contains a `kernel` for weights')
@@ -103,7 +101,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                 self.kernel_norm_axes = list(
                     range(len(self.layer.kernel.shape)))
             self.v = self.layer.kernel
-            self.g = self.layer.add_weight(
+            self.g = self.add_weight(
                 name="g",
                 shape=(self.layer_depth,),
                 initializer=CopyNormaInitializer(self.v, exponential_norm=self.exponential_norm),
