@@ -1,7 +1,8 @@
 from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
+\
 from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData, \
     default_wave_function_stats_callbacks_factory
 from flowket.layers import LogSpaceComplexNumberHistograms
@@ -12,6 +13,8 @@ from flowket.samplers import AutoregressiveSampler
 
 hilbert_state_shape = [4, 4]
 inputs = Input(shape=hilbert_state_shape, dtype='int8')
+policy = mixed_precision.Policy('mixed_float16')
+mixed_precision.set_policy(policy)
 convnet = ConvNetAutoregressive2D(inputs, depth=5, num_of_channels=32, weights_normalization=False)
 predictions, conditional_log_probs = convnet.predictions, convnet.conditional_log_probs
 predictions = LogSpaceComplexNumberHistograms(name='psi')(predictions)
@@ -31,9 +34,9 @@ variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
 validation_sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size * 16)
 validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
 
-tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/2d_monte_carlo_batch_%s_run_2' % batch_size,
+tensorboard = TensorBoardWithGeneratorValidationData(log_dir='tensorboard_logs/mp_2d_monte_carlo_batch_%s_run_1' % batch_size,
                                                      generator=variational_monte_carlo, update_freq=1,
-                                                     write_graph=False, profile_batch=2)
+                                                     write_graph=False, profile_batch=0)
 callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo,
                                                           validation_generator=validation_generator,
                                                           true_ground_state_energy=-50.18662388277671) + [tensorboard]

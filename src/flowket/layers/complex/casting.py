@@ -20,6 +20,7 @@ class VectorToComplexNumber(Layer):
         new_shape = list(orig_shape[:axis] + (2, orig_shape[axis] // 2) + orig_shape[axis + 1:])
         new_shape[0] = -1
         x = tensorflow.reshape(x, shape=new_shape)
+        x = tensorflow.cast(x, dtype='float32')
         real, imag = tensorflow.unstack(x, axis=axis)
         return tensorflow.complex(real, imag)
 

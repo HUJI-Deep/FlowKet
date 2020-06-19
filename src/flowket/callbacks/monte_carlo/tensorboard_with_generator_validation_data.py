@@ -1,5 +1,8 @@
-# from keras.callbacks import TensorBoard
-from ..tensorboard import TensorBoard
+import tensorflow
+if tensorflow.__version__.startswith('2'):
+    from tensorflow.keras.callbacks import TensorBoard
+else:
+    from ..tensorboard import TensorBoard
 import numpy
 
 

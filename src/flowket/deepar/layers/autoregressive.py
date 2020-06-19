@@ -7,6 +7,8 @@ from tensorflow.keras.layers import Lambda
 def normalize_in_log_space(x, norm_type=1):
     if x.dtype.is_complex:
         x_real, x_imag = tensorflow.math.real(x), tensorflow.math.imag(x)
+        x_real = tensorflow.cast(x_real, dtype='float32')
+        x_imag = tensorflow.cast(x_imag, dtype='float32') 
         norm = (1.0 / norm_type) * tensorflow.math.reduce_logsumexp(x_real * norm_type, axis=-1, keepdims=True)
         x_real = x_real - norm
         return tensorflow.complex(x_real, x_imag)

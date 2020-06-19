@@ -9,6 +9,18 @@ from .mini_batch_generator import MiniBatchGenerator
 from ..observables.monte_carlo import Observable, BaseObservable
 
 
+class Ctx(object):
+    """docstring for Ctx"""
+    def __init__(self):
+        super(Ctx, self).__init__()
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, a, b, c):
+        pass
+
+
 class VariationalMonteCarlo(MiniBatchGenerator):
     """docstring for VariationalMonteCarlo"""
 
@@ -19,7 +31,8 @@ class VariationalMonteCarlo(MiniBatchGenerator):
         self.model = model
         self.operator = operator
         self.sampler = sampler
-        self._graph = tensorflow.get_default_graph()
+        if not tensorflow.__version__.startswith('2'):
+            self._graph = tensorflow.get_default_graph()
         self._session = K.get_session()
         self.current_batch = None
         self.wave_function = functools.partial(self.model.predict, batch_size=wave_function_evaluation_batch_size)
@@ -41,7 +54,11 @@ class VariationalMonteCarlo(MiniBatchGenerator):
 
     def next_batch(self):
         K.set_session(self._session)
-        with self._graph.as_default():
+        if tensorflow.__version__.startswith('2'):
+            ctx = Ctx() 
+        else:
+            ctx = self._graph.as_default() 
+        with ctx:
             self.start_time = time.time()
             self.current_batch = next(self.sampler)
             self.sampling_end_time = time.time()
