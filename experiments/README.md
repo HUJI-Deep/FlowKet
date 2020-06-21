@@ -14,6 +14,13 @@ python3 ising_runner.py --gamma 4 train --output_path /path/to/save
 python3 heisenberg_runner.py train --output_path /path/to/save
 ```
 
+Or with horovod for faster training with multiple gpus
+```bash
+horovodrun -np <num_gpus> -H localhost:<num_gpus> python3 heisenberg_runner.py train --output_path /path/to/save --use_horovod
+```
+
+In case of gpu out of memory error try to decrease the mini batch size with the ```--mini_batch_size``` flag
+
 ## Evaluation
 
 ```bash
@@ -44,4 +51,5 @@ python3 heisenberg_runner.py eval --weights_path weights/heisenberg.h5
 | energy    | energy per spin | energy variance |
 |-----------|-----------------|-----------------|
 | -251.4536 | -2.514536       | 0.19            |
+
 
