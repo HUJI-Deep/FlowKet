@@ -5,7 +5,7 @@ from .data_structures import Dependency
 from .layer_topology import LayerTopology
 from .topology_manager import TopologyManager
 from ..layers import CastingLayer, ExpandInputDim, LambdaWithOneToOneTopology, ToOneHot, PlusMinusOneToOneHot, \
-    NormalizeInLogSpace
+    NormalizeInLogSpace, LayerNormalization
 
 
 class OneToOneTopology(LayerTopology):
@@ -73,6 +73,7 @@ TopologyManager().register_layer_topology(LeakyReLU, OneToOneTopology)
 TopologyManager().register_layer_topology(ELU, OneToOneTopology)
 TopologyManager().register_layer_topology(ThresholdedReLU, OneToOneTopology)
 TopologyManager().register_layer_topology(Softmax, OneToOneTopology)
+TopologyManager().register_layer_topology(LayerNormalization, OneToOneTopology)
 TopologyManager().register_layer_topology(NormalizeInLogSpace, OneToOneTopology)
 TopologyManager().register_layer_topology(PlusMinusOneToOneHot, OneHotTopologyWithIdentity)
 TopologyManager().register_layer_topology(ToOneHot, OneHotTopologyWithIdentity)
