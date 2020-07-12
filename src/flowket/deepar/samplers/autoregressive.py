@@ -19,6 +19,11 @@ class AutoregressiveSampler(Sampler):
         self.autoregressive_ordering = autoregressive_ordering
         self.zero_base = zero_base
 
+    def copy_with_new_batch_size(self, batch_size, mini_batch_size=None):
+        new_sampler = copy.copy(self)
+        new_sampler._set_batch_size(batch_size, mini_batch_size)
+        return new_sampler
+
     def __next__(self):
         batch = numpy.zeros((self.batch_size,) + self.input_size)
         random_batch = numpy.random.rand(*((self.batch_size,) + self.input_size))
