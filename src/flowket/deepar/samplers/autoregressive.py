@@ -1,3 +1,5 @@
+import copy
+
 from .base_sampler import Sampler
 from ..ordering import raster as raster_ordering
 
