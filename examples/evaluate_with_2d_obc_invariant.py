@@ -30,18 +30,18 @@ sampler = AutoregressiveSampler(conditional_log_probs_model, batch_size)
 monte_carlo_generator = VariationalMonteCarlo(model, operator, sampler)
 
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator, true_ground_state_energy=-50.18662388277671)
-model.fit_generator(monte_carlo_generator, steps_per_epoch=steps_per_epoch, epochs=2, callbacks=callbacks,
+model.fit_generator(monte_carlo_generator.to_generator(), steps_per_epoch=steps_per_epoch, epochs=2, callbacks=callbacks,
                     max_queue_size=0, workers=0)
 
 print('evaluate normal model')
-evaluate(monte_carlo_generator, steps=200, callbacks=callbacks,
-         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
+print(evaluate(monte_carlo_generator.to_generator(), steps=200, callbacks=callbacks,
+         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'}))
 
 print('evaluate invariant model')
 evaluation_inputs = Input(shape=hilbert_state_shape, dtype='int8')
 invariant_model = make_2d_obc_invariants(evaluation_inputs, model)
 monte_carlo_generator = VariationalMonteCarlo(invariant_model, operator, sampler)
 callbacks = default_wave_function_stats_callbacks_factory(monte_carlo_generator, true_ground_state_energy=-50.18662388277671)
-evaluate(monte_carlo_generator, steps=200, callbacks=callbacks,
-         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'})
+print(evaluate(monte_carlo_generator.to_generator(), steps=200, callbacks=callbacks,
+         keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error'}))
 
