@@ -181,14 +181,6 @@ def create_training_config_parser(depth, mini_batch_size, num_epoch, batch_size,
     parser.set_defaults(weights_normalization=True)
     parser.add_argument('--use_horovod', dest='use_horovod', action='store_true')
     parser.add_argument('--disable_horovod', dest='use_horovod', action='store_false')
-    parser.set_defaults(use_horovod=False)    
-    parser.add_argument('--use_separate_phase_network', dest='use_separate_phase_network', action='store_true')
-    parser.add_argument('--disable_separate_phase_network', dest='use_separate_phase_network', action='store_false')
-    parser.set_defaults(use_separate_phase_network=False)
-    parser.add_argument("--separate_phase_network_width", default=1024, type=int, help="num of channels at each layer in the phase network.")
-    parser.add_argument("--separate_phase_network_depth", default=2, type=int, help="num of hidden layer in the phase network.")
-    parser.add_argument('--use_conv_separate_phase_network', dest='conv_separate_phase_network', action='store_true')
-    parser.add_argument('--use_fc_separate_phase_network', dest='conv_separate_phase_network', action='store_false')
-    parser.set_defaults(conv_separate_phase_network=False)
+    parser.set_defaults(use_horovod=False)
     return parser
 
