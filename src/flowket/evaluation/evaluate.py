@@ -12,9 +12,9 @@ def mean_logs(logs_arr, keys=None):
     return res
 
     
-def evaluate(generator, steps, callbacks, keys_to_progress_bar_mapping=None):
+def evaluate(generator, steps, callbacks, keys_to_progress_bar_mapping=None, verbose=True):
     logs_arr = []
-    with tqdm.trange(steps) as progress_bar:
+    with tqdm.trange(steps, disable=(not verbose)) as progress_bar:
         for i in progress_bar:
             next(generator)
             logs = {}

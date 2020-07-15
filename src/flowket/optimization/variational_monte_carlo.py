@@ -12,8 +12,8 @@ from ..observables.monte_carlo import Observable, BaseObservable
 class VariationalMonteCarlo(MiniBatchGenerator):
     """docstring for VariationalMonteCarlo"""
 
-    def __init__(self, model, operator, sampler, mini_batch_size=None, wave_function_evaluation_batch_size=None):
-        super(VariationalMonteCarlo, self).__init__(sampler.batch_size, mini_batch_size)
+    def __init__(self, model, operator, sampler, mini_batch_size=None, wave_function_evaluation_batch_size=None, **kwargs):
+        super(VariationalMonteCarlo, self).__init__(sampler.batch_size, mini_batch_size, **kwargs)
         if wave_function_evaluation_batch_size is None:
             wave_function_evaluation_batch_size = self.mini_batch_size
         self.model = model

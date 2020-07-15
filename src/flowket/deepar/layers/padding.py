@@ -28,7 +28,7 @@ class PeriodicPadding(Layer):
             x_unstacked = tensorflow.unstack(x, axis=dim + 1)
             padded_list = []
             if before > 0:
-                padded_list += x_unstacked[:-before]
+                padded_list += x_unstacked[-before:]
             padded_list += x_unstacked
             if after > 0:
                 padded_list += x_unstacked[:after]

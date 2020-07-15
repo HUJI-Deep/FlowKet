@@ -101,12 +101,14 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                 self.kernel_norm_axes = list(
                     range(len(self.layer.kernel.shape)))
             self.v = self.layer.kernel
-            self.g = self.layer.add_weight(
+            self.layer.g = self.layer.add_weight(
                 name="g",
                 shape=(self.layer_depth,),
                 initializer=CopyNormaInitializer(self.v, exponential_norm=self.exponential_norm),
                 dtype=self.layer.kernel.dtype,
                 trainable=True)
+            self.g = self.layer.g
+            self.layer.g = None # hack for removing g from self.layer.trainable_weights in a way that work both  fr=or td 1.10 & 1.14
         super(WeightNormalization, self).build()
 
     def call(self, inputs):

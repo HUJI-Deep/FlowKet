@@ -32,5 +32,5 @@ def test_equal_to_builtin_jacobian(model_builder, batch_size):
         batch = np.random.rand(*size)
         gradient_per_example_vals = gradient_per_example_func([batch])
         tensorflow_jacobian_vals = tensorflow_jacobian_func([batch])
-        allclose = [np.allclose(a, b, rtol=1e-3) for a, b in zip(gradient_per_example_vals, tensorflow_jacobian_vals)]
+        allclose = [np.allclose(a, b, rtol=1e-2) for a, b in zip(gradient_per_example_vals, tensorflow_jacobian_vals)]
         assert np.all(allclose)

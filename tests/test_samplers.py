@@ -40,7 +40,7 @@ def sampler_factory(sampler_class, machine, machine_input, num_of_samples):
         model = Model(inputs=machine_input, outputs=machine.predictions)
         return sampler_class(model, num_of_samples, mini_batch_size=BATCH_SIZE,
                              num_of_chains=num_of_samples // (2 ** 7),
-                             unused_sampels=input_size)
+                             unused_sampels=input_size * 2)
     else:
         model = Model(inputs=machine_input, outputs=machine.conditional_log_probs)
         return sampler_class(model, num_of_samples, mini_batch_size=BATCH_SIZE)
