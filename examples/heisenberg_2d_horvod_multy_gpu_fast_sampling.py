@@ -49,7 +49,7 @@ hilbert_state_shape = (10, 10)
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=False)
 variational_monte_carlo = HorovodVariationalMonteCarlo(model, operator, sampler)
 
-validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
+validation_generator = HorovodVariationalMonteCarlo(model, operator, validation_sampler)
 
 run_name = 'horovod_fast_sampling_heisenberg_2d_%s_gpus' % (run_index)
 
