@@ -1,14 +1,17 @@
 import numpy as np
 import pytest
+import tensorflow
 import tensorflow as tf
 from tensorflow.python.ops.parallel_for import gradients
 import tensorflow.keras.backend as K
 
 from flowket.utils.jacobian import gradient_per_example
+from flowket.utils.v2_fake_graph_context import Ctx
 
 from .simple_models import real_values_2d_model, complex_values_2d_model, real_values_1d_model, complex_values_1d_model
 
-DEFAULT_TF_GRAPH = tf.get_default_graph()
+if not tensorflow.__version__.startswith('2'):
+    DEFAULT_TF_GRAPH = tf.get_default_graph()
 
 
 @pytest.mark.parametrize('model_builder, batch_size', [
@@ -18,11 +21,15 @@ DEFAULT_TF_GRAPH = tf.get_default_graph()
     (complex_values_1d_model, 5),
 ])
 def test_equal_to_builtin_jacobian(model_builder, batch_size):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         keras_model = model_builder()
         keras_model.summary()
-        gradient_per_example_t = gradient_per_example(tf.real(keras_model.output), keras_model)
-        tensorflow_jacobian_t = gradients.jacobian(tf.real(keras_model.output),
+        gradient_per_example_t = gradient_per_example(tf.math.real(keras_model.output), keras_model)
+        tensorflow_jacobian_t = gradients.jacobian(tf.math.real(keras_model.output),
                                                    keras_model.weights, use_pfor=False)
         print(gradient_per_example_t)
         print(tensorflow_jacobian_t)

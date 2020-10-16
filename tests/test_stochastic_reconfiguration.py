@@ -9,8 +9,10 @@ from tensorflow.keras.models import Model
 from tensorflow.python.keras import backend as K
 
 from flowket.optimizers import ComplexValuesStochasticReconfiguration
+from flowket.utils.v2_fake_graph_context import Ctx
 
-DEFAULT_TF_GRAPH = tensorflow.get_default_graph()
+if not tensorflow.__version__.startswith('2'):
+    DEFAULT_TF_GRAPH = tensorflow.get_default_graph()
 ONE_DIM_INPUT = Input(shape=(16,), dtype='int8')
 SCALAR_INPUT = Input(shape=(1,), dtype='int8')
 TWO_DIM_INPUT = Input(shape=(4, 4), dtype='int8')
@@ -38,7 +40,11 @@ def pinv(A, b, reltol=1e-6):
 ])
 def test_compute_wave_function_gradient_covariance_inverse_multiplication(input_layer, batch_size, diag_shift,
                                                                           iterative):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:    
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
         if tensorflow.__version__ >= '1.14':
@@ -78,7 +84,11 @@ def test_compute_wave_function_gradient_covariance_inverse_multiplication(input_
     (TWO_DIM_INPUT, 128, 0.01),
 ])
 def test_stochastic_reconfiguration_matrix_vector_product_via_jvp(input_layer, batch_size, diag_shift):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
         if tensorflow.__version__ >= '1.14':

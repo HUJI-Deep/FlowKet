@@ -21,7 +21,7 @@ class ConvolutionalTopology(LayerTopology):
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         flat_input = tensorflow.reshape(tensorflow.stack(dependencies_values, axis=1),
-                                        shape=[-1, self.layer.input_shape[-1] * numpy.product(self.layer.kernel_size)])
+                                        shape=[-1, self.layer.get_input_shape_at(output_index)[-1] * numpy.product(self.layer.kernel_size)])
         results = tensorflow.matmul(flat_input, self.reshaped_weights)
         if self.layer.use_bias:
             results = tensorflow.nn.bias_add(results, self.layer.bias)

@@ -5,7 +5,12 @@ import tensorflow
 
 
 def keras_conv_to_complex_conv(x, kernel, keras_conv, name=None):
-    with tensorflow.name_scope(name, "ComplexConv", [x]) as name:
+    if tensorflow.__version__.startswith('2'):
+        name = "ComplexConv" if name is None else name
+        name = tensorflow.name_scope(name)
+    else:
+        name = tensorflow.name_scope(name, "ComplexConv", [x])
+    with name:
         ac = keras_conv(tensorflow.math.real(x), tensorflow.math.real(kernel))
         bd = keras_conv(tensorflow.math.imag(x), tensorflow.math.imag(kernel))
         ad = keras_conv(tensorflow.math.real(x), tensorflow.math.imag(kernel))

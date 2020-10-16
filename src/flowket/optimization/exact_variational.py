@@ -1,6 +1,7 @@
 import time
 
 from ..exact.utils import binary_array_to_decimal_array, decimal_array_to_binary_array, fsum, complex_norm_log_fsum_exp
+from ..utils.v2_fake_graph_context import Ctx
 
 import tensorflow
 import tensorflow.keras.backend as K
@@ -103,7 +104,8 @@ class ExactVariational(object):
         self.wave_function_callable = K.function(inputs=[model.input], outputs=[model.output])
         self._build_wave_function_arrays(model.input_shape[1:])
         self._set_batch_size(batch_size)
-        self._graph = tensorflow.get_default_graph()
+        if not tensorflow.__version__.startswith('2'):
+            self._graph = tensorflow.get_default_graph()
         self.energy_observable = ExactObservable(self, operator, calculate_variance_of_the_local_operator=True)
 
     def _build_wave_function_arrays(self, input_size):
@@ -144,7 +146,11 @@ class ExactVariational(object):
         np.subtract(self.energy_observable.energies, self.probs_mult_energy_mean, out=self.energy_grad_coefficients)
 
     def machine_updated(self):
-        with self._graph.as_default():
+        if tensorflow.__version__.startswith('2'):
+            ctx = Ctx()
+        else:
+            ctx = self._graph.as_default()
+        with ctx:
             self.machine_updated_start_time = time.time()
             self._update_wave_function_arrays()
             self.wave_function_update_end_time = time.time()

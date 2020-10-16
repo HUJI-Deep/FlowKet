@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import tensorflow
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 
@@ -9,14 +10,21 @@ from flowket.evaluation import evaluate, exact_evaluate
 from flowket.operators import Heisenberg, NetketOperatorWrapper
 from flowket.optimization import ExactVariational, VariationalMonteCarlo, loss_for_energy_minimization
 from flowket.samplers import ExactSampler, Sampler
+from flowket.utils.v2_fake_graph_context import Ctx
+
 from .simple_models import complex_values_linear_1d_model, real_values_1d_model
 
-DEFAULT_TF_GRAPH = tf.get_default_graph()
+if not tensorflow.__version__.startswith('2'):
+    DEFAULT_TF_GRAPH = tf.get_default_graph()
 ONE_DIM_OPERATOR = Heisenberg(hilbert_state_shape=[7], pbc=True)
 
 
 def test_monte_carlo_update_unbalanced_local_energy():
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         model = complex_values_linear_1d_model()
 
         sample = np.array([[1, 1, 1, -1, -1, -1, -1],
@@ -51,7 +59,11 @@ def test_monte_carlo_update_unbalanced_local_energy():
     (complex_values_linear_1d_model, ONE_DIM_OPERATOR, 2 ** 10, 1000),
 ])
 def test_exact_and_monte_carlo_agree(model_builder, operator, batch_size, num_of_mc_iterations):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         model = model_builder()
         exact_variational = ExactVariational(model, operator, batch_size)
         reduce_variance(exact_variational, model)

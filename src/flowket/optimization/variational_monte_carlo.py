@@ -7,18 +7,8 @@ from tensorflow.python.keras import backend as K
 
 from .mini_batch_generator import MiniBatchGenerator
 from ..observables.monte_carlo import Observable, BaseObservable
+from ..utils.v2_fake_graph_context import Ctx
 
-
-class Ctx(object):
-    """docstring for Ctx"""
-    def __init__(self):
-        super(Ctx, self).__init__()
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, a, b, c):
-        pass
 
 
 class VariationalMonteCarlo(MiniBatchGenerator):

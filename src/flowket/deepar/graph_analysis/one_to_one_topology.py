@@ -1,3 +1,4 @@
+import tensorflow
 from tensorflow.keras.layers import Activation, Add, Average, Subtract, Multiply, Maximum, Minimum, \
     LeakyReLU, ELU, ThresholdedReLU, Softmax
 
@@ -12,12 +13,12 @@ class OneToOneTopology(LayerTopology):
     """docstring for OneToOneTopology"""
     def __init__(self, layer):
         super(OneToOneTopology, self).__init__(layer)
-        inputs_shape = layer.input_shape
+        inputs_shape = layer.get_input_shape_at(0)
         if isinstance(layer, ExpandInputDim):
              inputs_shape = inputs_shape + (1,)
         if isinstance(inputs_shape, tuple):
             inputs_shape = [inputs_shape]
-        self._spatial_inputs_size = [input_shape[1:-1]for input_shape in inputs_shape]
+        self._spatial_inputs_size = [input_shape[1:-1] for input_shape in inputs_shape]
 
     def _broadcast_spatial_location(self, spatial_location, input_index):
         broadcasted_spatial_location = []
@@ -27,7 +28,7 @@ class OneToOneTopology(LayerTopology):
             elif self._spatial_inputs_size[input_index][dim_index] == 1:
                 broadcasted_spatial_location.append(0)
         return tuple(broadcasted_spatial_location)
-
+    
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         values = dependencies_values
         if len(values) == 1:
@@ -35,7 +36,7 @@ class OneToOneTopology(LayerTopology):
         return self.layer(values)
 
     def get_spatial_dependency(self, spatial_location, output_index=0):
-        layer_inputs = self.layer.input
+        layer_inputs = self.layer.get_input_at(output_index)
         if not isinstance(layer_inputs, list):
             layer_inputs = [layer_inputs]
         return [Dependency(input_index=i, spatial_location=self._broadcast_spatial_location(spatial_location, i))
@@ -44,7 +45,6 @@ class OneToOneTopology(LayerTopology):
 
 class OneToOneTopologyWithIdentity(OneToOneTopology):
     """docstring for OneToOneTopology"""
-
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         values = dependencies_values
         if len(values) == 1:
@@ -54,7 +54,6 @@ class OneToOneTopologyWithIdentity(OneToOneTopology):
 
 class OneHotTopologyWithIdentity(OneToOneTopology):
     """docstring for OneToOneTopology"""
-
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         values = dependencies_values[0]
         return self.layer(values[..., 0])

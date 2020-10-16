@@ -30,7 +30,10 @@ class NegateDecorator(Initializer):
         self.initializer = initializer
 
     def __call__(self, shape, dtype=None, partition_info=None):
-        return -1 * self.initializer.__call__(shape, dtype, partition_info)
+        if tensorflow.__version__.startswith('2'):
+            return -1 * self.initializer.__call__(shape, dtype)
+        else:
+            return -1 * self.initializer.__call__(shape, dtype, partition_info)
 
 
 class ConjugateDecorator(ComplexValueInitializer):
@@ -88,8 +91,8 @@ class _ImagPartInitializer(Initializer):
 
 def random_rayleigh(shape, scale):
     scale_squared = scale * scale
-    x = tensorflow.random_normal(shape, stddev=scale_squared)
-    y = tensorflow.random_normal(shape, stddev=scale_squared)
+    x = tensorflow.random.normal(shape, stddev=scale_squared)
+    y = tensorflow.random.normal(shape, stddev=scale_squared)
     return tensorflow.math.sqrt(x * x + y * y)
 
 
@@ -116,7 +119,7 @@ class StandartComplexValueInitializer(ComplexValueInitializer):
         else:
             raise ValueError('Invalid criterion: ' + self.criterion)
         self.modulus = random_rayleigh(shape, scale=scale)
-        self.phase = tensorflow.random_uniform(shape, minval=-math.pi, maxval=math.pi)
+        self.phase = tensorflow.random.uniform(shape, minval=-math.pi, maxval=math.pi)
 
     def next_complex_nummber(self, shape, dtype=None):
         self._counter += 1

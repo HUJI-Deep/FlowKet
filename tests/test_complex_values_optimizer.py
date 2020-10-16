@@ -9,8 +9,10 @@ from tensorflow.keras.models import Model
 from tensorflow.python.keras import backend as K
 
 from flowket.optimizers import ComplexValuesOptimizer
+from flowket.utils.v2_fake_graph_context import Ctx
 
-DEFAULT_TF_GRAPH = tensorflow.get_default_graph()
+if not tensorflow.__version__.startswith('2'):
+    DEFAULT_TF_GRAPH = tensorflow.get_default_graph()
 ONE_DIM_INPUT = Input(shape=(16,), dtype='int8')
 SCALAR_INPUT = Input(shape=(1,), dtype='int8')
 TWO_DIM_INPUT = Input(shape=(4, 4), dtype='int8')
@@ -23,9 +25,14 @@ TWO_DIM_INPUT = Input(shape=(4, 4), dtype='int8')
     (TWO_DIM_INPUT, LinearDepthTwo, 128),
 ])
 def test_get_predictions_jacobian(input_layer, machine_class, batch_size):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:    
         machine = machine_class(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
+        print(machine.predictions_jacobian(model.weights))
         if tensorflow.__version__ >= '1.14':
             optimizer = ComplexValuesOptimizer(model, machine.predictions_jacobian, name='optimizer')
         else:
@@ -49,7 +56,11 @@ def test_get_predictions_jacobian(input_layer, machine_class, batch_size):
     (TWO_DIM_INPUT, 128, True),
 ])
 def test_get_complex_value_gradients(input_layer, batch_size, conjugate_gradients):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
         if tensorflow.__version__ >= '1.14':
@@ -83,7 +94,11 @@ def test_get_complex_value_gradients(input_layer, batch_size, conjugate_gradient
     (TWO_DIM_INPUT, 128),
 ])
 def test_apply_complex_gradient(input_layer, batch_size):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:    
         machine = Linear(input_layer)
         model = Model(inputs=[input_layer], outputs=machine.predictions)
         if tensorflow.__version__ >= '1.14':

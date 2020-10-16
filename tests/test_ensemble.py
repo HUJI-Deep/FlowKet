@@ -3,15 +3,18 @@ import itertools
 import tensorflow.keras.backend as K
 import numpy as np
 import pytest
+import tensorflow
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Lambda
 from tensorflow.keras.models import Model
 
 from flowket.machines.ensemble import make_2d_obc_invariants, make_pbc_invariants, build_ensemble, build_symmetrization_ensemble
+from flowket.utils.v2_fake_graph_context import Ctx
 
 from .simple_models import real_values_2d_model, real_values_1d_model
 
-DEFAULT_TF_GRAPH = tf.get_default_graph()
+if not tensorflow.__version__.startswith('2'):
+    DEFAULT_TF_GRAPH = tf.get_default_graph()
 
 
 def transform_sample(sample, num_of_rotations, flip):
@@ -30,7 +33,11 @@ def roll_sample(sample, roll_for_axis):
     (real_values_2d_model, 100),
 ])
 def test_make_2d_obc_invariants(model_builder, batch_size):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         keras_model = model_builder()
         keras_model.summary()
 
@@ -60,7 +67,11 @@ def test_make_2d_obc_invariants(model_builder, batch_size):
     (real_values_1d_model, 5),
 ])
 def test_make_pbc_invariants(model_builder, batch_size):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         keras_model = model_builder()
         keras_model.summary()
 
@@ -84,7 +95,11 @@ def test_make_pbc_invariants(model_builder, batch_size):
     (real_values_1d_model, 5),
 ])
 def test_build_symmetrization_ensemble(model_builder, batch_size):
-    with DEFAULT_TF_GRAPH.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = DEFAULT_TF_GRAPH.as_default()
+    with ctx:
         keras_model = model_builder()
         keras_model.summary()
 

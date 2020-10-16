@@ -28,7 +28,7 @@ class ReshapeTopology(LayerTopology):
 
     def __init__(self, layer):
         super(ReshapeTopology, self).__init__(layer)
-        total_size = numpy.prod(self.layer.input_shape[1:])
+        total_size = numpy.prod(self.layer.get_input_shape_at(0)[1:])
         self.target_shape = self.layer.target_shape
         if -1 in self.target_shape:
             minus_one_idx = self.target_shape.index(-1)
@@ -38,7 +38,7 @@ class ReshapeTopology(LayerTopology):
                 raise Exception('bad target shape')
             self.target_shape = self.target_shape[:] + (
                 -1 * total_size // numpy.prod(self.target_shape),) + self.target_shape[minus_one_idx + 1:]
-        if self.target_shape[-1] != self.layer.input_shape[-1]:
+        if self.target_shape[-1] != self.layer.get_input_shape_at(0)[-1]:
             raise Exception("can't move information between spatial and features dimensions")
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values):
@@ -46,7 +46,7 @@ class ReshapeTopology(LayerTopology):
 
     def get_spatial_dependency(self, spatial_location):
         flat_spatial_location = to_flat_spatial_location(spatial_location, self.target_shape[:-1])
-        input_spatial_location = from_flat_index_to_spatial_location(flat_spatial_location, self.layer.input_shape[1:-1])
+        input_spatial_location = from_flat_index_to_spatial_location(flat_spatial_location, self.layer.get_input_shape_at(0)[1:-1])
         return [Dependency(input_index=0, spatial_location=input_spatial_location)]
 
 

@@ -1,5 +1,6 @@
 from flowket.machines import SimpleConvNetAutoregressive1D, ConvNetAutoregressive2D
 from flowket.exact.utils import to_log_wave_function_vector
+from flowket.utils.v2_fake_graph_context import Ctx
 
 import numpy
 import scipy
@@ -12,7 +13,8 @@ ONE_DIM_INPUT = Input(shape=(16,), dtype='int8')
 TWO_DIM_INPUT = Input(shape=(4, 4), dtype='int8')
 SMALL_TWO_DIM_INPUT = Input(shape=(4, 3), dtype='int8')
 
-graph = tensorflow.get_default_graph()
+if not tensorflow.__version__.startswith('2'):
+    graph = tensorflow.get_default_graph()
 
 
 @pytest.mark.parametrize('machine_input, machine_class, machine_args', [
@@ -20,7 +22,11 @@ graph = tensorflow.get_default_graph()
     (TWO_DIM_INPUT, ConvNetAutoregressive2D, {'depth': 4, 'num_of_channels': 16, 'weights_normalization': False})
 ])
 def test_autoregressive_have_normalize_distribution(machine_input, machine_class, machine_args):
-    with graph.as_default():
+    if tensorflow.__version__.startswith('2'):
+        ctx = Ctx()
+    else:
+        ctx = graph.as_default()
+    with ctx:
         machine = machine_class(machine_input, **machine_args)
         model = Model(inputs=machine_input, outputs=machine.predictions)
         log_wave_function = to_log_wave_function_vector(model)

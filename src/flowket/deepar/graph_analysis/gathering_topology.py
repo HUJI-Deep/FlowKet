@@ -11,8 +11,8 @@ class GatherTopology(LayerTopology):
         super(GatherTopology, self).__init__(layer)
         self.axis = self.layer.axis
         if self.axis < 0:
-            self.axis = len(self.layer.input_shape) - self.axis
-        self.features_gathering = self.axis == len(self.layer.input_shape) - 1
+            self.axis = len(self.layer.get_input_shape_at(0)) - self.axis
+        self.features_gathering = self.axis == len(self.layer.get_input_shape_at(0)) - 1
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         if self.features_gathering:

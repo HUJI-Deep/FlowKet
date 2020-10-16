@@ -21,7 +21,6 @@ from __future__ import print_function
 import collections
 
 import tensorflow
-from tensorflow.contrib.solvers.python.ops import util
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
@@ -29,6 +28,10 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import linalg_ops
 from tensorflow.python.ops import math_ops
+
+
+def dot(x, y):
+    return math_ops.reduce_sum(math_ops.conj(x) * y)
 
 
 def conjugate_gradient(operator,
@@ -95,16 +98,16 @@ def conjugate_gradient(operator,
     def cg_step(i, state):  # pylint: disable=missing-docstring
         z = operator.apply(state.p)
         z = tensorflow.reshape(z, [-1, 1])
-        alpha = state.gamma / util.dot(state.p, z)
+        alpha = state.gamma / dot(state.p, z)
         x = tensorflow.reshape(state.x + alpha * state.p, [-1, 1])
         r = state.r - alpha * z
         if preconditioner is None:
-            gamma = util.dot(r, r)
+            gamma = dot(r, r)
             beta = gamma / state.gamma
             p = r + beta * state.p
         else:
             q = preconditioner.apply(r)
-            gamma = util.dot(r, q)
+            gamma = dot(r, q)
             beta = gamma / state.gamma
             p = q + beta * state.p
         return i + 1, cg_state(i + 1, x, r, p, gamma)
@@ -123,7 +126,7 @@ def conjugate_gradient(operator,
             p0 = r0
         else:
             p0 = preconditioner.apply(r0)
-        gamma0 = util.dot(r0, p0)
+        gamma0 = dot(r0, p0)
         tol *= float_norm(r0)
         i = constant_op.constant(0, dtype=dtypes.int32)
         state = cg_state(i=i, x=x, r=r0, p=p0, gamma=gamma0)

@@ -23,7 +23,7 @@ class PaddingTopology(LayerTopology):
 
     def get_spatial_dependency(self, spatial_location, output_index=0):
         for location, (prefix, _), input_shape in \
-                zip(spatial_location, self.padding, self.layer.input_shape[1:-1]):
+                zip(spatial_location, self.padding, self.layer.get_input_shape_at(output_index)[1:-1]):
             if location < prefix or location - prefix >= input_shape:
                 return []
         shifted_spatial_location = tuple([location - padding for location, padding in
@@ -47,7 +47,7 @@ class PeriodicPaddingTopology(LayerTopology):
 
     def get_spatial_dependency(self, spatial_location, output_index=0):
         shifted_spatial_location = tuple([(location - padding) % input_shape for location, padding, input_shape in
-                                          zip(spatial_location, self.padding, self.layer.input_shape[1:-1])])
+                                          zip(spatial_location, self.padding, self.layer.get_input_shape_at(output_index)[1:-1])])
         return [Dependency(input_index=0, spatial_location=shifted_spatial_location)]
 
 
