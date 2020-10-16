@@ -6,3 +6,4 @@ from .masking import DownShiftLayer, RightShiftLayer
 from .one_hot import ToOneHot, PlusMinusOneToOneHot
 from .padding import ExpandInputDim, PeriodicPadding
 from .wrappers import WeightNormalization
+from .layer_normalization import LayerNormalization

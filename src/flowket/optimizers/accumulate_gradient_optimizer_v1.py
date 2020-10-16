@@ -1,8 +1,16 @@
+import importlib
+
 import tensorflow
 from tensorflow.keras import backend as K
 
+horovod_spec = importlib.util.find_spec("horovod")
+horovod_found = horovod_spec is not None
+if horovod_found:
+    import horovod.tensorflow as hvd
 
-def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequency, accumulate_sum_or_mean=True, ema_decay=0):
+
+
+def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequency, accumulate_sum_or_mean=True, ema_decay=0, use_horovod=False):
     if update_params_frequency < 1:
         raise ValueError('update_params_frequency must be >= 1')
     print('update_params_frequency: %s' % update_params_frequency)
@@ -23,8 +31,25 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
     def set_weights_ema(self):
         return K.get_session().run(tensorflow.group(*[K.update(p, e_p / (1 - K.pow(ema_decay, self.total_iterations))) for e_p, p in zip(self.params_ema, self.params_for_ema_tracking)]))
 
+    def _allreduce(self, gradients):
+        if hvd.size() > 1:
+            averaged_gradients = []
+            with tensorflow.name_scope("OptimizerAllreduce"):
+                for grad in gradients:
+                    if grad is not None:
+                        avg_grad = hvd.allreduce(grad)
+                        averaged_gradients.append(avg_grad)
+                    else:
+                        averaged_gradients.append(None)
+                return averaged_gradients
+        else:
+            return gradients        
+
     def updated_get_gradients(self, loss, params):
-        return self.accumulate_gradient_accumulators
+        if use_horovod:
+            return self._allreduce(self.accumulate_gradient_accumulators)
+        else:
+            return self.accumulate_gradient_accumulators
 
     def updated_get_updates(self, loss, params):
         self.accumulate_gradient_accumulators = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
@@ -36,7 +61,6 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
         if not accumulate_sum_or_mean:
             new_grads = [g / K.cast(self.update_params_frequency, K.dtype(g)) for g in new_grads]
         self.updated_grads = [K.update_add(p, g) for p, g in zip(self.accumulate_gradient_accumulators, new_grads)]
-
 
         def update_function():
             with tensorflow.control_dependencies(orig_get_updates(loss, params)):
@@ -50,7 +74,7 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
         def just_store_function():
             return tensorflow.group(*[updates_accumulated_iterations])
 
-        update_switch = K.equal((updates_accumulated_iterations) % self.update_params_frequency, 0)
+        update_switch = K.equal(updates_accumulated_iterations % self.update_params_frequency, 0)
 
         with tensorflow.control_dependencies(self.updated_grads):
             self.updates = [K.switch(update_switch, update_function, just_store_function)]
@@ -60,4 +84,6 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
     orig_optimizer.get_updates = updated_get_updates.__get__(orig_optimizer, type(orig_optimizer))
     orig_optimizer.set_update_params_frequency = set_update_params_frequency.__get__(orig_optimizer, type(orig_optimizer))
     orig_optimizer.set_weights_ema = set_weights_ema.__get__(orig_optimizer, type(orig_optimizer))
-    return orig_optimizer
+    orig_optimizer._allreduce = _allreduce.__get__(orig_optimizer, type(orig_optimizer))
+
+

@@ -21,7 +21,8 @@ from flowket.callbacks.monte_carlo import TensorBoardWithGeneratorValidationData
 from flowket.layers import LogSpaceComplexNumberHistograms
 from flowket.machines import ConvNetAutoregressive2D
 from flowket.operators import Heisenberg
-from flowket.optimization import VariationalMonteCarlo, loss_for_energy_minimization
+from flowket.optimization import loss_for_energy_minimization
+from flowket.optimization.horovod_variational_monte_carlo import HorovodVariationalMonteCarlo
 from flowket.samplers import FastAutoregressiveSampler
 
 run_index = int(sys.argv[-1].strip())
@@ -46,9 +47,9 @@ model.summary()
 conditional_log_probs_model.summary()
 hilbert_state_shape = (10, 10)
 operator = Heisenberg(hilbert_state_shape=hilbert_state_shape, pbc=False)
-variational_monte_carlo = VariationalMonteCarlo(model, operator, sampler)
+variational_monte_carlo = HorovodVariationalMonteCarlo(model, operator, sampler)
 
-validation_generator = VariationalMonteCarlo(model, operator, validation_sampler)
+validation_generator = HorovodVariationalMonteCarlo(model, operator, validation_sampler)
 
 run_name = 'horovod_fast_sampling_heisenberg_2d_%s_gpus' % (run_index)
 

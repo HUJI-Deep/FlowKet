@@ -21,8 +21,13 @@ def main():
 
     operator = Heisenberg(hilbert_state_shape=config.hilbert_state_shape, pbc=config.pbc)
     true_ground_state_energy = None
-    if (not config.pbc) and len(config.hilbert_state_shape) == 2 and config.hilbert_state_shape[0] == 10 and  config.hilbert_state_shape[1] == 10:
-        true_ground_state_energy = -251.4624
+    if len(config.hilbert_state_shape) == 2 and config.hilbert_state_shape[0] == 10 and  config.hilbert_state_shape[1] == 10:
+        if config.pbc:
+            true_ground_state_energy = -268.61976
+        else:
+            true_ground_state_energy = -251.4624
+    elif (not config.pbc) and len(config.hilbert_state_shape) == 2 and config.hilbert_state_shape[0] == 16 and  config.hilbert_state_shape[1] == 16:
+        true_ground_state_energy = -658.9759488
     config.func(operator, config, true_ground_state_energy)
     
 if __name__ == '__main__':

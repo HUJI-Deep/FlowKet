@@ -1,11 +1,17 @@
 import argparse
+import importlib
 import json
+import math
 import os
 
+import tensorflow
 from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.python.keras import backend as K
+
+from tensorflow.keras.layers import Conv2D, Dense, Flatten, Lambda
+from flowket.deepar.layers import ToFloat32, WeightNormalization, ExpandInputDim, PeriodicPadding
 
 from flowket.callbacks import CheckpointByTime
 from flowket.callbacks.checkpoint import load_optimizer_weights
@@ -18,6 +24,19 @@ from flowket.samplers import FastAutoregressiveSampler
 from flowket.machines.ensemble import make_2d_obc_invariants, make_up_down_invariant
 from flowket.optimizers import convert_to_accumulate_gradient_optimizer
 
+horovod_spec = importlib.util.find_spec("horovod")
+horovod_found = horovod_spec is not None
+if horovod_found:
+    import horovod.tensorflow.keras as hvd
+    from flowket.optimization.horovod_variational_monte_carlo import HorovodVariationalMonteCarlo
+
+def init_horovod():
+    hvd.init()
+    config = tensorflow.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+    K.set_session(tensorflow.Session(config=config))
+
 
 def build_model(operator, config):
     inputs = Input(shape=operator.hilbert_state_shape, dtype='int8')
@@ -29,11 +48,12 @@ def build_model(operator, config):
     return model, sampler
 
 
-def compile_model(model, intial_learning_rate):
+def compile_model(model, intial_learning_rate, use_horovod):
     optimizer = Adam(lr=intial_learning_rate, beta_1=0.9, beta_2=0.9)
-    convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, accumulate_sum_or_mean=True)
+    convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, accumulate_sum_or_mean=True, use_horovod=use_horovod)
     model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
     return optimizer
+
 
 def load_weights_if_exist(model, checkpoint_path):
     if os.path.exists(checkpoint_path):
@@ -44,6 +64,7 @@ def load_weights_if_exist(model, checkpoint_path):
         initial_epoch = 0
     return initial_epoch
 
+
 def to_valid_stages_config(config):
     if len(config.batch_size) == 1:
         config.batch_size = [config.batch_size] * len(config.num_epoch)
@@ -51,11 +72,16 @@ def to_valid_stages_config(config):
         config.learning_rate = [config.learning_rate] * len(config.num_epoch)
     assert len(config.batch_size) == len(config.num_epoch) and len(config.learning_rate) == len(config.num_epoch)
 
+
 def train(operator, config, true_ground_state_energy=None):
+    if config.use_horovod:
+        init_horovod()
     to_valid_stages_config(config)
-    save_config(config)
+    is_rank_0 = (not config.use_horovod) or hvd.rank() == 0
+    if is_rank_0:
+        save_config(config)
     model, sampler = build_model(operator, config)
-    optimizer = compile_model(model, config.learning_rate[0])
+    optimizer = compile_model(model, config.learning_rate[0], config.use_horovod)
     checkpoint_path = os.path.join(config.output_path, 'model.h5')
     initial_epoch = load_weights_if_exist(model, checkpoint_path)
 
@@ -65,44 +91,64 @@ def train(operator, config, true_ground_state_energy=None):
         total_epochs += num_epoch
         if total_epochs <= initial_epoch:
             continue
+        vmc_cls = VariationalMonteCarlo
+        if config.use_horovod:
+            batch_size = int(math.ceil(batch_size / hvd.size()))
+            vmc_cls = HorovodVariationalMonteCarlo
+
         validation_sampler = sampler.copy_with_new_batch_size(min(batch_size * 8, 2**15), mini_batch_size=config.mini_batch_size)
         assert batch_size < config.mini_batch_size or batch_size % config.mini_batch_size == 0
         sampler = sampler.copy_with_new_batch_size(batch_size, config.mini_batch_size)
-        variational_monte_carlo = VariationalMonteCarlo(model,
+        variational_monte_carlo = vmc_cls(model,
             operator,
             sampler,
             mini_batch_size=config.mini_batch_size)
-        validation_generator = VariationalMonteCarlo(model,
+        validation_generator = vmc_cls(model,
             operator,
             validation_sampler,
             wave_function_evaluation_batch_size=config.mini_batch_size)
         optimizer.set_update_params_frequency(variational_monte_carlo.update_params_frequency)
         K.set_value(optimizer.lr, learning_rate)
-        tensorboard = TensorBoardWithGeneratorValidationData(log_dir=config.output_path,
-                                                             generator=variational_monte_carlo, update_freq='epoch',
-                                                             histogram_freq=0, batch_size=batch_size, write_output=False)
+
         callbacks = default_wave_function_stats_callbacks_factory(
             variational_monte_carlo, validation_generator=validation_generator, log_in_batch_or_epoch=False, true_ground_state_energy=true_ground_state_energy, validation_period=config.validation_period)
-        callbacks += [tensorboard, CheckpointByTime(checkpoint_path, save_weights_only=True)]
+        
+        if config.use_horovod:
+            callbacks = [hvd.callbacks.BroadcastGlobalVariablesCallback(0), ] + callbacks + [hvd.callbacks.MetricAverageCallback()]
+        if is_rank_0:
+            tensorboard = TensorBoardWithGeneratorValidationData(log_dir=config.output_path,
+                                                                 generator=variational_monte_carlo, update_freq='epoch',
+                                                                 histogram_freq=0, batch_size=batch_size, write_output=False, write_graph=False)
+            callbacks += [tensorboard, CheckpointByTime(checkpoint_path, save_weights_only=True)]
+            verbose = 1
+        else:
+            verbose = 0
         model.fit_generator(variational_monte_carlo.to_generator(), steps_per_epoch=config.steps_per_epoch * variational_monte_carlo.update_params_frequency, epochs=total_epochs, callbacks=callbacks,
-                        max_queue_size=0, workers=0, initial_epoch=initial_epoch)
-        model.save_weights(os.path.join(config.output_path, 'stage_%s.h5' % (idx + 1)))
+                        max_queue_size=0, workers=0, initial_epoch=initial_epoch, verbose=verbose)
+        if is_rank_0:
+            model.save_weights(os.path.join(config.output_path, 'stage_%s.h5' % (idx + 1)))
         initial_epoch = total_epochs
-
 
     evaluation_inputs = Input(shape=config.hilbert_state_shape, dtype='int8')
     obc_input = Input(shape=config.hilbert_state_shape, dtype=evaluation_inputs.dtype)
     invariant_model = make_2d_obc_invariants(obc_input, model)
     invariant_model = make_up_down_invariant(evaluation_inputs, invariant_model)
-    mini_batch_size=config.mini_batch_size // 16
+    mini_batch_size = config.mini_batch_size // 16
 
     sampler = sampler.copy_with_new_batch_size(config.mini_batch_size)
-    variational_monte_carlo = VariationalMonteCarlo(invariant_model, operator, sampler, mini_batch_size=config.mini_batch_size)
-    callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo, log_in_batch_or_epoch=False, true_ground_state_energy=true_ground_state_energy)
+    
+    vmc_cls = VariationalMonteCarlo
+    if config.use_horovod:
+        vmc_cls = HorovodVariationalMonteCarlo
 
+    variational_monte_carlo = vmc_cls(invariant_model, operator, sampler, mini_batch_size=config.mini_batch_size)
+    callbacks = default_wave_function_stats_callbacks_factory(variational_monte_carlo, log_in_batch_or_epoch=False, true_ground_state_energy=true_ground_state_energy)
+    if config.use_horovod:
+        callbacks = callbacks + [hvd.callbacks.MetricAverageCallback()]
     results = evaluate(variational_monte_carlo, steps=(2**15) // mini_batch_size, callbacks=callbacks[:4],
-            keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error', 'energy/local_energy_variance': 'variance'})
-    print(results)
+            keys_to_progress_bar_mapping={'energy/energy': 'energy', 'energy/relative_error': 'relative_error', 'energy/local_energy_variance': 'variance'}, verbose=is_rank_0)
+    if is_rank_0:
+        print(results)
 
 
 def save_config(config):
@@ -133,4 +179,8 @@ def create_training_config_parser(depth, mini_batch_size, num_epoch, batch_size,
     parser.add_argument('--use_weights_normalization', dest='weights_normalization', action='store_true')
     parser.add_argument('--no_weights_normalization', dest='weights_normalization', action='store_false')
     parser.set_defaults(weights_normalization=True)
+    parser.add_argument('--use_horovod', dest='use_horovod', action='store_true')
+    parser.add_argument('--disable_horovod', dest='use_horovod', action='store_false')
+    parser.set_defaults(use_horovod=False)
     return parser
+

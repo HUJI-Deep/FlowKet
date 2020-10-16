@@ -1,5 +1,10 @@
 import tensorflow
 
+
+class SimpleClass(object):
+    pass
+
+
 def fix_tensorflow_v1_names():
     tensorflow.math.real = tensorflow.real
     tensorflow.math.imag = tensorflow.imag
@@ -15,6 +20,7 @@ def fix_tensorflow_v1_names():
     tensorflow.math.sqrt = tensorflow.sqrt
     tensorflow.math.floormod = tensorflow.floormod
     tensorflow.math.abs = tensorflow.abs
+    tensorflow.random = SimpleClass()
     tensorflow.random.normal = tensorflow.random_normal 
     tensorflow.random.uniform = tensorflow.random_uniform
     if not hasattr(tensorflow, 'roll'):
