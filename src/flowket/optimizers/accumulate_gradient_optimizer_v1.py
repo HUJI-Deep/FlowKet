@@ -85,5 +85,5 @@ def convert_to_accumulate_gradient_optimizer(orig_optimizer, update_params_frequ
     orig_optimizer.set_update_params_frequency = set_update_params_frequency.__get__(orig_optimizer, type(orig_optimizer))
     orig_optimizer.set_weights_ema = set_weights_ema.__get__(orig_optimizer, type(orig_optimizer))
     orig_optimizer._allreduce = _allreduce.__get__(orig_optimizer, type(orig_optimizer))
-
+    return orig_optimizer
 

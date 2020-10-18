@@ -73,7 +73,7 @@ operator = J1J2(hilbert_state_shape=hilbert_state_shape, j2=0.5, pbc=False)
 exact_variational = ExactVariational(model, operator, batch_size)
 
 optimizer = Adam(lr=params['lr'], beta_1=0.9, beta_2=0.999)
-convert_to_accumulate_gradient_optimizer(
+optimizer = convert_to_accumulate_gradient_optimizer(
     optimizer,
     update_params_frequency=exact_variational.num_of_batch_until_full_cycle,
     accumulate_sum_or_mean=True)

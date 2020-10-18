@@ -35,7 +35,7 @@ def build_model(hilbert_state_shape, depth, width, weights_normalization, learni
     conditional_log_probs_model = Model(inputs=inputs, outputs=conditional_log_phobs)
 
     optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.9)
-    convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, 
+    optimizer = convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, 
         accumulate_sum_or_mean=True)
     model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
     model.summary()

@@ -50,7 +50,7 @@ def build_model(operator, config):
 
 def compile_model(model, intial_learning_rate, use_horovod):
     optimizer = Adam(lr=intial_learning_rate, beta_1=0.9, beta_2=0.9)
-    convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, accumulate_sum_or_mean=True, use_horovod=use_horovod)
+    optimizer = convert_to_accumulate_gradient_optimizer(optimizer, update_params_frequency=1, accumulate_sum_or_mean=True, use_horovod=use_horovod)
     model.compile(optimizer=optimizer, loss=loss_for_energy_minimization)
     return optimizer
 
