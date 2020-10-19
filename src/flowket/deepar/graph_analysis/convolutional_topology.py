@@ -17,14 +17,21 @@ class ConvolutionalTopology(LayerTopology):
         if self.layer.padding != 'valid':
             raise Exception("THis topology support only valid padding, you could use "
                             "ZeroPadding1D, ZeroPadding2D, ZeroPadding3D for padding")
+        self.reshaped_weights = None
+    
+    def _prepare_weights(self):
         self.reshaped_weights = tensorflow.reshape(self.layer.kernel, [-1, self.layer.filters])
-
+        if self.layer.use_bias:
+            self.bias = self.layer.bias
+    
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
+        if self.reshaped_weights is None:
+            self._prepare_weights()
         flat_input = tensorflow.reshape(tensorflow.stack(dependencies_values, axis=1),
                                         shape=[-1, self.layer.get_input_shape_at(output_index)[-1] * numpy.product(self.layer.kernel_size)])
         results = tensorflow.matmul(flat_input, self.reshaped_weights)
         if self.layer.use_bias:
-            results = tensorflow.nn.bias_add(results, self.layer.bias)
+            results = tensorflow.nn.bias_add(results, self.bias)
         if self.layer.activation is not None:
             results = self.layer.activation(results)
         return results

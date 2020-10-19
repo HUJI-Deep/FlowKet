@@ -137,6 +137,13 @@ class ComplexConv3D(_ComplexConv):
         super(ComplexConv3D, self).__init__(3, filters, kernel_size, **kwargs)
 
 
-TopologyManager().register_layer_topology(ComplexConv1D, ConvolutionalTopology)
-TopologyManager().register_layer_topology(ComplexConv2D, ConvolutionalTopology)
-TopologyManager().register_layer_topology(ComplexConv3D, ConvolutionalTopology)
+class ComplexConvolutionalTopology(ConvolutionalTopology):
+    def _prepare_weights(self):
+        self.reshaped_weights = tensorflow.reshape(self.layer.kernel(), [-1, self.layer.filters])
+        if self.layer.use_bias:
+            self.bias = self.layer.bias()
+
+
+TopologyManager().register_layer_topology(ComplexConv1D, ComplexConvolutionalTopology)
+TopologyManager().register_layer_topology(ComplexConv2D, ComplexConvolutionalTopology)
+TopologyManager().register_layer_topology(ComplexConv3D, ComplexConvolutionalTopology)

@@ -72,7 +72,7 @@ def test_get_complex_value_gradients(input_layer, batch_size, conjugate_gradient
         loss = Multiply()([machine.predictions, machine.predictions])
         manual_gradients_layer = Lambda(
             lambda x: tensorflow.reshape(tensorflow.reduce_sum(2.0 * x[0] * x[1], axis=0),
-                                         machine.dense_layer.kernel.shape)) \
+                                         machine.dense_layer.kernel().shape)) \
             ([machine.predictions, machine.manual_jacobian])
         if conjugate_gradients:
             manual_gradients_layer = Lambda(lambda x: tensorflow.conj(x))(manual_gradients_layer)

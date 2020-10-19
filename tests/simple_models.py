@@ -35,12 +35,12 @@ class LinearDepthTwo(Machine):
         x = ToComplex64()(keras_input_layer)
         x = Flatten()(x)
         flat_input = x
+        num_of_first_layer_params = 10 * x.shape[-1]
         first_layer = ComplexDense(10, use_bias=False)
         second_layer = ComplexDense(1, use_bias=False)
         x = first_layer(x)
         self._predictions = second_layer(x)
         second_layer_jacobian = x
-        num_of_first_layer_params = 10 * x.shape[-1]
         first_layer_jacobian = Lambda(
             lambda y: tensorflow.reshape(
                 tensorflow.matmul(tensorflow.reshape(y, (-1, 1)),
