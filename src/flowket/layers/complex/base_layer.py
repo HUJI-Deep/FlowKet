@@ -29,12 +29,12 @@ class ComplexLayer(Layer):
                                trainable=trainable)
         self.real_weights.append(real)
         self.imag_weights.append(imag)
-        self.weights_for_complex_value_params_gradient_conjugate.append(real)
         def callable_kernel():
             # we need to use callback, otherwise  in tf 2 the Gradient will be None since we outside of keras GradientTape
             minus_imag = tensorflow.math.multiply(imag, -1., 'conj_imag')
-            if len(self.weights_for_complex_value_params_gradient_conjugate) < len(self.real_weights):
+            if len(self.weights_for_complex_value_params_gradient_conjugate) < len(self.real_weights) * 2:
                 # todo find better logic how to track this tensor
+                self.weights_for_complex_value_params_gradient_conjugate.append(real)
                 self.weights_for_complex_value_params_gradient_conjugate.append(minus_imag)
             return tensorflow.complex(real, minus_imag)
         return callable_kernel
