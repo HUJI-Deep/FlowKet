@@ -44,7 +44,7 @@ class LinearDepthTwo(Machine):
         first_layer_jacobian = Lambda(
             lambda y: tensorflow.reshape(
                 tensorflow.matmul(tensorflow.reshape(y, (-1, 1)),
-                                  second_layer.kernel,
+                                  second_layer.kernel(),
                                   transpose_b=True),
                 (-1, num_of_first_layer_params)))(flat_input)
         self.manual_jacobian = Concatenate()([first_layer_jacobian, second_layer_jacobian])
