@@ -161,7 +161,7 @@ class ExactVariational(object):
         while True:
             self.machine_updated()
             for i in range(0, self.num_of_states, self.batch_size):
-                yield self.states[i:i+self.batch_size], self.energy_grad_coefficients[i:i+self.batch_size]
+                yield self.states[i:i+self.batch_size], self.energy_grad_coefficients[i:i+self.batch_size].astype(np.complex64)
 
     def __iter__(self):
         return self.to_generator()

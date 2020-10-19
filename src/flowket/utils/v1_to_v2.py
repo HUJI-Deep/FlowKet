@@ -9,7 +9,6 @@ def fix_tensorflow_v1_names():
     tensorflow.math.real = tensorflow.real
     tensorflow.math.imag = tensorflow.imag
     tensorflow.math.conj = tensorflow.conj
-    tensorflow.math.log = tensorflow.log
     tensorflow.math.tanh = tensorflow.tanh
     tensorflow.math.reduce_logsumexp = tensorflow.reduce_logsumexp
     tensorflow.math.reduce_sum = tensorflow.reduce_sum

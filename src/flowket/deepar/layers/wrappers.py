@@ -32,7 +32,11 @@ class CopyNormaInitializer(Initializer):
         self.exponential_norm = exponential_norm
 
     def __call__(self, shape, dtype=None, partition_info=None):
-        flat = tf.reshape(self.variable.initial_value, [-1, shape[-1]])
+        if tf.__version__.startswith('2'):
+            initial_value = self.variable
+        else:
+            initial_value = self.variable.initial_value,
+        flat = tf.reshape(initial_value, [-1, shape[-1]])
         norm = tf.linalg.norm(flat, axis=0)
         if self.exponential_norm:
             norm = tf.math.log(norm + 1e-10)

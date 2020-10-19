@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.models import Model
 
 from flowket.deepar.layers import ExpandInputDim, PeriodicPadding
-from flowket.layers import ComplexConv1D, ComplexConv2D, ComplexDense, ToComplex64
+from flowket.layers import ComplexConv1D, ComplexConv2D, ComplexDense, ToComplex64, VectorToComplexNumber
 from flowket.layers.complex.tensorflow_ops import lncosh
 from flowket.machines import Machine
 
@@ -71,10 +71,11 @@ def real_values_2d_model():
     x = Activation('relu')(x)
     x = Flatten()(x)
     first_dense_layer = Dense(7)
-    second_dense_layer = Dense(1)
+    second_dense_layer = Dense(2)
     x = first_dense_layer(x)
     x = Activation('relu')(x)
     x = second_dense_layer(x)
+    x = VectorToComplexNumber(axis=-1)(x)
     return Model(input_layer, x)
 
 
@@ -123,8 +124,9 @@ def real_values_1d_model():
                , kernel_size=1)(x)
     x = Flatten()(x)
     first_dense_layer = Dense(7)
-    second_dense_layer = Dense(1)
+    second_dense_layer = Dense(2)
     x = first_dense_layer(x)
     x = Activation('relu')(x)
     x = second_dense_layer(x)
+    x = VectorToComplexNumber(axis=-1)(x)
     return Model(input_layer, x)

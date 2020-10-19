@@ -95,13 +95,13 @@ class _ComplexConv(ComplexLayer, abc.ABC):
         if self.rank == 1:
             dilation_rate = self.dilation_rate[0]
 
-        res = keras_conv_to_complex_conv(x, self.kernel,
+        res = keras_conv_to_complex_conv(x, self.kernel(),
                                          functools.partial(self.real_conv_op,
                                                            strides=self.strides,
                                                            dilation_rate=dilation_rate,
                                                            padding=self.padding))
         if self.use_bias:
-            res = tensorflow.nn.bias_add(res, self.bias)
+            res = tensorflow.nn.bias_add(res, self.bias())
         if self.activation is not None:
             return self.activation(res)
         return res

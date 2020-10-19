@@ -65,6 +65,7 @@ def test_exact_and_monte_carlo_agree(model_builder, operator, batch_size, num_of
         ctx = DEFAULT_TF_GRAPH.as_default()
     with ctx:
         model = model_builder()
+        model.summary()
         exact_variational = ExactVariational(model, operator, batch_size)
         reduce_variance(exact_variational, model)
         sampler = ExactSampler(exact_variational, batch_size)

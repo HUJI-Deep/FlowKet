@@ -42,9 +42,9 @@ class ComplexDense(ComplexLayer):
         self.built = True
 
     def call(self, inputs):
-        output = K.dot(inputs, self.kernel)
+        output = K.dot(inputs, self.kernel())
         if self.use_bias:
-            output = K.bias_add(output, self.bias, data_format='channels_last')
+            output = K.bias_add(output, self.bias(), data_format='channels_last')
         if self.activation is not None:
             output = self.activation(output)
         return output
@@ -57,18 +57,13 @@ class TranslationInvariantComplexDense(ComplexDense):
 
     def build(self, input_shape):
         assert len(input_shape) >= 2
-        input_dims = tuple([int(s) for s in input_shape[1:]])
-        self.number_of_visible = numpy.prod(input_dims)
+        self.input_dims = tuple([int(s) for s in input_shape[1:]])
+        self.number_of_visible = numpy.prod(self.input_dims)
         self.bare_kernel = self.add_complex_weight(name='kernel',
-                                                   shape=input_dims + (self.units,),
+                                                   shape=self.input_dims + (self.units,),
                                                    complex_initializer=self.kernel_initializer,
                                                    trainable=True,
                                                    dtype=self.params_dtype)
-
-        all_axes = tuple(list(range(len(input_dims))))
-        kernel_translations = [tensorflow.manip.roll(self.bare_kernel, i, all_axes) for i in
-                               itertools.product(*[range(dim_size) for dim_size in input_dims])]
-        self.kernel = tensorflow.reshape(tensorflow.stack(kernel_translations, axis=-1), (self.number_of_visible, -1))
 
         if self.use_bias:
             self.bare_bias = self.add_complex_weight(name='bias',
@@ -76,10 +71,22 @@ class TranslationInvariantComplexDense(ComplexDense):
                                                      complex_initializer=self.bias_initializer,
                                                      trainable=True,
                                                      dtype=self.params_dtype)
-            self.bias = tensorflow.reshape(tensorflow.stack([self.bare_bias] * self.number_of_visible, axis=-1), (-1,))
         else:
             self.bias = None
         self.built = True
 
     def call(self, inputs):
-        return super().call(tensorflow.reshape(inputs, (-1, self.number_of_visible)))
+        all_axes = tuple(list(range(len(self.input_dims))))
+        bare_kernel = self.bare_kernel()
+        kernel_translations = [tensorflow.manip.roll(bare_kernel, i, all_axes) for i in
+                               itertools.product(*[range(dim_size) for dim_size in self.input_dims])]
+        self.kernel = tensorflow.reshape(tensorflow.stack(kernel_translations, axis=-1), (self.number_of_visible, -1))
+        self.bias = tensorflow.reshape(tensorflow.stack([self.bare_bias] * self.number_of_visible, axis=-1), (-1,))
+        inputs = tensorflow.reshape(inputs, (-1, self.number_of_visible))
+
+        output = K.dot(inputs, self.kernel)
+        if self.use_bias:
+            output = K.bias_add(output, self.bias, data_format='channels_last')
+        if self.activation is not None:
+            output = self.activation(output)
+        return output

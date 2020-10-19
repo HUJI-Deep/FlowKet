@@ -19,6 +19,7 @@ if not tensorflow.__version__.startswith('2'):
 
 @pytest.mark.parametrize('machine_input, machine_class, machine_args', [
     (ONE_DIM_INPUT, SimpleConvNetAutoregressive1D, {'depth': 7, 'num_of_channels': 16, 'weights_normalization': False}),
+    (ONE_DIM_INPUT, SimpleConvNetAutoregressive1D, {'depth': 7, 'num_of_channels': 16, 'weights_normalization': True}),
     (TWO_DIM_INPUT, ConvNetAutoregressive2D, {'depth': 4, 'num_of_channels': 16, 'weights_normalization': False})
 ])
 def test_autoregressive_have_normalize_distribution(machine_input, machine_class, machine_args):

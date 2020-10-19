@@ -40,7 +40,7 @@ class VariationalMonteCarlo(MiniBatchGenerator):
 
     def loss_coefficients(self):
         local_energy_minus_mean = self.current_local_energy - self.current_energy
-        return numpy.conj(local_energy_minus_mean)
+        return numpy.conj(local_energy_minus_mean).astype(numpy.complex64)
 
     def next_batch(self):
         K.set_session(self._session)
