@@ -40,7 +40,7 @@ class LinearDepthTwo(Machine):
         x = first_layer(x)
         self._predictions = second_layer(x)
         second_layer_jacobian = x
-        num_of_first_layer_params = numpy.prod([int(s) for s in first_layer.kernel.shape])
+        num_of_first_layer_params = 10 * x.output_shape[-1]
         first_layer_jacobian = Lambda(
             lambda y: tensorflow.reshape(
                 tensorflow.matmul(tensorflow.reshape(y, (-1, 1)),
