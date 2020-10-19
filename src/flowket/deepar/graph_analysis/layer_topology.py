@@ -29,10 +29,7 @@ class LayerTopology(abc.ABC):
 
     def get_zeros(self, batch_size, output_index=0):
         output_shape = self.layer.get_output_shape_at(output_index)
-        if isinstance(output_shape, tuple):
-            output_shape = [output_shape]
         dtype = tensorflow.float32
         if self.layer.dtype is not None:
             dtype = self.layer.dtype
-        return tensorflow.zeros(shape=(batch_size, output_shape[-1],),
-                                dtype=tensorflow.as_dtype(dtype))
+        return tensorflow.zeros(shape=(batch_size, output_shape[-1]), dtype=tensorflow.as_dtype(dtype))

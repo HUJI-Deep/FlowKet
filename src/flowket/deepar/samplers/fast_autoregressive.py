@@ -1,4 +1,5 @@
 import copy
+import itertools
 
 import networkx
 import numpy
@@ -38,7 +39,10 @@ class FastAutoregressiveSampler(Sampler):
         self._layer_to_activation_array[layer] = []
         for output_index, output_shape in enumerate(self.dependencies_graph.layer_to_output_shape[layer]):
             zeros = TopologyManager().get_layer_topology(layer).get_zeros(self.batch_size_t, output_index)
-            self._layer_to_activation_array[layer].append(numpy.full(output_shape, fill_value=zeros))
+            activation_array = numpy.empty(output_shape, dtype=object)
+            for i in itertools.product(*[range(s) for s in output_shape]):
+                activation_array[i] = zeros
+            self._layer_to_activation_array[layer].append(activation_array)
 
     def _get_layer_activation_array(self, layer, output_index):
         return self._layer_to_activation_array[layer][output_index]

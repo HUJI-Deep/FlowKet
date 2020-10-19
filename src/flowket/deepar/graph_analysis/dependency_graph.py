@@ -1,10 +1,31 @@
 import itertools
 
 import networkx
+import tensorflow
 from tensorflow.python.keras.engine.input_layer import InputLayer
 
 from .data_structures import GraphNode
 from .topology_manager import TopologyManager
+
+
+def get_keras_node_inbound_v1(node):
+    inbound_layers = node.inbound_layers
+    if not isinstance(inbound_layers, list):
+        inbound_layers = [inbound_layers]
+    tensor_indices = node.tensor_indices
+    if not isinstance(tensor_indices, list):
+        tensor_indices = [tensor_indices]
+    return inbound_layers, tensor_indices
+
+
+def get_keras_node_inbound_v2(node):
+    inbounds = list(node.iterate_inbound())
+    inbound_layers = [inbound[0] for inbound in inbounds]
+    tensor_indices = [inbound[2] for inbound in inbounds]
+    return inbound_layers, tensor_indices
+
+
+get_keras_node_inbound = get_keras_node_inbound_v2 if tensorflow.__version__.startswith('2') else get_keras_node_inbound_v1
 
 
 def visit_layer_predecessors(layer, visitor, visited_layers=None, layer_output_index=0):
@@ -13,12 +34,7 @@ def visit_layer_predecessors(layer, visitor, visited_layers=None, layer_output_i
     visited_layers.add((layer_output_index, layer))
     layer_nodes = layer.inbound_nodes
     assert len(layer_nodes) == 1
-    inbound_layers = layer_nodes[-1].inbound_layers
-    if not isinstance(inbound_layers, list):
-        inbound_layers = [inbound_layers]
-    tensor_indices = layer_nodes[-1].tensor_indices
-    if not isinstance(tensor_indices, list):
-        tensor_indices = [tensor_indices]
+    inbound_layers, tensor_indices = get_keras_node_inbound(layer_nodes[-1])
     visitor(layer, layer_output_index, inbound_layers, tensor_indices)
     for tensor_indice, inbound_layer in zip(tensor_indices, inbound_layers):
         if (tensor_indice, inbound_layer) not in visited_layers:
@@ -54,7 +70,7 @@ class DependencyGraph(object):
                 output_shape = output_shape + (1,)
             if isinstance(output_shape, tuple):
                 output_shape = [output_shape]
-            self.layer_to_output_shape[layer] = [o[1:-1]for o in output_shape]
+            self.layer_to_output_shape[layer] = [tuple([int(t) for t in o[1:-1]]) for o in output_shape]
 
     def _dependency_graph_visitor(self, layer, layer_output_index, inbound_layers, inbound_indices):
         self.layer_to_input_layers[layer] = inbound_layers

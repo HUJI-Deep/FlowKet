@@ -23,5 +23,8 @@ def fix_tensorflow_v1_names():
     tensorflow.random = SimpleClass()
     tensorflow.random.normal = tensorflow.random_normal 
     tensorflow.random.uniform = tensorflow.random_uniform
+    def categorical_func(logits, num_samples, dtype=None, seed=None, name=None):
+        return tensorflow.multinomial(logits, num_samples, output_dtype=dtype, seed=seed, name=name)
+    tensorflow.random.categorical = categorical_func
     if not hasattr(tensorflow, 'roll'):
         tensorflow.roll = tensorflow.manip.roll

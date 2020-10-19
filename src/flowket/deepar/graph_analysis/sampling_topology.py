@@ -12,7 +12,7 @@ class CategorialSamplingTopology(LayerTopology):
 
     def apply_layer_for_single_spatial_location(self, spatial_location, dependencies_values, output_index=0):
         dependencies_values = dependencies_values[0]
-        return tensorflow.cast(tensorflow.multinomial(dependencies_values, 1, output_dtype=tensorflow.int32),
+        return tensorflow.cast(tensorflow.random.categorical(dependencies_values, 1, dtype=tensorflow.int32),
                                self.layer.dtype)
 
 
