@@ -19,6 +19,7 @@ def fix_tensorflow_v1_names():
     tensorflow.math.sqrt = tensorflow.sqrt
     tensorflow.math.floormod = tensorflow.floormod
     tensorflow.math.abs = tensorflow.abs
+    tensorflow.math.log = tensorflow.log
     tensorflow.random = SimpleClass()
     tensorflow.random.normal = tensorflow.random_normal 
     tensorflow.random.uniform = tensorflow.random_uniform
