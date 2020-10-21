@@ -50,21 +50,21 @@ def create_test_case(idx):
             (ZeroPadding2D(((1, 2), (5, 3))), Input((10, 10, 5)), 32),
             (ZeroPadding2D(((1, 0), (5, 0))), Input((10, 10, 5)), 32),
             (ZeroPadding2D(((0, 1), (0, 5))), Input((10, 10, 5)), 32),
-            (ZeroPadding3D(((0, 1), (0, 5), (0, 3))), Input((10, 10, 8, 5)), 32),
-            (ZeroPadding3D(((1, 0), (5, 0), (3, 0))), Input((10, 10, 8, 5)), 32),
-            (ZeroPadding3D(((1, 2), (5, 4), (3, 6))), Input((10, 10, 8, 5)), 32),
+            (ZeroPadding3D(((0, 1), (0, 3), (0, 3))), Input((4, 4, 3, 5)), 32),
+            (ZeroPadding3D(((1, 0), (2, 0), (3, 0))), Input((4, 4, 3, 5)), 32),
+            (ZeroPadding3D(((1, 2), (2, 3), (3, 1))), Input((4, 4, 3, 5)), 32),
             (Conv1D(8, kernel_size=3, data_format='channels_last', bias_initializer='ones'), Input((6, 5)), 32),
             (ZeroPadding1D(padding=(1, 0)), Input((6, 5)), 32),
             (ZeroPadding1D(padding=(1, 1)), Input((6, 5)), 32),
             (ZeroPadding1D(padding=(1, 1)), Input((6, 5)), 32),
-            (Conv3D(8, kernel_size=(3, 3, 3), data_format='channels_last', bias_initializer='ones'), Input((6, 6, 6, 5)), 32),
+            (Conv3D(8, kernel_size=(2, 2, 2), data_format='channels_last', bias_initializer='ones'), Input((4, 4, 4, 5)), 32),
             (ComplexConv2D(8, kernel_size=3), Input((6, 6, 5), dtype=tf.complex64), 32),
             (ComplexConv2D(8, kernel_size=3), Input((7, 7, 5), dtype=tf.complex64), 32),
             (ComplexConv2D(8, kernel_size=3, dilation_rate=2), Input((10, 10, 5), dtype=tf.complex64), 32),
             (ComplexConv2D(8, kernel_size=3, strides=2), Input((10, 10, 5), dtype=tf.complex64), 32),
             (ComplexConv1D(8, kernel_size=3), Input((6, 5), dtype=tf.complex64), 32),
             (ComplexConv3D(8, kernel_size=(3, 1, 1)), Input((6, 1, 1, 5), dtype=tf.complex64), 32),
-            (ComplexConv3D(8, kernel_size=3), Input((6, 6, 8, 5), dtype=tf.complex64), 32)][idx]
+            (ComplexConv3D(8, kernel_size=2), Input((4, 4, 5, 5), dtype=tf.complex64), 32)][idx]
 
 
 @pytest.mark.parametrize('idx', list(range(49)))
