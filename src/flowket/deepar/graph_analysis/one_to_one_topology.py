@@ -1,5 +1,5 @@
 from tensorflow.keras.layers import Activation, Add, Average, Subtract, Multiply, Maximum, Minimum, \
-    LeakyReLU, ELU, ThresholdedReLU, Softmax
+    LeakyReLU, ELU, ThresholdedReLU, Softmax, Embedding
 
 from .data_structures import Dependency
 from .layer_topology import LayerTopology
@@ -13,11 +13,11 @@ class OneToOneTopology(LayerTopology):
     def __init__(self, layer):
         super(OneToOneTopology, self).__init__(layer)
         inputs_shape = layer.input_shape
-        if isinstance(layer, ExpandInputDim):
+        if isinstance(layer, ExpandInputDim) or isinstance(layer, Embedding):
              inputs_shape = inputs_shape + (1,)
         if isinstance(inputs_shape, tuple):
             inputs_shape = [inputs_shape]
-        self._spatial_inputs_size = [input_shape[1:-1]for input_shape in inputs_shape]
+        self._spatial_inputs_size = [input_shape[1:-1] for input_shape in inputs_shape]
 
     def _broadcast_spatial_location(self, spatial_location, input_index):
         broadcasted_spatial_location = []
@@ -78,3 +78,4 @@ TopologyManager().register_layer_topology(NormalizeInLogSpace, OneToOneTopology)
 TopologyManager().register_layer_topology(PlusMinusOneToOneHot, OneHotTopologyWithIdentity)
 TopologyManager().register_layer_topology(ToOneHot, OneHotTopologyWithIdentity)
 TopologyManager().register_layer_topology(ExpandInputDim, OneToOneTopologyWithIdentity)
+TopologyManager().register_layer_topology(Embedding, OneToOneTopology)

@@ -7,9 +7,10 @@ class GatherLayer(Layer):
         super(GatherLayer, self).__init__(**kwargs)
         self.indices = indices
         self.axis = axis
-
+        self.indices_tensor = tensorflow.convert_to_tensor(self.indices)
+    
     def call(self, x, mask=None):
-        return tensorflow.gather(x, tensorflow.convert_to_tensor(self.indices), axis=self.axis)
+        return tensorflow.gather(x, self.indices_tensor, axis=self.axis)
 
     def get_config(self):
         config = {'indices': self.indices, 'axis': self.axis}

@@ -1,4 +1,5 @@
 import abc
+import copy
 
 
 class Sampler(abc.ABC):
@@ -16,6 +17,11 @@ class Sampler(abc.ABC):
             mini_batch_size = batch_size
         self.batch_size = batch_size
         self.mini_batch_size = mini_batch_size
+
+    def copy_with_new_batch_size(self, batch_size, mini_batch_size=None):
+        new_sampler = copy.copy(self)
+        new_sampler._set_batch_size(batch_size, mini_batch_size)
+        return new_sampler
 
     def __iter__(self):
         return self

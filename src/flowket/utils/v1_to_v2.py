@@ -11,6 +11,7 @@ def fix_tensorflow_v1_names():
     tensorflow.math.multiply = tensorflow.multiply
     tensorflow.math.sqrt = tensorflow.sqrt
     tensorflow.math.floormod = tensorflow.floormod
+    tensorflow.math.floordiv = tensorflow.floordiv
     tensorflow.math.abs = tensorflow.abs
     if not hasattr(tensorflow, 'roll'):
         tensorflow.roll = tensorflow.manip.roll

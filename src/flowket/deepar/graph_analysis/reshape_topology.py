@@ -33,7 +33,7 @@ class ReshapeTopology(LayerTopology):
         if -1 in self.target_shape:
             minus_one_idx = self.target_shape.index(-1)
             if -1 in self.target_shape[minus_one_idx + 1:]:
-                raise Exception('Reshape output shape cant contain two unknowns')
+                raise Exception("Reshape output shape can't contain two unknowns")
             if total_size % numpy.prod(self.target_shape) != 0:
                 raise Exception('bad target shape')
             self.target_shape = self.target_shape[:] + (
