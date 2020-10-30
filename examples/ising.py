@@ -152,7 +152,7 @@ def run(params, batch_size_list, epochs_list):
 def get_params():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gamma", help="The Gamma in the Ising model", type=float, 
-        choices=[2., 2.5, 3., 3.5, 4.])
+        choices=[2., 2.5, 3., 3.5, 4.], required=True)
     parser.add_argument("--depth", help="num of PixelCNN blocks", type=int, default=20, required=False)
     parser.add_argument("--width", help="num of channels in each Conv layer", type=int, default=32, required=False)
     parser.add_argument("--learning_rate", help="Adam learning rate", type=float, default=1e-3, required=False)
