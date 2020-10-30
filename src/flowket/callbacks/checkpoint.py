@@ -69,5 +69,6 @@ class CheckpointByTime(Callback):
         self.current_epoch = epoch
 
     def on_train_end(self, logs=None):
+        logs = logs or {}
         self.current_epoch += 1
         self._save(logs, 0)
